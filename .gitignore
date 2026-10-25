@@ -1,0 +1,21 @@
+
+# Data files (large, generated)
+data/jonco/transactions.json
+data/jonco/staff_schedules.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+dist/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

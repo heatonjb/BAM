@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business as a Machine — {{ company.name }}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0a; color: #e0e0e0; }
+
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 1.5rem 2rem; border-bottom: 1px solid #333; }
+        .header h1 { font-size: 1.8rem; color: #fff; margin-bottom: 0.3rem; }
+        .header .subtitle { color: #888; font-size: 0.9rem; }
+        .header .company-number { color: #555; font-size: 0.8rem; }
+
+        .nav { background: #111; padding: 0.8rem 2rem; display: flex; gap: 1rem; border-bottom: 1px solid #222; overflow-x: auto; }
+        .nav a { color: #888; text-decoration: none; padding: 0.5rem 1rem; border-radius: 4px; transition: all 0.2s; font-size: 0.9rem; white-space: nowrap; }
+        .nav a:hover, .nav a.active { color: #fff; background: #222; }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem 2rem; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 1.2rem; }
+        .stat-card .label { color: #888; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
+        .stat-card .value { font-size: 1.6rem; font-weight: 600; }
+
+        .positive { color: #4caf50; }
+        .negative { color: #f44336; }
+        .neutral { color: #ff9800; }
+
+        .section { margin-bottom: 2rem; scroll-margin-top: 80px; }
+        .section-title { font-size: 1.2rem; color: #fff; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #333; }
+
+        .card { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; }
+        .card h3 { color: #fff; font-size: 1rem; margin-bottom: 0.8rem; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 0.7rem 1rem; border-bottom: 1px solid #222; font-size: 0.9rem; }
+        th { color: #888; font-weight: 500; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+        td { color: #ccc; }
+
+        .kpi-status { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+        .kpi-critical { background: #f44336; }
+        .kpi-poor { background: #ff5722; }
+        .kpi-ok { background: #ff9800; }
+        .kpi-good { background: #4caf50; }
+
+        .kpi-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid #222; }
+        .kpi-row:last-child { border-bottom: none; }
+        .kpi-name { color: #ccc; font-size: 0.9rem; }
+        .kpi-value { font-weight: 600; color: #fff; }
+        .kpi-benchmark { color: #666; font-size: 0.8rem; margin-left: 0.5rem; }
+        .kpi-gap { font-size: 0.8rem; margin-left: 0.5rem; }
+
+        .chart-container { position: relative; height: 300px; }
+
+        .query-box { background: #111; border: 1px solid #333; border-radius: 8px; padding: 1rem; }
+        .query-input { width: 100%; background: #0a0a0a; border: 1px solid #333; color: #fff; padding: 0.8rem; border-radius: 4px; font-size: 0.95rem; margin-bottom: 0.5rem; }
+        .query-input:focus { outline: none; border-color: #4caf50; }
+        .query-btn { background: #4caf50; color: #fff; border: none; padding: 0.8rem 1.5rem; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
+        .query-btn:hover { background: #45a049; }
+        .query-response { margin-top: 1rem; white-space: pre-wrap; color: #ccc; font-family: monospace; font-size: 0.9rem; line-height: 1.5; }
+
+        .exp-form { background: #111; border: 1px solid #333; border-radius: 8px; padding: 1rem; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+        .exp-form select, .exp-form input { background: #0a0a0a; border: 1px solid #333; color: #fff; padding: 0.6rem; border-radius: 4px; font-size: 0.9rem; }
+        .exp-form select { width: 200px; }
+        .exp-form input { width: 100px; }
+
+        .exp-result { margin-top: 1rem; background: #0a0a0a; border: 1px solid #333; border-radius: 4px; padding: 1rem; }
+        .exp-result h4 { color: #4caf50; margin-bottom: 0.5rem; }
+        .exp-result .impact { color: #fff; font-size: 1rem; margin: 0.3rem 0; }
+        .exp-result .assumption { color: #888; font-size: 0.85rem; margin: 0.2rem 0; padding-left: 1rem; }
+
+        .opp-card { background: #1a1a1a; border: 1px solid #333; border-radius: 6px; padding: 1rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .opp-card h4 { color: #fff; font-size: 0.95rem; margin: 0; }
+        .opp-card .gap { color: #f44336; font-size: 0.85rem; }
+
+        .footer { text-align: center; padding: 2rem; color: #555; font-size: 0.8rem; border-top: 1px solid #222; }
+
+        @media (max-width: 768px) {
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .container { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Business as a Machine</h1>
+        <div class="subtitle">{{ company.name }} — {{ company.period }}</div>
+        <div class="company-number">Company Number: {{ company.number }}</div>
+    </div>
+
+    <div class="nav">
+        <a href="#overview" class="active">Overview</a>
+        <a href="#revenue">Revenue</a>
+        <a href="#costs">Costs</a>
+        <a href="#hourly">Hourly</a>
+        <a href="#kpi">KPIs</a>
+        <a href="#staff">Staff</a>
+        <a href="#products">Products</a>
+        <a href="#graph">Graph</a>
+        <a href="#query">Ask</a>
+        <a href="#experiment">Experiments</a>
+    </div>
+
+    <div class="container">
+        <!-- Overview Stats -->
+        <div class="stats-grid" id="overview">
+            <div class="stat-card">
+                <div class="label">Total Revenue</div>
+                <div class="value">£{{ "{:,.2f}".format(company.total_revenue) }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Operating Profit</div>
+                <div class="value {% if company.total_profit > 0 %}positive{% else %}negative{% endif %}">£{{ "{:,.2f}".format(company.total_profit) }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Avg Monthly Revenue</div>
+                <div class="value">£{{ "{:,.2f}".format(company.total_revenue / 3) }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Total Transactions</div>
+                <div class="value">{{ "{:,}".format(monthly[0].transactions + monthly[1].transactions + monthly[2].transactions) }}</div>
+            </div>
+        </div>
+
+        <!-- Revenue Trend -->
+        <div class="section" id="revenue">
+            <h2 class="section-title">Revenue & Profit Trend</h2>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="chart-container">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="chart-container">
+                        <canvas id="profitChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cost Breakdown -->
+        <div class="section" id="costs">
+            <h2 class="section-title">Cost Structure</h2>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="chart-container">
+                        <canvas id="costChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="chart-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hourly Pattern -->
+        <div class="section" id="hourly">
+            <h2 class="section-title">Hourly Revenue Pattern</h2>
+            <div class="card">
+                <div class="chart-container">
+                    <canvas id="hourlyChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI Dashboard -->
+        <div class="section" id="kpi">
+            <h2 class="section-title">KPI Dashboard vs Benchmarks</h2>
+            <div class="card">
+                {% for status in ["critical", "poor", "ok", "good"] %}
+                {% if status == "critical" %}<h3 style="color:#f44336;margin-bottom:0.5rem;">Critical</h3>{% endif %}
+                {% if status == "poor" %}<h3 style="color:#ff5722;margin-bottom:0.5rem;">Poor</h3>{% endif %}
+                {% if status == "ok" %}<h3 style="color:#ff9800;margin-bottom:0.5rem;">OK</h3>{% endif %}
+                {% if status == "good" %}<h3 style="color:#4caf50;margin-bottom:0.5rem;">Good</h3>{% endif %}
+                {% for kpi_name, kpi in kpis.items() %}
+                {% if kpi.status == status and kpi.benchmark and kpi.value is not none %}
+                <div class="kpi-row">
+                    <div>
+                        <span class="kpi-status kpi-{{ status }}"></span>
+                        <span class="kpi-name">{{ kpi.name.replace("_", " ").title() }}</span>
+                    </div>
+                    <div>
+                        <span class="kpi-value">{{ "%.1f"|format(kpi.value) }} {{ kpi.unit }}</span>
+                        <span class="kpi-benchmark">(benchmark: {{ "%.1f"|format(kpi.benchmark) }})</span>
+                        <span class="kpi-gap {% if kpi.value >= kpi.benchmark %}positive{% else %}negative{% endif %}">
+                            {{ "%+.1f"|format(kpi.value - kpi.benchmark) }}
+                        </span>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Optimisation Opportunities -->
+        <div class="section">
+            <h2 class="section-title">Top Optimisation Opportunities</h2>
+            {% for opp in opps %}
+            <div class="opp-card">
+                <div>
+                    <h4>{{ opp.kpi.replace("_", " ").title() }}</h4>
+                    <div style="color:#888;font-size:0.85rem;">Current: <strong>{{ "%.1f"|format(opp.current) }}</strong> → Target: <strong>{{ "%.1f"|format(opp.target) }}</strong></div>
+                </div>
+                <div class="gap">Gap: {{ "%+.1f"|format(opp.gap) }}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Staff Analysis -->
+        <div class="section" id="staff">
+            <h2 class="section-title">Staff Productivity</h2>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Role</th>
+                            <th>Hours/Month</th>
+                            <th>Cost/Month</th>
+                            <th>Revenue/Hour</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in staff %}
+                        <tr>
+                            <td>{{ s.role.replace("_", " ").title() }}</td>
+                            <td>{{ "%.1f"|format(s.hours) }}</td>
+                            <td>£{{ "{:,.2f}".format(s.cost) }}</td>
+                            <td class="{% if s.revenue_per_hour < 15 %}negative{% elif s.revenue_per_hour < 25 %}neutral{% else %}positive{% endif %}">£{{ "%.2f"|format(s.revenue_per_hour) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Product Performance -->
+        <div class="section" id="products">
+            <h2 class="section-title">Product Performance (3 months)</h2>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Units Sold</th>
+                            <th>Revenue</th>
+                            <th>Avg Price</th>
+                            <th>Category</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in products %}
+                        <tr>
+                            <td>{{ p.name.replace("_", " ").title() }}</td>
+                            <td>{{ "{:,}".format(p.count) }}</td>
+                            <td>£{{ "{:,.2f}".format(p.revenue) }}</td>
+                            <td>£{{ "%.2f"|format(p.avg_price) }}</td>
+                            <td>{{ p.category.replace("_", " ").title() }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Transformation Graph -->
+        <div class="section" id="graph">
+            <h2 class="section-title">Transformation Graph</h2>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Node</th>
+                            <th>Type</th>
+                            <th>Value (£/mo)</th>
+                            <th>Efficiency</th>
+                            <th>Constraint</th>
+                            <th>Lever</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for n in nodes if n.efficiency is not none %}
+                        <tr>
+                            <td>{{ n.label }}</td>
+                            <td><code>{{ n.type }}</code></td>
+                            <td>£{{ "{:,.2f}".format(n.value) }}</td>
+                            <td>{{ "%.2f"|format(n.efficiency) }}x</td>
+                            <td>{{ n.constraint or "—" }}</td>
+                            <td>{{ n.lever or "—" }}</td>
+                        </tr>
+                        {% endfor %}
+                        {% for n in nodes if n.efficiency is none %}
+                        <tr>
+                            <td>{{ n.label }}</td>
+                            <td><code>{{ n.type }}</code></td>
+                            <td>£{{ "{:,.2f}".format(n.value) }}</td>
+                            <td>—</td>
+                            <td>{{ n.constraint or "—" }}</td>
+                            <td>{{ n.lever or "—" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Ask Questions -->
+        <div class="section" id="query">
+            <h2 class="section-title">Ask About the Business</h2>
+            <div class="query-box">
+                <input type="text" class="query-input" id="questionInput" placeholder="e.g., How profitable is the business? What are our biggest costs? Show me trends..." onkeydown="if(event.key==='Enter') askQuestion()">
+                <button class="query-btn" onclick="askQuestion()">Ask</button>
+                <div class="query-response" id="queryResponse"></div>
+            </div>
+        </div>
+
+        <!-- Experiments -->
+        <div class="section" id="experiment">
+            <h2 class="section-title">Run Experiments</h2>
+            <div class="exp-form">
+                <select id="expType">
+                    <option value="price">Price Change (%)</option>
+                    <option value="staff">Staff Cost Change (%)</option>
+                    <option value="volume">Volume Increase (%)</option>
+                    <option value="rent">Rent Reduction (£)</option>
+                </select>
+                <input type="number" id="expValue" placeholder="Value" value="5">
+                <button class="query-btn" onclick="runExperiment()">Run</button>
+            </div>
+            <div id="expResults"></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Business as a Machine MVP — JonCo Coffee Limited — Built with Flask + Chart.js
+    </div>
+
+    <script>
+        Chart.defaults.color = '#888';
+        Chart.defaults.borderColor = '#333';
+        Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, sans-serif';
+
+        const months = {{ monthly | map(attribute='month') | list | tojson }};
+        const revenues = {{ monthly | map(attribute='revenue') | list | tojson }};
+        const cogs = {{ monthly | map(attribute='cogs') | list | tojson }};
+        const staffCosts = {{ monthly | map(attribute='staff_costs') | list | tojson }};
+        const overheads = {{ monthly | map(attribute='overheads') | list | tojson }};
+        const opProfits = {{ monthly | map(attribute='operating_profit') | list | tojson }};
+
+        // Revenue vs Costs bar chart
+        new Chart(document.getElementById('revenueChart'), {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [
+                    { label: 'Revenue', data: revenues, backgroundColor: 'rgba(76, 175, 80, 0.6)', borderColor: '#4caf50', borderWidth: 1 },
+                    { label: 'COGS', data: cogs, backgroundColor: 'rgba(255, 87, 34, 0.6)', borderColor: '#ff5722', borderWidth: 1 },
+                    { label: 'Staff', data: staffCosts, backgroundColor: 'rgba(255, 152, 0, 0.6)', borderColor: '#ff9800', borderWidth: 1 },
+                    { label: 'Overheads', data: overheads, backgroundColor: 'rgba(156, 39, 176, 0.6)', borderColor: '#9c27b0', borderWidth: 1 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { title: { display: true, text: 'Monthly Revenue vs Costs', color: '#fff' } },
+                scales: { y: { beginAtZero: true, ticks: { callback: v => '£' + v.toLocaleString() } } }
+            }
+        });
+
+        // Profit line chart
+        new Chart(document.getElementById('profitChart'), {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'Operating Profit',
+                    data: opProfits,
+                    borderColor: '#4caf50',
+                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 6,
+                    pointBackgroundColor: '#4caf50'
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { title: { display: true, text: 'Operating Profit Trend', color: '#fff' } },
+                scales: { y: { ticks: { callback: v => '£' + v.toLocaleString() } } }
+            }
+        });
+
+        // Cost breakdown doughnut
+        const avgCogs = cogs.reduce((a,b) => a+b, 0) / cogs.length;
+        const avgStaff = staffCosts.reduce((a,b) => a+b, 0) / staffCosts.length;
+        const avgOh = overheads.reduce((a,b) => a+b, 0) / overheads.length;
+
+        new Chart(document.getElementById('costChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['COGS', 'Staff', 'Overheads'],
+                datasets: [{
+                    data: [avgCogs, avgStaff, avgOh],
+                    backgroundColor: ['#ff5722', '#ff9800', '#9c27b0'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Avg Monthly Cost Breakdown', color: '#fff' },
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+
+        // Revenue by category pie
+        const catRevenue = {{ cat_revenue | tojson }};
+        const catLabels = Object.keys(catRevenue).map(l => l.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
+        const catValues = Object.values(catRevenue);
+        const catColors = ['#4caf50', '#2196f3', '#ff9800', '#9c27b0'];
+
+        new Chart(document.getElementById('categoryChart'), {
+            type: 'pie',
+            data: {
+                labels: catLabels,
+                datasets: [{
+                    data: catValues,
+                    backgroundColor: catColors,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Revenue by Category (3 months)', color: '#fff' },
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+
+        // Hourly pattern
+        const hourlyData = {{ hourly | tojson }};
+        const hours = hourlyData.map(h => h.hour.toString().padStart(2, '0') + ':00');
+        const hourRev = hourlyData.map(h => h.revenue);
+        const hourTxn = hourlyData.map(h => h.transactions);
+
+        new Chart(document.getElementById('hourlyChart'), {
+            type: 'bar',
+            data: {
+                labels: hours,
+                datasets: [
+                    { label: 'Revenue (£)', data: hourRev, backgroundColor: 'rgba(76, 175, 80, 0.5)', yAxisID: 'y' },
+                    { label: 'Transactions', data: hourTxn, type: 'line', borderColor: '#2196f3', backgroundColor: 'transparent', yAxisID: 'y1', tension: 0.3, pointRadius: 4 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { title: { display: true, text: 'Hourly Revenue & Transaction Volume (3 months)', color: '#fff' } },
+                scales: {
+                    y: { type: 'linear', position: 'left', ticks: { callback: v => '£' + v.toLocaleString() } },
+                    y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false } }
+                }
+            }
+        });
+
+        // Ask question
+        async function askQuestion() {
+            const input = document.getElementById('questionInput');
+            const response = document.getElementById('queryResponse');
+            const question = input.value.trim();
+            if (!question) return;
+
+            response.textContent = 'Thinking...';
+
+            try {
+                const res = await fetch('/api/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question })
+                });
+                const data = await res.json();
+                response.textContent = data.answer;
+            } catch (err) {
+                response.textContent = 'Error: ' + err.message;
+            }
+        }
+
+        // Run experiment
+        async function runExperiment() {
+            const type = document.getElementById('expType').value;
+            const value = parseFloat(document.getElementById('expValue').value);
+            const results = document.getElementById('expResults');
+
+            const params = {};
+            let name = '';
+
+            switch(type) {
+                case 'price': params.price_change_pct = value; name = 'Price Change ' + (value > 0 ? '+' : '') + value + '%'; break;
+                case 'staff': params.staff_cost_change_pct = value; name = 'Staff Cost Change ' + (value > 0 ? '+' : '') + value + '%'; break;
+                case 'volume': params.volume_increase_pct = value; name = 'Volume Increase ' + (value > 0 ? '+' : '') + value + '%'; break;
+                case 'rent': params.rent_reduction = value; name = 'Rent Reduction £' + value; break;
+            }
+
+            results.innerHTML = '<p style="color:#888;">Running experiment...</p>';
+
+            try {
+                const res = await fetch('/api/experiment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description: name, params })
+                });
+                const data = await res.json();
+
+                let html = '<div class="exp-result">';
+                html += '<h4>🧪 ' + data.name + '</h4>';
+                for (const [key, val] of Object.entries(data.impact)) {
+                    const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    if (typeof val === 'number') {
+                        const color = val > 0 ? '#4caf50' : val < 0 ? '#f44336' : '#888';
+                        html += '<div class="impact">' + label + ': <span style="color:' + color + '">£' + val.toLocaleString('en-GB', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</span></div>';
+                    }
+                }
+                if (data.assumptions) {
+                    html += '<div style="margin-top:0.5rem;color:#888;font-size:0.85rem;">';
+                    html += '<strong>Assumptions:</strong><br>';
+                    data.assumptions.forEach(a => { html += '<span class="assumption">• ' + a + '</span><br>'; });
+                    html += '</div>';
+                }
+                html += '</div>';
+                results.innerHTML = html;
+            } catch (err) {
+                results.innerHTML = '<p style="color:#f44336;">Error: ' + err.message + '</p>';
+            }
+        }
+    </script>
+</body>
+</html>

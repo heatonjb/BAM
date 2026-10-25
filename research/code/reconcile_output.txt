@@ -1,0 +1,171 @@
+
+==============================================================================
+1. INPUT ARTIFACTS (pinned)
+==============================================================================
+OCEL bundle : /root/code/personal/research/business-as-machine/data/inventory_management_postprocessed.ocel.zip  sha256 2e450961e208d13ed1d161f9a0a76871b679264d24a3dc3b80c62a7b95433f6b
+SQLite DB   : /root/code/personal/research/business-as-machine/data/inventory_management.db  sha256 c86daa9cd5d598567b1018ab27b50ed188c1f3bc52684c547c73e8a00a7c2899
+OCEL: 2.0 | bundleFormat 1.0 | storage parquet
+event types: 30 | object types: ['CUSTOMER', 'MAT', 'MAT_PLA', 'PLA', 'PO_ITEM', 'SO_ITEM', 'SUPPLIER']
+
+==============================================================================
+2. LOAD OCEL 2.0 BUNDLE (typed Parquet layout)
+==============================================================================
+events: 2301 | span 2023-09-28 02:20:29+00:00 -> 2024-09-25 02:52:41+00:00
+o2o relation rows: 0   <-- sellable-output edge set is EMPTY
+e2o relation rows: 10956
+economic activities: 5 | synthetic status/annotation activities: 16
+stock-changing OCEL events (Goods Receipt/Issue, economic only): 90 GR + 97 GI
+
+==============================================================================
+3. ARCHIVED SQLite DB GROUND TRUTH
+==============================================================================
+GoodsReceiptsAndIssues rows: 200
+total receipt units: 4225.0 | total issue units: 5178.0
+materials: 100 | valuation classes: ['ValClass1', 'ValClass2', 'ValClass3']
+DB stock transactions: 200 | OCEL stock events: 187
+OCEL omits 13 DB transactions: 4 Goods Receipt (131.0 units) + 9 Goods Issue (394.0 units); OCEL-only events: 0
+
+==============================================================================
+4. STOCK SEMANTICS (verified against the generator source)
+==============================================================================
+Builder 02_database_to_ocel_csv.py: 'Stock Before'/'Stock After' are SQL
+windows PARTITION BY MAT ORDER BY Timestamp, ROWS UNBOUNDED PRECEDING
+AND 1 PRECEDING / AND CURRENT ROW; then floored PER (MAT,PLA) by adding
+max(0, -min(Stock Before, Stock After)).  Postprocessor 04 copies rows
+(with their Stock values) into synthetic status events and reassigns
+intra-day sub-second times by row index, so the published bundle is an
+intra-day PERMUTATION of the generator's day-granularity floored series.
+generator rows reproduced from archived DB: 1210 | published ORIG events: 1210
+(MAT,PLA) groups compared: 445 | 'Stock After' multiset IDENTICAL: 445
+=> the bundle embeds the builder's floored Stock series exactly; only the
+   within-day ordering differs (4 zero-impact synthetic copies excluded here).
+
+==============================================================================
+5. PERIODS, FLOWS, DeltaInventory
+==============================================================================
+P_full [2023-09-26, 2024-09-26)  DB closed set:  receipts 4225.0 units | issues 5178.0 units | DeltaInventory(flow) = -953.0 units  [200 transactions]
+P_h1  [2023-09-26, 2024-03-26)  DB closed set:  receipts 2185.0 units | issues 2358.0 units | DeltaInventory(flow) = -173.0 units  [96 transactions]
+P_full  OCEL published events only:  receipts 4094.0 units | issues 4784.0 units | DeltaInventory(flow) = -690.0 units  [187 transactions]
+
+P_full DB   : snapshots opening 5011.0 -> closing 4058.0; DeltaInventory(snapshot) = -953.0  vs flow-based -953.0
+P_full OCEL : snapshots opening 4617.0 -> closing 3927.0; DeltaInventory(snapshot) = -690.0  vs flow-based -690.0
+=> identity inputs are consistent iff |snapshot - flow| == 0 (floor is a constant shift).
+
+==============================================================================
+6. DECLARED SYNTHETIC COST LAYER (the valuation add-on)
+==============================================================================
+price/unit 10.00 | TVC/unit 4.00 | AFOH 4,500.00 | normal capacity 4000.00 units | oh_u = AFOH/normal = 1.125/unit | SG&A 6,000.00
+
+==============================================================================
+7. SINGLE-POOL RECONCILIATION (P_full, DB closed set)
+==============================================================================
+
+[P_full (DB complete set)]
+   produced 4225.0 | sold 5178.0 | opening 5011.0 units
+   revenue 51,780.00 | NP_TA = 20,568.00
+   NI_GAAP = 19,495.88 | DeltaInv -953.0 | DeltaInv*oh_u -1,072.12
+   V = AFOH - oh_u*produced = -253.12 (OVER-absorbed (favorable))
+   residual = NI_GAAP - (NP_TA + DeltaInv*oh_u) = 0.0000
+   trial balance: 145177.2500 = 145177.2500 | balanced: True
+
+[P_full (OCEL published events)]
+   produced 4094.0 | sold 4784.0 | opening 4617.0 units
+   revenue 47,840.00 | NP_TA = 18,204.00
+   NI_GAAP = 17,427.75 | DeltaInv -690.0 | DeltaInv*oh_u -776.25
+   V = AFOH - oh_u*produced = -105.75 (OVER-absorbed (favorable))
+   residual = NI_GAAP - (NP_TA + DeltaInv*oh_u) = 0.0000
+   trial balance: 141089.8750 = 141089.8750 | balanced: True
+
+[P_h1 (DB, first 6 months)]
+   produced 2185.0 | sold 2358.0 | opening 5011.0 units
+   revenue 23,580.00 | NP_TA = 3,648.00
+   NI_GAAP = 3,453.38 | DeltaInv -173.0 | DeltaInv*oh_u -194.62
+   V = AFOH - oh_u*produced = 2,041.88 (under-absorbed)
+   residual = NI_GAAP - (NP_TA + DeltaInv*oh_u) = 0.0000
+   trial balance: 129134.7500 = 129134.7500 | balanced: True
+
+Under/over-absorption variance and WHY it stays internal:
+  V = AFOH - oh_u*U_prod. It is closed to the P&L inside BOTH profit
+  figures (NP_TA charges actual AFOH; NI_GAAP charges oh_u*U_sold + V).
+  It is NOT an extra term of the identity; NI_GAAP = NP_TA + DeltaInv*oh_u
+
+==============================================================================
+8. MULTI-OVERHEAD-POOL VERSION (3 pools = valuation classes)
+==============================================================================
+pools: {'ValClass1': 'AFOH=1300.00 normal=1200.00 oh=1.083333333333333333333333333', 'ValClass2': 'AFOH=1500.00 normal=1500.00 oh=1', 'ValClass3': 'AFOH=1700.00 normal=1300.00 oh=1.307692307692307692307692308'}
+produced by pool {'ValClass2': Decimal('1126.0'), 'ValClass3': Decimal('1389.0'), 'ValClass1': Decimal('1710.0')} | sold by pool {'ValClass2': Decimal('2249.0'), 'ValClass3': Decimal('1687.0'), 'ValClass1': Decimal('1242.0')}
+DeltaInv by pool (units): {'ValClass1': Decimal('468.0'), 'ValClass2': Decimal('-1123.0'), 'ValClass3': Decimal('-298.0')}
+sum_p oh_p * DeltaInv_p = -1,005.69
+NP_TA (same in either view) = 20,568.00
+NI_GAAP (multi-pool ledger) = 19,562.31
+per-pool variance V_p = {'ValClass1': '-552.50', 'ValClass2': '374.00', 'ValClass3': '-116.38'}
+trial balance: 145206.1538461538461538461538 vs 145206.1538461538461538461539 | diff -1E-22 | balanced(exact False, within 1e-18: True)
+residual = NI_GAAP - (NP_TA + sum_p oh_p*DeltaInv_p) = 1E-23
+
+==============================================================================
+9. FALSIFICATION CONTROLS
+==============================================================================
+
+(a) FLAT INVENTORY (DeltaInv = 0) -> NI_GAAP must equal NP_TA
+
+[FLAT constructed: opening 200, produced 100, sold 100]
+   produced 100 | sold 100 | opening 200 units
+   revenue 1,000.00 | NP_TA = -9,900.00
+   NI_GAAP = -9,900.00 | DeltaInv 0 | DeltaInv*oh_u 0.00
+   V = AFOH - oh_u*produced = 4,387.50 (under-absorbed)
+   residual = NI_GAAP - (NP_TA + DeltaInv*oh_u) = 0.000
+   trial balance: 101025.000 = 101025.000 | balanced: True
+   -> NI_GAAP == NP_TA: True | both -9,900.00 | V = 4,387.50 (huge under-absorption) | residual 0.000
+
+[FLAT real window [2023-10-31, 2024-03-23) (144 days)]
+   produced 1839.0 | sold 1839.0 | opening 5011.0 units
+   revenue 18,390.00 | NP_TA = 534.00
+   NI_GAAP = 534.00 | DeltaInv 0.0 | DeltaInv*oh_u 0.00
+   V = AFOH - oh_u*produced = 2,431.12 (under-absorbed)
+   residual = NI_GAAP - (NP_TA + DeltaInv*oh_u) = 0.0000
+   trial balance: 126215.3750 = 126215.3750 | balanced: True
+   -> receipts 1839.0 == issues 1839.0 | NI_GAAP == NP_TA: True | residual 0.0000
+
+(b) TRUNCATED OPENING BALANCE -> identity must break when DeltaInventory
+    is read from stock snapshots (it is invariant when read as net flows)
+
+[TRUNCATED: opening reported as 0 units]
+   produced 4225.0 | sold 5178.0 | opening 0 units
+   revenue 51,780.00 | NP_TA = 20,568.00
+   NI_GAAP = 19,495.88 | DeltaInv -953.0 | DeltaInv*oh_u -1,072.12
+   V = AFOH - oh_u*produced = -253.12 (OVER-absorbed (favorable))
+   residual = NI_GAAP - (NP_TA + DeltaInv*oh_u) = 0.0000
+   trial balance: 124380.000 = 124380.0000 | balanced: True
+   true opening = 5011.0 units | reported opening = 0
+   DeltaInv(flow, unaffected) = -953.0 | residual stays 0.0000
+   DeltaInv(snapshot, truncation) = 4058.0 | residual = -5637.3750
+   expected breach = -oh_u * (true opened) = -5,637.38
+   -> identity breaks ONLY through snapshot-based DeltaInventory, by exactly oh_u * opening-balance error.
+
+[PARTIAL opening: material 49/Plant4 opening '129.0' dropped]
+   produced 4225.0 | sold 5178.0 | opening 4882.0 units
+   revenue 51,780.00 | NP_TA = 20,568.00
+   NI_GAAP = 19,495.88 | DeltaInv -953.0 | DeltaInv*oh_u -1,072.12
+   V = AFOH - oh_u*produced = -253.12 (OVER-absorbed (favorable))
+   residual = NI_GAAP - (NP_TA + DeltaInv*oh_u) = 0.0000
+   trial balance: 144516.1250 = 144516.1250 | balanced: True
+   flow-based residual stays 0.0000 | expected snapshot-breach = -oh_u * 129.0 = -145.12
+
+(c) LEDGER THAT FAILS TO CLOSE THE VARIANCE POOL -> residual = V exactly
+   NI_GAAP(no variance close) = 19,242.75 vs correct 19,495.88
+   residual = -253.1250 | V = -253.1250 | residual == V: True
+
+==============================================================================
+10. SUMMARY OF ACTUAL NUMBERS
+==============================================================================
+  per-event stock changes: 200 DB transactions -> 187 published OCEL stock events (13 omitted: 4 GR = 131 units, 9 GI = 394 units)
+  P_full(DB):  up 4225.0 | us 5178.0 | DeltaInv -953.0 | NP_TA 20,568.00 | NI_GAAP 19,495.88 | DeltaInv*oh_u -1,072.12 | residual 0.0000 | V -253.12
+  P_full(OCEL):up 4094.0 | us 4784.0 | DeltaInv -690.0 | NP_TA 18,204.00 | NI_GAAP 17,427.75 | residual 0.0000 | V -105.75
+  P_h1(DB):   up 2185.0 | us 2358.0 | DeltaInv -173.0 | NP_TA 3,648.00 | NI_GAAP 3,453.38 | residual 0.0000 | V 2,041.88
+  multi-pool: sum_p oh_p*DeltaInv_p -1,005.69 | NI_GAAP - NP_TA -1,005.69 | residual 1E-23
+  falsification (a) flat : NI_GAAP == NP_TA -> True (real window 144 days)
+  falsification (b) trunc: flow-based residual 0.0000 | snapshot-based residual -5637.3750 (must be non-zero)
+  falsification (c) pool open: residual -253.1250 == V -253.1250
+
+Even with the identity EXACT, the valuation is valid only inside the synthetic
+ledger: cash/capacity/mission constraints were not modeled.

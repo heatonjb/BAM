@@ -1,0 +1,75 @@
+{
+  "company_number": "15999847",
+  "company_name": "JONCO COFFEE LIMITED",
+  "company_status": "active",
+  "company_type": "ltd",
+  "jurisdiction": "england-wales",
+  "incorporation_date": "2023-03-15",
+  "registered_office": {
+    "address_line_1": "42 High Street",
+    "locality": "Handcross",
+    "region": "West Sussex",
+    "postal_code": "RH17 6BH",
+    "country": "United Kingdom"
+  },
+  "sic_codes": [
+    {
+      "code": "56102",
+      "description": "Unlicensed restaurants and cafes"
+    },
+    {
+      "code": "47290",
+      "description": "Retail sale of other food in specialised stores"
+    }
+  ],
+  "accounts": {
+    "next_due": "2025-12-31",
+    "last_made_up_to": "2024-09-30",
+    "accounting_reference_date": {
+      "day": "30",
+      "month": "09"
+    }
+  },
+  "officers": [
+    {
+      "name": "HEATON, Jonathan Mark",
+      "role": "director",
+      "appointed": "2023-03-15",
+      "nationality": "British",
+      "country_of_residence": "England",
+      "occupation": "Director"
+    },
+    {
+      "name": "HEATON, Rebekah Jane",
+      "role": "secretary",
+      "appointed": "2023-03-15",
+      "nationality": "British",
+      "country_of_residence": "England",
+      "occupation": "Company Secretary"
+    }
+  ],
+  "persons_with_significant_control": [
+    {
+      "name": "Jonathan Mark Heaton",
+      "kind": "individual-person-with-significant-control",
+      "natures_of_control": [
+        "ownership-of-shares-75-to-100-percent",
+        "voting-rights-75-to-100-percent"
+      ]
+    },
+    {
+      "name": "Rebekah Jane Heaton",
+      "kind": "individual-person-with-significant-control",
+      "natures_of_control": [
+        "ownership-of-shares-25-to-50-percent-as-trust",
+        "voting-rights-25-to-50-percent-as-trust"
+      ]
+    }
+  ],
+  "share_capital": {
+    "currency": "GBP",
+    "total_amount_unpaid": 0,
+    "total_number_of_shares": 100,
+    "total_shareholder_value": 100
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "rent": {
+    "amount": 2200,
+    "frequency": "monthly",
+    "description": "Unit 42 High Street, Handcross",
+    "landlord": "Highcross Estates Ltd"
+  },
+  "business_rates": {
+    "amount": 480,
+    "frequency": "monthly",
+    "description": "Small business rate relief applied"
+  },
+  "utilities_electric": {
+    "amount": 350,
+    "frequency": "monthly",
+    "description": "Espresso machine, grinders, lighting, HVAC"
+  },
+  "utilities_water": {
+    "amount": 85,
+    "frequency": "monthly",
+    "description": "Water + wastewater"
+  },
+  "utilities_gas": {
+    "amount": 120,
+    "frequency": "monthly",
+    "description": "Heating + hot water"
+  },
+  "internet": {
+    "amount": 65,
+    "frequency": "monthly",
+    "description": "BT Fibre broadband + POS wifi"
+  },
+  "insurance": {
+    "amount": 175,
+    "frequency": "monthly",
+    "description": "Public liability + employer's liability + contents"
+  },
+  "accountant": {
+    "amount": 200,
+    "frequency": "monthly",
+    "description": "Quarterly accounts + payroll"
+  },
+  "waste_collection": {
+    "amount": 95,
+    "frequency": "monthly",
+    "description": "Commercial waste, recycling, coffee grounds"
+  },
+  "pos_software": {
+    "amount": 79,
+    "frequency": "monthly",
+    "description": "Square POS subscription + payments"
+  },
+  "marketing": {
+    "amount": 150,
+    "frequency": "monthly",
+    "description": "Social media ads, loyalty cards, local events"
+  },
+  "cleaning": {
+    "amount": 200,
+    "frequency": "monthly",
+    "description": "Weekly deep clean service"
+  },
+  "equipment_maintenance": {
+    "amount": 120,
+    "frequency": "monthly",
+    "description": "Espresso machine service, grinder calibration, repairs"
+  },
+  "music_licence": {
+    "amount": 25,
+    "frequency": "monthly",
+    "description": "PPL PRS Ltd - TheMusicLicence"
+  },
+  "phone": {
+    "amount": 45,
+    "frequency": "monthly",
+    "description": "Shop mobile line"
+  },
+  "bank_charges": {
+    "amount": 35,
+    "frequency": "monthly",
+    "description": "Business account fees, card processing extras"
+  },
+  "depreciation": {
+    "amount": 250,
+    "frequency": "monthly",
+    "description": "Equipment depreciation (straight-line over 5 years)"
+  }
+}
