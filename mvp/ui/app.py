@@ -1,4 +1,4 @@
-"""Flask web UI for Business as a Machine MVP — hierarchical drill-down."""
+"""Flask web UI for Business as a Machine MVP — hierarchical drill-down with stock tickers."""
 
 import os
 import sys
@@ -25,11 +25,9 @@ def get_graph():
 
 @app.route("/")
 def index():
-    """Top-level P&L view."""
     g = get_graph()
     level0 = g.get_level(0)
-    
-    # Build P&L rows
+
     pnl = []
     for node in level0:
         pnl.append({
@@ -42,23 +40,22 @@ def index():
             "efficiency": node.efficiency,
             "efficiency_label": node.efficiency_label,
             "type": node.node_type.value,
-            "has_children": len(node.children) > 0
+            "has_children": len(node.children) > 0,
+            "change_7d": round(node.change_7d, 2),
+            "change_7d_pct": round(node.change_7d_pct, 1),
+            "change_30d": round(node.change_30d, 2),
+            "change_30d_pct": round(node.change_30d_pct, 1),
+            "trend": node.trend.value if hasattr(node.trend, 'value') else str(node.trend),
+            "sparkline": [round(v, 2) for v in node.sparkline[-30:]] if node.sparkline else [],
         })
-    
+
     company = {
         "name": "JONCO COFFEE LIMITED",
         "number": "15999847",
         "period": "Oct–Dec 2024 (monthly averages)"
     }
-    
-    # Monthly trend data
-    monthly_data = [
-        {"month": "2024-10", "revenue": 19415.10, "cogs": 4790.00, "staff": 11124.30, "oh": 4674.00, "op": -1173.20},
-        {"month": "2024-11", "revenue": 19122.40, "cogs": 4518.10, "staff": 10387.65, "oh": 4674.00, "op": -457.35},
-        {"month": "2024-12", "revenue": 23752.30, "cogs": 5502.10, "staff": 11674.10, "oh": 4674.00, "op": 1902.10},
-    ]
-    
-    # Benchmarked KPIs
+
+    # Benchmark KPIs
     kpis = []
     for node in g.get_by_type(NodeType.METRIC):
         if node.benchmark is not None:
@@ -67,36 +64,29 @@ def index():
                 "value": round(node.value, 2),
                 "unit": node.unit,
                 "benchmark": node.benchmark,
-                "id": node.id
+                "id": node.id,
             })
-    
+
     return render_template("index.html",
                          company=company,
                          pnl=pnl,
-                         monthly_data=monthly_data,
                          kpis=kpis)
 
 
 @app.route("/drill/<node_id>")
 def drill(node_id):
-    """Drill-down page for a specific P&L line."""
     g = get_graph()
     node = g.get(node_id)
-    
     if not node:
         return "Not found", 404
-    
-    # Get subgraph (children + their children)
+
     subgraph = g.get_subgraph(node_id, depth=2)
-    
-    # Build the drill path (breadcrumb)
     path = g.get_drill_path(node_id)
-    
-    # Format nodes for the template
+
     graph_nodes = []
     for nid, ndata in subgraph["nodes"].items():
         graph_nodes.append(ndata)
-    
+
     return render_template("drill.html",
                          node=node.to_dict(),
                          subgraph=subgraph,
@@ -106,7 +96,6 @@ def drill(node_id):
 
 @app.route("/api/node/<node_id>")
 def api_node(node_id):
-    """Get a single node's data."""
     g = get_graph()
     node = g.get(node_id)
     if not node:
@@ -116,7 +105,6 @@ def api_node(node_id):
 
 @app.route("/api/subgraph/<node_id>")
 def api_subgraph(node_id):
-    """Get the subgraph for drill-down."""
     g = get_graph()
     depth = request.args.get("depth", 2, type=int)
     subgraph = g.get_subgraph(node_id, depth=depth)
@@ -125,7 +113,6 @@ def api_subgraph(node_id):
 
 @app.route("/api/levels")
 def api_levels():
-    """Get nodes grouped by level."""
     g = get_graph()
     result = {}
     for level in range(3):
@@ -135,7 +122,6 @@ def api_levels():
 
 @app.route("/api/search")
 def api_search():
-    """Search nodes by label or tag."""
     g = get_graph()
     q = request.args.get("q", "").lower()
     if not q:

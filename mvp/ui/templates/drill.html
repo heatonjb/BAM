@@ -6,58 +6,97 @@
     <title>Drill: {{ node.label }} — Business as a Machine</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0a; color: #e0e0e0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'SF Mono', 'Fira Code', monospace; background: #0a0a0a; color: #e0e0e0; }
 
-        .header { background: #111; padding: 1rem 2rem; border-bottom: 1px solid #222; }
-        .header .back { color: #4caf50; text-decoration: none; font-size: 0.85rem; }
-        .header h1 { font-size: 1.3rem; color: #fff; margin-top: 0.3rem; }
+        .header { background: #111; padding: 0.8rem 1.5rem; border-bottom: 1px solid #222; display: flex; align-items: center; gap: 1rem; }
+        .header .back { color: #4caf50; text-decoration: none; font-size: 0.8rem; }
+        .header .back:hover { text-decoration: underline; }
+        .header h1 { font-size: 1.2rem; color: #fff; font-family: -apple-system, sans-serif; }
 
-        .breadcrumb { padding: 0.6rem 2rem; background: #0d0d0d; border-bottom: 1px solid #1a1a1a; display: flex; gap: 0.3rem; align-items: center; font-size: 0.8rem; flex-wrap: wrap; }
+        .breadcrumb { padding: 0.5rem 1.5rem; background: #0d0d0d; border-bottom: 1px solid #1a1a1a; display: flex; gap: 0.3rem; align-items: center; font-size: 0.75rem; flex-wrap: wrap; }
         .breadcrumb a { color: #4caf50; text-decoration: none; }
         .breadcrumb a:hover { text-decoration: underline; }
         .breadcrumb .sep { color: #333; }
         .breadcrumb .current { color: #fff; font-weight: 600; }
 
-        .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 1rem; }
 
-        /* Node detail card */
-        .node-card { background: #111; border: 1px solid #222; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-        .node-card .main h2 { color: #fff; font-size: 1.3rem; margin-bottom: 0.3rem; }
-        .node-card .main .value { font-size: 2rem; font-weight: 700; color: #4caf50; font-family: 'SF Mono', 'Fira Code', monospace; }
-        .node-card .main .value.negative { color: #f44336; }
-        .node-card .meta { display: flex; flex-direction: column; gap: 0.5rem; justify-content: center; }
-        .node-card .meta-row { display: flex; justify-content: space-between; padding: 0.3rem 0; border-bottom: 1px solid #1a1a1a; }
-        .node-card .meta-row .label { color: #666; font-size: 0.8rem; }
-        .node-card .meta-row .val { color: #ccc; font-size: 0.85rem; }
+        /* Stock ticker detail card */
+        .ticker-card {
+            background: #111; border: 1px solid #222; border-radius: 8px;
+            padding: 1.2rem; margin-bottom: 1rem;
+        }
+        .ticker-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.8rem; }
+        .ticker-icon { font-size: 1.8rem; }
+        .ticker-title { font-size: 1.1rem; color: #fff; font-family: -apple-system, sans-serif; }
+        .ticker-type { color: #555; font-size: 0.7rem; text-transform: uppercase; }
 
-        /* Graph canvas */
-        .graph-section { background: #111; border: 1px solid #222; border-radius: 8px; margin-bottom: 1.5rem; overflow: hidden; }
-        .graph-section .toolbar { padding: 0.6rem 1rem; background: #0d0d0d; border-bottom: 1px solid #1a1a1a; display: flex; gap: 0.5rem; align-items: center; }
-        .graph-section .toolbar span { color: #666; font-size: 0.8rem; }
-        .graph-section .toolbar button { background: #222; color: #ccc; border: 1px solid #333; padding: 0.3rem 0.8rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
-        .graph-section .toolbar button:hover { background: #333; }
-        #graphCanvas { width: 100%; height: 500px; display: block; }
+        .ticker-value { font-size: 2.2rem; font-weight: 700; font-variant-numeric: tabular-nums; margin-bottom: 0.5rem; }
+        .ticker-value.positive { color: #4caf50; }
+        .ticker-value.negative { color: #f44336; }
 
-        /* Node list below graph */
-        .node-list { margin-bottom: 1.5rem; }
-        .node-list h3 { color: #fff; font-size: 0.95rem; margin-bottom: 0.5rem; }
-        .node-table { width: 100%; border-collapse: collapse; }
-        .node-table th { text-align: left; color: #666; font-size: 0.7rem; text-transform: uppercase; padding: 0.5rem 0.8rem; border-bottom: 1px solid #1a1a1a; letter-spacing: 0.5px; }
-        .node-table td { padding: 0.6rem 0.8rem; border-bottom: 1px solid #111; font-size: 0.85rem; }
-        .node-table tr { cursor: pointer; transition: background 0.1s; }
-        .node-table tr:hover { background: #151515; }
-        .node-table .icon { width: 30px; text-align: center; }
-        .node-table .val { font-family: 'SF Mono', 'Fira Code', monospace; text-align: right; }
+        .ticker-changes { display: flex; gap: 1.5rem; margin-bottom: 0.8rem; }
+        .ticker-change { display: flex; align-items: center; gap: 0.4rem; }
+        .ticker-change .period { color: #555; font-size: 0.7rem; }
+        .ticker-change .val { font-size: 0.9rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+        .ticker-change .val.up { color: #4caf50; }
+        .ticker-change .val.down { color: #f44336; }
+        .ticker-change .val.flat { color: #666; }
+        .ticker-change .arrow { font-size: 1rem; }
 
-        .footer { text-align: center; padding: 2rem; color: #333; font-size: 0.75rem; border-top: 1px solid #1a1a1a; }
+        .ticker-sparkline { height: 40px; margin-bottom: 0.8rem; }
+        .ticker-sparkline svg { width: 100%; height: 100%; }
 
-        .green { color: #4caf50; }
-        .red { color: #f44336; }
+        .ticker-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.4rem; }
+        .ticker-meta-row { display: flex; justify-content: space-between; padding: 0.3rem 0; border-bottom: 1px solid #151515; }
+        .ticker-meta-row .label { color: #555; font-size: 0.75rem; }
+        .ticker-meta-row .val { color: #ccc; font-size: 0.8rem; }
+        .ticker-meta-row .val.green { color: #4caf50; }
+
+        /* Graph */
+        .graph-section { background: #111; border: 1px solid #222; border-radius: 8px; margin-bottom: 1rem; overflow: hidden; }
+        .graph-toolbar { padding: 0.5rem 1rem; background: #0d0d0d; border-bottom: 1px solid #1a1a1a; display: flex; gap: 0.5rem; align-items: center; }
+        .graph-toolbar span { color: #555; font-size: 0.75rem; }
+        .graph-toolbar button { background: #1a1a1a; color: #888; border: 1px solid #333; padding: 0.25rem 0.6rem; border-radius: 3px; cursor: pointer; font-size: 0.7rem; }
+        .graph-toolbar button:hover { background: #222; color: #ccc; }
+        #graphCanvas { width: 100%; height: 450px; display: block; }
+
+        /* Child table */
+        .child-section { margin-bottom: 1rem; }
+        .child-section h3 { color: #888; font-size: 0.85rem; margin-bottom: 0.5rem; font-family: -apple-system, sans-serif; }
+        .child-table { width: 100%; border-collapse: collapse; }
+        .child-table th { text-align: left; color: #555; font-size: 0.65rem; text-transform: uppercase; padding: 0.4rem 0.6rem; border-bottom: 1px solid #1a1a1a; letter-spacing: 0.5px; }
+        .child-table td { padding: 0.5rem 0.6rem; border-bottom: 1px solid #111; font-size: 0.8rem; }
+        .child-table tr { cursor: pointer; transition: background 0.15s; }
+        .child-table tr:hover { background: #151515; }
+        .child-table .icon { width: 28px; text-align: center; font-size: 1rem; }
+        .child-table .val { font-family: 'SF Mono', 'Fira Code', monospace; text-align: right; font-variant-numeric: tabular-nums; }
+
+        .contrib-badge {
+            display: inline-block; padding: 0.1rem 0.35rem; border-radius: 2px;
+            font-size: 0.65rem; font-variant-numeric: tabular-nums;
+        }
+        .contrib-high { background: rgba(76, 175, 80, 0.15); color: #4caf50; }
+        .contrib-mid { background: rgba(255, 152, 0, 0.15); color: #ff9800; }
+        .contrib-low { background: rgba(100, 100, 100, 0.1); color: #888; }
+
+        .change-mini {
+            display: inline-block; padding: 0.1rem 0.3rem; border-radius: 2px;
+            font-size: 0.65rem; font-variant-numeric: tabular-nums;
+        }
+        .change-mini.up { background: rgba(76, 175, 80, 0.15); color: #4caf50; }
+        .change-mini.down { background: rgba(244, 67, 54, 0.15); color: #f44336; }
+        .change-mini.flat { background: rgba(80, 80, 80, 0.1); color: #666; }
+
+        .footer { text-align: center; padding: 1.5rem; color: #333; font-size: 0.7rem; border-top: 1px solid #1a1a1a; }
+
+        @keyframes slide-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+        .ticker-card { animation: slide-in 0.4s ease-out; }
     </style>
 </head>
 <body>
     <div class="header">
-        <a href="/" class="back">← Back to P&L</a>
+        <a href="/" class="back">← P&L</a>
         <h1>{{ node.icon }} {{ node.label }}</h1>
     </div>
 
@@ -67,74 +106,135 @@
         <span class="sep">›</span>
         <a href="/drill/{{ p }}">{{ subgraph.nodes[p].label if p in subgraph.nodes else p }}</a>
         {% endfor %}
-        {% if path|length > 1 %}
-        <span class="sep">›</span>
-        {% endif %}
+        {% if path|length > 1 %}<span class="sep">›</span>{% endif %}
         <span class="current">{{ node.label }}</span>
     </div>
 
     <div class="container">
-        <!-- Node detail -->
-        <div class="node-card">
-            <div class="main">
-                <h2>{{ node.label }}</h2>
-                <div class="value {% if node.value < 0 %}negative{% endif %}">
-                    {% if node.node_type in ['cost', 'revenue', 'process', 'input', 'aggregate'] %}£{% endif %}{{ "{:,.2f}".format(node.value) }}
+        <!-- Stock Ticker Detail Card -->
+        <div class="ticker-card">
+            <div class="ticker-header">
+                <span class="ticker-icon">{{ node.icon }}</span>
+                <div>
+                    <div class="ticker-title">{{ node.label }}</div>
+                    <div class="ticker-type">{{ node.node_type }} · {{ node.unit }} · {{ node.period }}</div>
                 </div>
-                <div style="color: #666; font-size: 0.85rem; margin-top: 0.3rem;">{{ node.unit }}{% if node.efficiency is not none %} · {{ "%.2f"|format(node.efficiency) }}x efficiency{% endif %}</div>
             </div>
-            <div class="meta">
+
+            <div class="ticker-value {% if node.value < 0 %}negative{% elif node.node_type == 'metric' and node.value > 0 %}positive{% endif %}">
+                {% if node.node_type in ['cost', 'revenue', 'process', 'input', 'aggregate'] %}£{% endif %}{{ "{:,.2f}".format(node.value) }}
+            </div>
+
+            <div class="ticker-changes">
+                <div class="ticker-change">
+                    <span class="period">7D</span>
+                    <span class="arrow {% if node.trend == 'up' %}up{% elif node.trend == 'down' %}down{% else %}flat{% endif %}" style="color: {% if node.trend == 'up' %}#4caf50{% elif node.trend == 'down' %}#f44336{% else %}#666{% endif %}; font-size: 0.9rem;">{% if node.trend == 'up' %}▲{% elif node.trend == 'down' %}▼{% else %}─{% endif %}</span>
+                    <span class="val {% if node.trend == 'up' %}up{% elif node.trend == 'down' %}down{% else %}flat{% endif %}">
+                        £{{ "{:,.2f}".format(node.change_7d|abs) }} ({{ "%+.1f"|format(node.change_7d_pct) }}%)
+                    </span>
+                </div>
+                <div class="ticker-change">
+                    <span class="period">30D</span>
+                    <span class="val {% if node.change_30d > 0.5 %}up{% elif node.change_30d < -0.5 %}down{% else %}flat{% endif %}">
+                        £{{ "{:,.2f}".format(node.change_30d|abs) }} ({{ "%+.1f"|format(node.change_30d_pct) }}%)
+                    </span>
+                </div>
                 {% if node.efficiency_label %}
-                <div class="meta-row"><span class="label">Efficiency</span><span class="val">{{ node.efficiency_label }}</span></div>
+                <div class="ticker-change">
+                    <span class="period">EFF</span>
+                    <span class="val flat">{{ node.efficiency_label }}</span>
+                </div>
                 {% endif %}
+            </div>
+
+            {% if node.sparkline|length > 0 %}
+            <div class="ticker-sparkline">
+                <svg viewBox="0 0 300 40" preserveAspectRatio="none">
+                    {% set vals = node.sparkline[-30:] %}
+                    {% set min_v = vals|min %}
+                    {% set max_v = vals|max %}
+                    {% set range_v = max_v - min_v if max_v != min_v else 1 %}
+                    {% set tc = '#4caf50' if node.trend == 'up' else '#f44336' if node.trend == 'down' else '#555' %}
+                    <!-- Fill area -->
+                    <polygon fill="{{ tc }}" opacity="0.08"
+                        points="0,40 {% for v in vals %}{{ (loop.index0 / (vals|length - 1)) * 300 }},{{ 38 - ((v - min_v) / range_v) * 34 }}{% endfor %} 300,40" />
+                    <!-- Line -->
+                    <polyline fill="none" stroke="{{ tc }}" stroke-width="1.5"
+                        points="{% for v in vals %}{{ (loop.index0 / (vals|length - 1)) * 300 }},{{ 38 - ((v - min_v) / range_v) * 34 }}{% endfor %}" />
+                    <!-- End dot -->
+                    <circle cx="300" cy="{{ 38 - ((vals[-1] - min_v) / range_v) * 34 }}" r="3" fill="{{ tc }}" />
+                </svg>
+            </div>
+            {% endif %}
+
+            {% if node.metadata or node.constraint or node.lever %}
+            <div class="ticker-meta">
                 {% if node.constraint %}
-                <div class="meta-row"><span class="label">Constraint</span><span class="val">{{ node.constraint }}</span></div>
+                <div class="ticker-meta-row"><span class="label">Constraint</span><span class="val">{{ node.constraint }}</span></div>
                 {% endif %}
                 {% if node.lever %}
-                <div class="meta-row"><span class="label">Optimisation Lever</span><span class="val green">{{ node.lever }}</span></div>
+                <div class="ticker-meta-row"><span class="label">Optimisation Lever</span><span class="val green">{{ node.lever }}</span></div>
                 {% endif %}
                 {% if node.description %}
-                <div class="meta-row"><span class="label">Description</span><span class="val">{{ node.description }}</span></div>
+                <div class="ticker-meta-row"><span class="label">Description</span><span class="val">{{ node.description }}</span></div>
                 {% endif %}
-                {% if node.metadata %}
                 {% for k, v in node.metadata.items() %}
-                <div class="meta-row"><span class="label">{{ k.replace("_", " ").title() }}</span><span class="val">{{ v }}</span></div>
+                <div class="ticker-meta-row"><span class="label">{{ k.replace("_", " ").title() }}</span><span class="val">{{ v }}</span></div>
                 {% endfor %}
-                {% endif %}
-                <div class="meta-row"><span class="label">Parents</span><span class="val">{{ node.parents|join(', ') or '—' }}</span></div>
-                <div class="meta-row"><span class="label">Children</span><span class="val">{{ node.children|join(', ') or '—' }}</span></div>
-                <div class="meta-row"><span class="label">Level</span><span class="val">{{ node.level }}</span></div>
             </div>
+            {% endif %}
         </div>
 
         <!-- Graph -->
+        {% if subgraph.edges %}
         <div class="graph-section">
-            <div class="toolbar">
+            <div class="graph-toolbar">
                 <span>Transformation Graph</span>
-                <button onclick="resetLayout()">Reset Layout</button>
-                <button onclick="toggleLabels()">Toggle Labels</button>
+                <button onclick="resetLayout()">Reset</button>
+                <button onclick="toggleLabels()">Labels</button>
+                <button onclick="toggleAnnotations()">Annotations</button>
             </div>
             <canvas id="graphCanvas"></canvas>
         </div>
+        {% endif %}
 
         <!-- Child nodes table -->
         {% if node.children %}
-        <div class="node-list">
+        <div class="child-section">
             <h3>Components ({{ node.children|length }})</h3>
-            <table class="node-table">
+            <table class="child-table">
                 <thead>
-                    <tr><th></th><th>Name</th><th>Type</th><th style="text-align:right">Value</th><th style="text-align:right">Efficiency</th></tr>
+                    <tr><th></th><th>Name</th><th style="text-align:right">Value</th><th style="text-align:right">7D Change</th><th style="text-align:right">30D Change</th><th style="text-align:right">Contribution</th></tr>
                 </thead>
                 <tbody>
                     {% for child_id in node.children %}
                     {% set child = subgraph.nodes.get(child_id) %}
                     {% if child %}
+                    {% set contrib = node.child_contribution_pct.get(child_id, 0) %}
                     <tr onclick="location.href='/drill/{{ child_id }}'">
                         <td class="icon">{{ child.icon or '📊' }}</td>
                         <td>{{ child.label }}</td>
-                        <td style="color:#666;font-size:0.75rem;">{{ child.node_type }}</td>
                         <td class="val">£{{ "{:,.2f}".format(child.value) }}</td>
-                        <td class="val">{{ "%.2f"|format(child.efficiency) if child.efficiency is not none else '—' }}x</td>
+                        <td class="val">
+                            <span class="change-mini {% if child.trend == 'up' %}up{% elif child.trend == 'down' %}down{% else %}flat{% endif %}">
+                                {% if child.trend == 'up' %}▲{% elif child.trend == 'down' %}▼{% else %}─{% endif %}
+                                {{ "%+.1f"|format(child.change_7d_pct) }}%
+                            </span>
+                        </td>
+                        <td class="val">
+                            <span class="change-mini {% if child.change_30d_pct > 3 %}up{% elif child.change_30d_pct < -3 %}down{% else %}flat{% endif %}">
+                                {{ "%+.1f"|format(child.change_30d_pct) }}%
+                            </span>
+                        </td>
+                        <td class="val">
+                            {% if contrib > 30 %}
+                            <span class="contrib-badge contrib-high">{{ contrib }}%</span>
+                            {% elif contrib > 10 %}
+                            <span class="contrib-badge contrib-mid">{{ contrib }}%</span>
+                            {% else %}
+                            <span class="contrib-badge contrib-low">{{ contrib }}%</span>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endif %}
                     {% endfor %}
@@ -147,39 +247,37 @@
     <div class="footer">Business as a Machine · Click any row to drill deeper</div>
 
     <script>
-        // Graph data from the server
         const graphNodes = {{ graph_nodes | tojson }};
         const graphEdges = {{ subgraph.edges | tojson }};
-        const showLabels = { on: true };
+        const focusNode = '{{ node.id }}';
+        let showLabels = true;
+        let showAnnotations = true;
 
-        // Node positions (force-directed layout, simple)
-        const positions = {};
-        const velocities = {};
-
-        // Color by node type
         const typeColors = {
             revenue: '#4caf50', cost: '#f44336', process: '#2196f3',
             input: '#ff9800', asset: '#00bcd4', liability: '#e91e63',
             metric: '#9c27b0', aggregate: '#607d8b'
         };
 
+        const positions = {};
+        const velocities = {};
+
         function initPositions() {
             const canvas = document.getElementById('graphCanvas');
+            if (!canvas) return;
             const W = canvas.clientWidth;
             const H = canvas.clientHeight;
-            const centerX = W / 2;
-            const centerY = H / 2;
+            const cx = W / 2, cy = H / 2;
             const nodeIds = graphNodes.map(n => n.id);
             const n = nodeIds.length;
 
-            // Place the focus node at center, others in a circle
             nodeIds.forEach((id, i) => {
-                if (id === '{{ node.id }}') {
-                    positions[id] = { x: centerX, y: centerY };
+                if (id === focusNode) {
+                    positions[id] = { x: cx, y: cy };
                 } else {
                     const angle = (2 * Math.PI * i) / n;
                     const radius = Math.min(W, H) * 0.3;
-                    positions[id] = { x: centerX + Math.cos(angle) * radius, y: centerY + Math.sin(angle) * radius };
+                    positions[id] = { x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius };
                 }
                 velocities[id] = { x: 0, y: 0 };
             });
@@ -187,25 +285,19 @@
 
         function simulate() {
             const canvas = document.getElementById('graphCanvas');
+            if (!canvas) return;
             const W = canvas.clientWidth;
             const H = canvas.clientHeight;
-            const damping = 0.85;
-            const repulsion = 8000;
-            const attraction = 0.005;
-            const centerPull = 0.002;
-            const centerX = W / 2;
-            const centerY = H / 2;
-
-            // Repulsion between all pairs
+            const cx = W / 2, cy = H / 2;
             const nodeIds = graphNodes.map(n => n.id);
+
+            // Repulsion
             for (let i = 0; i < nodeIds.length; i++) {
                 for (let j = i + 1; j < nodeIds.length; j++) {
-                    const a = positions[nodeIds[i]];
-                    const b = positions[nodeIds[j]];
-                    let dx = a.x - b.x;
-                    let dy = a.y - b.y;
+                    const a = positions[nodeIds[i]], b = positions[nodeIds[j]];
+                    let dx = a.x - b.x, dy = a.y - b.y;
                     let dist = Math.sqrt(dx * dx + dy * dy) || 1;
-                    let force = repulsion / (dist * dist);
+                    let force = 8000 / (dist * dist);
                     velocities[nodeIds[i]].x += (dx / dist) * force;
                     velocities[nodeIds[i]].y += (dy / dist) * force;
                     velocities[nodeIds[j]].x -= (dx / dist) * force;
@@ -213,16 +305,13 @@
                 }
             }
 
-            // Attraction along edges
+            // Attraction
             graphEdges.forEach(e => {
                 if (!positions[e.source] || !positions[e.target]) return;
-                const a = positions[e.source];
-                const b = positions[e.target];
-                let dx = b.x - a.x;
-                let dy = b.y - a.y;
+                const a = positions[e.source], b = positions[e.target];
+                let dx = b.x - a.x, dy = b.y - a.y;
                 let dist = Math.sqrt(dx * dx + dy * dy) || 1;
-                let idealDist = 120;
-                let force = (dist - idealDist) * attraction;
+                let force = (dist - 120) * 0.005;
                 velocities[e.source].x += (dx / dist) * force;
                 velocities[e.source].y += (dy / dist) * force;
                 velocities[e.target].x -= (dx / dist) * force;
@@ -231,17 +320,16 @@
 
             // Center pull
             nodeIds.forEach(id => {
-                velocities[id].x += (centerX - positions[id].x) * centerPull;
-                velocities[id].y += (centerY - positions[id].y) * centerPull;
+                velocities[id].x += (cx - positions[id].x) * 0.002;
+                velocities[id].y += (cy - positions[id].y) * 0.002;
             });
 
-            // Apply velocities
+            // Apply
             nodeIds.forEach(id => {
-                velocities[id].x *= damping;
-                velocities[id].y *= damping;
+                velocities[id].x *= 0.85;
+                velocities[id].y *= 0.85;
                 positions[id].x += velocities[id].x;
                 positions[id].y += velocities[id].y;
-                // Clamp
                 positions[id].x = Math.max(40, Math.min(W - 40, positions[id].x));
                 positions[id].y = Math.max(40, Math.min(H - 40, positions[id].y));
             });
@@ -249,24 +337,24 @@
 
         function draw() {
             const canvas = document.getElementById('graphCanvas');
+            if (!canvas) return;
             const ctx = canvas.getContext('2d');
             canvas.width = canvas.clientWidth * 2;
             canvas.height = canvas.clientHeight * 2;
             ctx.scale(2, 2);
-            const W = canvas.clientWidth;
-            const H = canvas.clientHeight;
-
+            const W = canvas.clientWidth, H = canvas.clientHeight;
             ctx.clearRect(0, 0, W, H);
 
-            // Draw edges
+            // Edges with annotations
             graphEdges.forEach(e => {
                 if (!positions[e.source] || !positions[e.target]) return;
-                const a = positions[e.source];
-                const b = positions[e.target];
+                const a = positions[e.source], b = positions[e.target];
+
+                // Edge line
                 ctx.beginPath();
                 ctx.moveTo(a.x, a.y);
                 ctx.lineTo(b.x, b.y);
-                ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+                ctx.strokeStyle = 'rgba(255,255,255,0.12)';
                 ctx.lineWidth = 1.5;
                 ctx.stroke();
 
@@ -274,60 +362,104 @@
                 const angle = Math.atan2(b.y - a.y, b.x - a.x);
                 const arrowLen = 8;
                 ctx.beginPath();
-                ctx.moveTo(b.x - Math.cos(angle) * 20, b.y - Math.sin(angle) * 20);
-                ctx.lineTo(b.x - Math.cos(angle - 0.4) * (20 + arrowLen), b.y - Math.sin(angle - 0.4) * (20 + arrowLen));
-                ctx.lineTo(b.x - Math.cos(angle + 0.4) * (20 + arrowLen), b.y - Math.sin(angle + 0.4) * (20 + arrowLen));
+                ctx.moveTo(b.x - Math.cos(angle) * 22, b.y - Math.sin(angle) * 22);
+                ctx.lineTo(b.x - Math.cos(angle - 0.4) * (22 + arrowLen), b.y - Math.sin(angle - 0.4) * (22 + arrowLen));
+                ctx.lineTo(b.x - Math.cos(angle + 0.4) * (22 + arrowLen), b.y - Math.sin(angle + 0.4) * (22 + arrowLen));
                 ctx.closePath();
-                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.fillStyle = 'rgba(255,255,255,0.25)';
                 ctx.fill();
+
+                // Annotations
+                if (showAnnotations) {
+                    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+                    const perpX = -Math.sin(angle) * 12;
+                    const perpY = Math.cos(angle) * 12;
+
+                    // Contribution badge
+                    if (e.contribution_pct !== undefined) {
+                        const contribText = e.contribution_pct.toFixed(0) + '%';
+                        ctx.font = '9px monospace';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+
+                        // Background
+                        const tw = ctx.measureText(contribText).width + 8;
+                        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                        ctx.beginPath();
+                        ctx.roundRect(mx + perpX - tw/2, my + perpY - 7, tw, 14, 3);
+                        ctx.fill();
+
+                        // Text
+                        ctx.fillStyle = e.trend === 'up' ? '#4caf50' : e.trend === 'down' ? '#f44336' : '#888';
+                        ctx.fillText(contribText, mx + perpX, my + perpY);
+
+                        // Change % on other side
+                        const changeText = (e.change_pct >= 0 ? '+' : '') + e.change_pct.toFixed(1) + '%';
+                        const tw2 = ctx.measureText(changeText).width + 8;
+                        ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                        ctx.beginPath();
+                        ctx.roundRect(mx - perpX - tw2/2, my - perpY - 7, tw2, 14, 3);
+                        ctx.fill();
+
+                        ctx.fillStyle = e.change_pct > 0 ? '#4caf50' : e.change_pct < 0 ? '#f44336' : '#666';
+                        ctx.fillText(changeText, mx - perpX, my - perpY);
+                    }
+                }
             });
 
-            // Draw nodes
-            const nodeMap = {};
-            graphNodes.forEach(n => { nodeMap[n.id] = n; });
-
+            // Nodes
             graphNodes.forEach(n => {
                 const pos = positions[n.id];
                 if (!pos) return;
                 const color = typeColors[n.node_type] || '#607d8b';
-                const radius = Math.max(18, Math.min(35, Math.sqrt(Math.abs(n.value)) * 1.2));
-                const isFocus = n.id === '{{ node.id }}';
+                const radius = Math.max(16, Math.min(32, Math.sqrt(Math.abs(n.value)) * 1.0));
+                const isFocus = n.id === focusNode;
 
-                // Glow for focus
+                // Glow
                 if (isFocus) {
                     ctx.beginPath();
-                    ctx.arc(pos.x, pos.y, radius + 6, 0, Math.PI * 2);
-                    ctx.fillStyle = color + '33';
+                    ctx.arc(pos.x, pos.y, radius + 8, 0, Math.PI * 2);
+                    ctx.fillStyle = color + '22';
                     ctx.fill();
                 }
 
-                // Node circle
+                // Circle
                 ctx.beginPath();
                 ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
-                ctx.fillStyle = color + '44';
+                ctx.fillStyle = color + '33';
                 ctx.fill();
                 ctx.strokeStyle = color;
                 ctx.lineWidth = isFocus ? 2.5 : 1.5;
                 ctx.stroke();
 
                 // Icon
-                ctx.font = `${Math.min(16, radius)}px sans-serif`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
                 if (n.icon) {
+                    ctx.font = `${Math.min(14, radius)}px sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
                     ctx.fillText(n.icon, pos.x, pos.y);
                 }
 
-                // Label
-                if (showLabels.on) {
+                // Label + value
+                if (showLabels) {
                     ctx.font = '10px -apple-system, sans-serif';
                     ctx.fillStyle = '#aaa';
+                    ctx.textAlign = 'center';
                     ctx.textBaseline = 'top';
-                    const label = n.label.length > 16 ? n.label.slice(0, 15) + '…' : n.label;
-                    ctx.fillText(label, pos.x, pos.y + radius + 4);
+                    const label = n.label.length > 18 ? n.label.slice(0, 17) + '…' : n.label;
+                    ctx.fillText(label, pos.x, pos.y + radius + 5);
+
                     ctx.font = '9px monospace';
-                    ctx.fillStyle = '#666';
-                    ctx.fillText('£' + n.value.toLocaleString(), pos.x, pos.y + radius + 16);
+                    ctx.fillStyle = '#555';
+                    ctx.fillText('£' + n.value.toLocaleString(), pos.x, pos.y + radius + 17);
+
+                    // Trend arrow
+                    if (n.trend) {
+                        ctx.font = '11px sans-serif';
+                        ctx.fillStyle = n.trend === 'up' ? '#4caf50' : n.trend === 'down' ? '#f44336' : '#444';
+                        const arrow = n.trend === 'up' ? '↗' : n.trend === 'down' ? '↘' : '→';
+                        ctx.fillText(arrow, pos.x, pos.y + radius + 28);
+                    }
                 }
             });
         }
@@ -338,21 +470,29 @@
             requestAnimationFrame(tick);
         }
 
-        function resetLayout() {
-            initPositions();
-        }
+        function resetLayout() { initPositions(); }
+        function toggleLabels() { showLabels = !showLabels; }
+        function toggleAnnotations() { showAnnotations = !showAnnotations; }
 
-        function toggleLabels() {
-            showLabels.on = !showLabels.on;
+        // Polyfill roundRect
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+                this.moveTo(x + r, y);
+                this.lineTo(x + w - r, y);
+                this.quadraticCurveTo(x + w, y, x + w, y + r);
+                this.lineTo(x + w, y + h - r);
+                this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+                this.lineTo(x + r, y + h);
+                this.quadraticCurveTo(x, y + h, x, y + h - r);
+                this.lineTo(x, y + r);
+                this.quadraticCurveTo(x, y, x + r, y);
+                this.closePath();
+            };
         }
 
         initPositions();
         tick();
-
-        // Resize handling
-        window.addEventListener('resize', () => {
-            initPositions();
-        });
+        window.addEventListener('resize', () => { initPositions(); });
     </script>
 </body>
 </html>

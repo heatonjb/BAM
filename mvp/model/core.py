@@ -1,8 +1,7 @@
 """Core object model for the Business as a Machine transformation graph.
 
-Everything in the graph extends BaseNode. Each node type adds
-type-specific attributes while sharing a common interface for
-rendering, traversal, and computation.
+Everything extends BaseNode. Each node carries current value, 7-day and 30-day
+rolling changes, trend direction, and sparkline data for stock-ticker display.
 """
 
 from dataclasses import dataclass, field
@@ -19,68 +18,75 @@ class NodeType(Enum):
     LIABILITY = "liability"
     EQUITY = "equity"
     METRIC = "metric"
-    AGGREGATE = "aggregate"  # composite node (sum of children)
+    AGGREGATE = "aggregate"
 
 
-class MetricDirection(Enum):
-    HIGHER_BETTER = "higher_better"
-    LOWER_BETTER = "lower_better"
-    NEUTRAL = "neutral"
+class TrendDirection(Enum):
+    UP = "up"
+    DOWN = "down"
+    FLAT = "flat"
+    UNKNOWN = "unknown"
 
 
 @dataclass
 class BaseNode:
-    """All graph objects extend this. Shared interface for rendering and traversal."""
-    
+    """All graph objects extend this. Shared interface for rendering, traversal, and computation."""
+
     # Identity
     id: str
     label: str
     node_type: NodeType
-    
-    # Value
+
+    # Current value
     value: float = 0.0
     unit: str = "GBP"
     period: str = "monthly"
-    
+
+    # Stock-ticker change fields
+    change_7d: float = 0.0          # absolute change over last 7 days vs prior 7
+    change_7d_pct: float = 0.0      # percentage change
+    change_30d: float = 0.0         # absolute change over last 30 days vs prior 30
+    change_30d_pct: float = 0.0     # percentage change
+    trend: TrendDirection = TrendDirection.UNKNOWN
+    sparkline: List[float] = field(default_factory=list)  # last 30 daily values
+
     # Graph structure
-    parents: List[str] = field(default_factory=list)   # inputs to this node
-    children: List[str] = field(default_factory=list)   # outputs from this node
-    
+    parents: List[str] = field(default_factory=list)
+    children: List[str] = field(default_factory=list)
+
     # Analytics
-    efficiency: Optional[float] = None  # output/input ratio
-    efficiency_label: Optional[str] = None  # human-readable: "3.2x revenue per £1 input"
-    
+    efficiency: Optional[float] = None
+    efficiency_label: Optional[str] = None
+
+    # Edge annotations: for each child, what % it contributes to this node
+    child_contribution_pct: Dict[str, float] = field(default_factory=dict)
+
     # Optimisation
-    constraint: Optional[str] = None  # what limits this node
+    constraint: Optional[str] = None
     constraint_detail: Optional[str] = None
-    lever: Optional[str] = None  # what can be pulled
-    lever_action: Optional[str] = None  # description of the action
-    
+    lever: Optional[str] = None
+    lever_action: Optional[str] = None
+
     # Metadata
     description: str = ""
     tags: List[str] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
-    
+
     # Hierarchy
-    level: int = 0  # 0 = top-level P&L, 1 = breakdown, 2 = granular
-    parent_group: Optional[str] = None  # which P&L line this rolls up to
-    
+    level: int = 0
+    parent_group: Optional[str] = None
+
     # UI
     icon: Optional[str] = None
     color: Optional[str] = None
-    
-    # Computed (set during graph build)
-    _computed: Dict[str, Any] = field(default_factory=dict, repr=False)
-    
+
     def summary(self) -> str:
-        """Human-readable one-liner."""
         parts = [f"{self.label}: {self.value:.2f} {self.unit}"]
         if self.efficiency is not None:
             parts.append(f"({self.efficiency:.2f}x)")
         return " | ".join(parts)
-    
+
     def to_dict(self) -> dict:
-        """Serialize for JSON/UI."""
         return {
             "id": self.id,
             "label": self.label,
@@ -88,8 +94,15 @@ class BaseNode:
             "value": round(self.value, 2),
             "unit": self.unit,
             "period": self.period,
+            "change_7d": round(self.change_7d, 2),
+            "change_7d_pct": round(self.change_7d_pct, 1),
+            "change_30d": round(self.change_30d, 2),
+            "change_30d_pct": round(self.change_30d_pct, 1),
+            "trend": self.trend.value if isinstance(self.trend, TrendDirection) else str(self.trend),
+            "sparkline": [round(v, 2) for v in self.sparkline[-30:]],
             "parents": self.parents,
             "children": self.children,
+            "child_contribution_pct": {k: round(v, 1) for k, v in self.child_contribution_pct.items()},
             "efficiency": round(self.efficiency, 2) if self.efficiency is not None else None,
             "efficiency_label": self.efficiency_label,
             "constraint": self.constraint,
@@ -106,49 +119,43 @@ class BaseNode:
         }
 
 
-# ── Specialised Node Types ──
-
 @dataclass
 class RevenueNode(BaseNode):
-    """A revenue source — product, service, or income stream."""
     node_type: NodeType = field(default=NodeType.REVENUE, init=False)
-    volume: float = 0.0  # units sold
-    unit_type: str = ""  # "cups", "transactions", etc.
-    price: float = 0.0   # average price per unit
-    growth_rate: float = 0.0  # month-over-month
+    volume: float = 0.0
+    unit_type: str = ""
+    price: float = 0.0
+    growth_rate: float = 0.0
     color: str = "#4caf50"
     icon: str = "💰"
 
 
 @dataclass
 class CostNode(BaseNode):
-    """A cost — variable, fixed, or semi-variable."""
     node_type: NodeType = field(default=NodeType.COST, init=False)
-    cost_type: str = "fixed"  # fixed, variable, semi_variable
-    per_unit_cost: float = 0.0  # cost per unit of output
-    is_controllable: bool = True  # can management influence this?
+    cost_type: str = "fixed"
+    per_unit_cost: float = 0.0
+    is_controllable: bool = True
     color: str = "#f44336"
     icon: str = "💸"
 
 
 @dataclass
 class ProcessNode(BaseNode):
-    """A transformation step — inputs become outputs."""
     node_type: NodeType = field(default=NodeType.PROCESS, init=False)
-    throughput: float = 0.0  # units processed per period
-    capacity: float = 0.0  # max throughput
-    utilisation: float = 0.0  # throughput/capacity
-    cycle_time: float = 0.0  # time per unit
+    throughput: float = 0.0
+    capacity: float = 0.0
+    utilisation: float = 0.0
+    cycle_time: float = 0.0
     color: str = "#2196f3"
     icon: str = "⚙️"
 
 
 @dataclass
 class InputNode(BaseNode):
-    """A raw material or resource input."""
     node_type: NodeType = field(default=NodeType.INPUT, init=False)
     quantity: float = 0.0
-    unit_measure: str = ""  # kg, litres, units
+    unit_measure: str = ""
     supplier: str = ""
     lead_time_days: float = 0.0
     waste_pct: float = 0.0
@@ -158,7 +165,6 @@ class InputNode(BaseNode):
 
 @dataclass
 class AssetNode(BaseNode):
-    """A business asset — tangible or intangible."""
     node_type: NodeType = field(default=NodeType.ASSET, init=False)
     original_cost: float = 0.0
     accumulated_depreciation: float = 0.0
@@ -171,7 +177,6 @@ class AssetNode(BaseNode):
 
 @dataclass
 class LiabilityNode(BaseNode):
-    """A business liability — debt, payables, etc."""
     node_type: NodeType = field(default=NodeType.LIABILITY, init=False)
     principal: float = 0.0
     interest_rate: float = 0.0
@@ -183,90 +188,85 @@ class LiabilityNode(BaseNode):
 
 @dataclass
 class MetricNode(BaseNode):
-    """A derived metric — ratio, percentage, or KPI."""
     node_type: NodeType = field(default=NodeType.METRIC, init=False)
     formula: str = ""
     benchmark: Optional[float] = None
     benchmark_source: str = ""
-    direction: MetricDirection = MetricDirection.HIGHER_BETTER
+    direction: str = "higher_better"
     color: str = "#9c27b0"
     icon: str = "📊"
 
 
 @dataclass
 class AggregateNode(BaseNode):
-    """A composite node that sums its children (e.g., Total Revenue)."""
     node_type: NodeType = field(default=NodeType.AGGREGATE, init=False)
-    composition: Dict[str, float] = field(default_factory=dict)  # child_id -> weight
+    composition: Dict[str, float] = field(default_factory=dict)
     color: str = "#607d8b"
     icon: str = "📁"
 
 
-# ── Graph Container ──
-
 class BusinessGraph:
     """Holds all nodes and provides traversal, query, and rendering helpers."""
-    
+
     def __init__(self):
         self.nodes: Dict[str, BaseNode] = {}
-        self.edges: List[dict] = []  # {source, target, label, value}
-        self.root_nodes: List[str] = []  # top-level P&L nodes
+        self.edges: List[dict] = []
+        self.root_nodes: List[str] = []
         self._adjacency: Dict[str, List[str]] = {}
         self._reverse_adj: Dict[str, List[str]] = {}
-    
+
     def add(self, node: BaseNode):
-        """Add a node to the graph."""
         self.nodes[node.id] = node
         self._adjacency[node.id] = node.children[:]
         self._reverse_adj[node.id] = node.parents[:]
         if node.level == 0:
             self.root_nodes.append(node.id)
-    
+
     def get(self, node_id: str) -> Optional[BaseNode]:
         return self.nodes.get(node_id)
-    
+
     def get_subgraph(self, node_id: str, depth: int = 2) -> dict:
-        """Get the subgraph rooted at node_id, up to depth levels."""
         visited = set()
         subgraph_nodes = {}
         subgraph_edges = []
-        
+
         def _traverse(nid: str, current_depth: int):
             if nid in visited or current_depth > depth:
                 return
             visited.add(nid)
-            
             node = self.nodes.get(nid)
             if node:
                 subgraph_nodes[nid] = node.to_dict()
-                
-                # Edges to children
                 for child_id in node.children:
                     if child_id in self.nodes:
+                        child = self.nodes[child_id]
+                        contrib = 0
+                        if node.value != 0:
+                            contrib = round(abs(child.value) / abs(node.value) * 100, 1) if node.value != 0 else 0
                         subgraph_edges.append({
                             "source": nid,
                             "target": child_id,
-                            "label": self.nodes[child_id].label,
-                            "value": self.nodes[child_id].value
+                            "label": child.label,
+                            "value": round(child.value, 2),
+                            "contribution_pct": contrib,
+                            "trend": child.trend.value if isinstance(child.trend, TrendDirection) else str(child.trend),
+                            "change_pct": round(child.change_7d_pct, 1)
                         })
                         _traverse(child_id, current_depth + 1)
-                
-                # Edges to parents (upstream)
                 for parent_id in node.parents:
                     if parent_id in self.nodes and parent_id not in visited:
                         subgraph_edges.append({
                             "source": parent_id,
                             "target": nid,
                             "label": node.label,
-                            "value": node.value
+                            "value": round(node.value, 2)
                         })
                         _traverse(parent_id, current_depth + 1)
-        
+
         _traverse(node_id, 0)
         return {"nodes": subgraph_nodes, "edges": subgraph_edges}
-    
+
     def get_drill_path(self, node_id: str) -> List[str]:
-        """Get the path from root to this node."""
         path = []
         current = node_id
         while current:
@@ -274,14 +274,13 @@ class BusinessGraph:
             node = self.nodes.get(current)
             current = node.parent_group if node and node.parent_group else None
         return list(reversed(path))
-    
+
     def get_level(self, level: int) -> List[BaseNode]:
-        """Get all nodes at a given level."""
         return [n for n in self.nodes.values() if n.level == level]
-    
+
     def get_by_type(self, node_type: NodeType) -> List[BaseNode]:
         return [n for n in self.nodes.values() if n.node_type == node_type]
-    
+
     def to_dict(self) -> dict:
         return {
             "nodes": {nid: n.to_dict() for nid, n in self.nodes.items()},
