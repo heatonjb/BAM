@@ -7,34 +7,25 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'SF Mono', 'Fira Code', monospace; background: #0a0a0a; color: #e0e0e0; }
-
         .header { background: #111; padding: 0.8rem 1.5rem; border-bottom: 1px solid #222; display: flex; align-items: center; gap: 1rem; }
         .header .back { color: #4caf50; text-decoration: none; font-size: 0.8rem; }
-        .header .back:hover { text-decoration: underline; }
         .header h1 { font-size: 1.2rem; color: #fff; font-family: -apple-system, sans-serif; }
-
         .breadcrumb { padding: 0.5rem 1.5rem; background: #0d0d0d; border-bottom: 1px solid #1a1a1a; display: flex; gap: 0.3rem; align-items: center; font-size: 0.75rem; flex-wrap: wrap; }
         .breadcrumb a { color: #4caf50; text-decoration: none; }
         .breadcrumb a:hover { text-decoration: underline; }
         .breadcrumb .sep { color: #333; }
         .breadcrumb .current { color: #fff; font-weight: 600; }
-
         .container { max-width: 1100px; margin: 0 auto; padding: 1rem; }
 
-        /* Stock ticker detail card */
-        .ticker-card {
-            background: #111; border: 1px solid #222; border-radius: 8px;
-            padding: 1.2rem; margin-bottom: 1rem;
-        }
+        /* Ticker card */
+        .ticker-card { background: #111; border: 1px solid #222; border-radius: 8px; padding: 1.2rem; margin-bottom: 1rem; }
         .ticker-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.8rem; }
         .ticker-icon { font-size: 1.8rem; }
         .ticker-title { font-size: 1.1rem; color: #fff; font-family: -apple-system, sans-serif; }
         .ticker-type { color: #555; font-size: 0.7rem; text-transform: uppercase; }
-
         .ticker-value { font-size: 2.2rem; font-weight: 700; font-variant-numeric: tabular-nums; margin-bottom: 0.5rem; }
         .ticker-value.positive { color: #4caf50; }
         .ticker-value.negative { color: #f44336; }
-
         .ticker-changes { display: flex; gap: 1.5rem; margin-bottom: 0.8rem; }
         .ticker-change { display: flex; align-items: center; gap: 0.4rem; }
         .ticker-change .period { color: #555; font-size: 0.7rem; }
@@ -42,16 +33,32 @@
         .ticker-change .val.up { color: #4caf50; }
         .ticker-change .val.down { color: #f44336; }
         .ticker-change .val.flat { color: #666; }
-        .ticker-change .arrow { font-size: 1rem; }
-
         .ticker-sparkline { height: 40px; margin-bottom: 0.8rem; }
         .ticker-sparkline svg { width: 100%; height: 100%; }
-
         .ticker-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.4rem; }
         .ticker-meta-row { display: flex; justify-content: space-between; padding: 0.3rem 0; border-bottom: 1px solid #151515; }
         .ticker-meta-row .label { color: #555; font-size: 0.75rem; }
         .ticker-meta-row .val { color: #ccc; font-size: 0.8rem; }
         .ticker-meta-row .val.green { color: #4caf50; }
+
+        /* Constraints panel */
+        .constraints-panel { background: #111; border: 1px solid #222; border-radius: 8px; margin-bottom: 1rem; }
+        .constraints-header { padding: 0.6rem 1rem; background: #0d0d0d; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .constraints-header h3 { color: #ff9800; font-size: 0.85rem; font-family: -apple-system, sans-serif; margin: 0; }
+        .constraints-header .count { color: #888; font-size: 0.75rem; }
+        .constraints-body { padding: 0.8rem 1rem; display: none; }
+        .constraints-body.open { display: block; }
+        .constraint-item { padding: 0.6rem; border: 1px solid #1a1a1a; border-radius: 4px; margin-bottom: 0.5rem; }
+        .constraint-item .ci-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem; }
+        .constraint-item .ci-severity { font-size: 0.6rem; padding: 0.1rem 0.4rem; border-radius: 2px; font-variant-numeric: tabular-nums; }
+        .ci-hard { background: rgba(244,67,54,0.15); color: #f44336; }
+        .ci-soft { background: rgba(255,152,0,0.15); color: #ff9800; }
+        .constraint-item .ci-name { color: #fff; font-size: 0.85rem; }
+        .constraint-item .ci-type { color: #555; font-size: 0.7rem; text-transform: uppercase; }
+        .constraint-item .ci-desc { color: #888; font-size: 0.75rem; margin-top: 0.2rem; }
+        .constraint-item .ci-params { color: #555; font-size: 0.7rem; margin-top: 0.2rem; font-family: 'SF Mono', monospace; }
+        .constraint-item .ci-penalty { color: #f44336; font-size: 0.7rem; margin-top: 0.2rem; }
+        .constraint-item .ci-source { color: #444; font-size: 0.65rem; margin-top: 0.2rem; }
 
         /* Graph */
         .graph-section { background: #111; border: 1px solid #222; border-radius: 8px; margin-bottom: 1rem; overflow: hidden; }
@@ -71,27 +78,41 @@
         .child-table tr:hover { background: #151515; }
         .child-table .icon { width: 28px; text-align: center; font-size: 1rem; }
         .child-table .val { font-family: 'SF Mono', 'Fira Code', monospace; text-align: right; font-variant-numeric: tabular-nums; }
+        .contrib-badge { display: inline-block; padding: 0.1rem 0.35rem; border-radius: 2px; font-size: 0.65rem; font-variant-numeric: tabular-nums; }
+        .contrib-high { background: rgba(76,175,80,0.15); color: #4caf50; }
+        .contrib-mid { background: rgba(255,152,0,0.15); color: #ff9800; }
+        .contrib-low { background: rgba(100,100,100,0.1); color: #888; }
+        .change-mini { display: inline-block; padding: 0.1rem 0.3rem; border-radius: 2px; font-size: 0.65rem; font-variant-numeric: tabular-nums; }
+        .change-mini.up { background: rgba(76,175,80,0.15); color: #4caf50; }
+        .change-mini.down { background: rgba(244,67,54,0.15); color: #f44336; }
+        .change-mini.flat { background: rgba(80,80,80,0.1); color: #666; }
 
-        .contrib-badge {
-            display: inline-block; padding: 0.1rem 0.35rem; border-radius: 2px;
-            font-size: 0.65rem; font-variant-numeric: tabular-nums;
-        }
-        .contrib-high { background: rgba(76, 175, 80, 0.15); color: #4caf50; }
-        .contrib-mid { background: rgba(255, 152, 0, 0.15); color: #ff9800; }
-        .contrib-low { background: rgba(100, 100, 100, 0.1); color: #888; }
-
-        .change-mini {
-            display: inline-block; padding: 0.1rem 0.3rem; border-radius: 2px;
-            font-size: 0.65rem; font-variant-numeric: tabular-nums;
-        }
-        .change-mini.up { background: rgba(76, 175, 80, 0.15); color: #4caf50; }
-        .change-mini.down { background: rgba(244, 67, 54, 0.15); color: #f44336; }
-        .change-mini.flat { background: rgba(80, 80, 80, 0.1); color: #666; }
+        /* Insights panel (drill page) */
+        .insights-section { background: #111; border: 1px solid #222; border-radius: 8px; margin-bottom: 1rem; }
+        .insights-header { padding: 0.6rem 1rem; background: #0d0d0d; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; }
+        .insights-header h3 { color: #4caf50; font-size: 0.85rem; font-family: -apple-system, sans-serif; margin: 0; }
+        .insights-body { padding: 1rem; }
+        .hypothesis-card { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 6px; padding: 1rem; margin-bottom: 0.8rem; }
+        .hypothesis-card h4 { color: #fff; font-size: 0.9rem; margin: 0 0 0.3rem; }
+        .hypothesis-card .desc { color: #aaa; font-size: 0.8rem; }
+        .hypothesis-card .meta { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.5rem; }
+        .hypothesis-card .meta span { font-size: 0.75rem; }
+        .hypothesis-card .risk { color: #f44336; font-size: 0.75rem; margin-top: 0.5rem; }
+        .hypothesis-card .counterfactual { color: #666; font-size: 0.7rem; margin-top: 0.3rem; }
+        .hypothesis-card .metrics { color: #555; font-size: 0.7rem; margin-top: 0.3rem; }
 
         .footer { text-align: center; padding: 1.5rem; color: #333; font-size: 0.7rem; border-top: 1px solid #1a1a1a; }
 
-        @keyframes slide-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+        .positive { color: #4caf50; }
+        .negative { color: #f44336; }
+
+        @keyframes slide-in { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
         .ticker-card { animation: slide-in 0.4s ease-out; }
+
+        @media (max-width: 700px) {
+            .ticker-changes { flex-direction: column; gap: 0.3rem; }
+            .ticker-meta { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -99,7 +120,6 @@
         <a href="/" class="back">← P&L</a>
         <h1>{{ node.icon }} {{ node.label }}</h1>
     </div>
-
     <div class="breadcrumb">
         <a href="/">P&L</a>
         {% for p in path[:-1] %}
@@ -109,9 +129,8 @@
         {% if path|length > 1 %}<span class="sep">›</span>{% endif %}
         <span class="current">{{ node.label }}</span>
     </div>
-
     <div class="container">
-        <!-- Stock Ticker Detail Card -->
+        <!-- Ticker Card -->
         <div class="ticker-card">
             <div class="ticker-header">
                 <span class="ticker-icon">{{ node.icon }}</span>
@@ -120,70 +139,68 @@
                     <div class="ticker-type">{{ node.node_type }} · {{ node.unit }} · {{ node.period }}</div>
                 </div>
             </div>
-
             <div class="ticker-value {% if node.value < 0 %}negative{% elif node.node_type == 'metric' and node.value > 0 %}positive{% endif %}">
                 {% if node.node_type in ['cost', 'revenue', 'process', 'input', 'aggregate'] %}£{% endif %}{{ "{:,.2f}".format(node.value) }}
             </div>
-
             <div class="ticker-changes">
                 <div class="ticker-change">
                     <span class="period">7D</span>
-                    <span class="arrow {% if node.trend == 'up' %}up{% elif node.trend == 'down' %}down{% else %}flat{% endif %}" style="color: {% if node.trend == 'up' %}#4caf50{% elif node.trend == 'down' %}#f44336{% else %}#666{% endif %}; font-size: 0.9rem;">{% if node.trend == 'up' %}▲{% elif node.trend == 'down' %}▼{% else %}─{% endif %}</span>
-                    <span class="val {% if node.trend == 'up' %}up{% elif node.trend == 'down' %}down{% else %}flat{% endif %}">
-                        £{{ "{:,.2f}".format(node.change_7d|abs) }} ({{ "%+.1f"|format(node.change_7d_pct) }}%)
-                    </span>
+                    <span style="color:{% if node.trend == 'up' %}#4caf50{% elif node.trend == 'down' %}#f44336{% else %}#666{% endif %};font-size:0.9rem;">{% if node.trend == 'up' %}▲{% elif node.trend == 'down' %}▼{% else %}─{% endif %}</span>
+                    <span class="val {% if node.trend == 'up' %}up{% elif node.trend == 'down' %}down{% else %}flat{% endif %}">£{{ "{:,.2f}".format(node.change_7d|abs) }} ({{ "%+.1f"|format(node.change_7d_pct) }}%)</span>
                 </div>
                 <div class="ticker-change">
                     <span class="period">30D</span>
-                    <span class="val {% if node.change_30d > 0.5 %}up{% elif node.change_30d < -0.5 %}down{% else %}flat{% endif %}">
-                        £{{ "{:,.2f}".format(node.change_30d|abs) }} ({{ "%+.1f"|format(node.change_30d_pct) }}%)
-                    </span>
+                    <span class="val {% if node.change_30d > 0.5 %}up{% elif node.change_30d < -0.5 %}down{% else %}flat{% endif %}">£{{ "{:,.2f}".format(node.change_30d|abs) }} ({{ "%+.1f"|format(node.change_30d_pct) }}%)</span>
                 </div>
                 {% if node.efficiency_label %}
-                <div class="ticker-change">
-                    <span class="period">EFF</span>
-                    <span class="val flat">{{ node.efficiency_label }}</span>
-                </div>
+                <div class="ticker-change"><span class="period">EFF</span><span class="val flat">{{ node.efficiency_label }}</span></div>
                 {% endif %}
             </div>
-
             {% if node.sparkline|length > 0 %}
             <div class="ticker-sparkline">
                 <svg viewBox="0 0 300 40" preserveAspectRatio="none">
-                    {% set vals = node.sparkline[-30:] %}
-                    {% set min_v = vals|min %}
-                    {% set max_v = vals|max %}
-                    {% set range_v = max_v - min_v if max_v != min_v else 1 %}
+                    {% set vals = node.sparkline[-30:] %}{% set min_v = vals|min %}{% set max_v = vals|max %}{% set range_v = max_v - min_v if max_v != min_v else 1 %}
                     {% set tc = '#4caf50' if node.trend == 'up' else '#f44336' if node.trend == 'down' else '#555' %}
-                    <!-- Fill area -->
-                    <polygon fill="{{ tc }}" opacity="0.08"
-                        points="0,40 {% for v in vals %}{{ (loop.index0 / (vals|length - 1)) * 300 }},{{ 38 - ((v - min_v) / range_v) * 34 }}{% endfor %} 300,40" />
-                    <!-- Line -->
-                    <polyline fill="none" stroke="{{ tc }}" stroke-width="1.5"
-                        points="{% for v in vals %}{{ (loop.index0 / (vals|length - 1)) * 300 }},{{ 38 - ((v - min_v) / range_v) * 34 }}{% endfor %}" />
-                    <!-- End dot -->
+                    <polygon fill="{{ tc }}" opacity="0.08" points="0,40 {% for v in vals %}{{ (loop.index0 / (vals|length - 1)) * 300 }},{{ 38 - ((v - min_v) / range_v) * 34 }}{% endfor %} 300,40" />
+                    <polyline fill="none" stroke="{{ tc }}" stroke-width="1.5" points="{% for v in vals %}{{ (loop.index0 / (vals|length - 1)) * 300 }},{{ 38 - ((v - min_v) / range_v) * 34 }}{% endfor %}" />
                     <circle cx="300" cy="{{ 38 - ((vals[-1] - min_v) / range_v) * 34 }}" r="3" fill="{{ tc }}" />
                 </svg>
             </div>
             {% endif %}
-
             {% if node.metadata or node.constraint or node.lever %}
             <div class="ticker-meta">
-                {% if node.constraint %}
-                <div class="ticker-meta-row"><span class="label">Constraint</span><span class="val">{{ node.constraint }}</span></div>
-                {% endif %}
-                {% if node.lever %}
-                <div class="ticker-meta-row"><span class="label">Optimisation Lever</span><span class="val green">{{ node.lever }}</span></div>
-                {% endif %}
-                {% if node.description %}
-                <div class="ticker-meta-row"><span class="label">Description</span><span class="val">{{ node.description }}</span></div>
-                {% endif %}
-                {% for k, v in node.metadata.items() %}
-                <div class="ticker-meta-row"><span class="label">{{ k.replace("_", " ").title() }}</span><span class="val">{{ v }}</span></div>
-                {% endfor %}
+                {% if node.constraint %}<div class="ticker-meta-row"><span class="label">Constraint</span><span class="val">{{ node.constraint }}</span></div>{% endif %}
+                {% if node.lever %}<div class="ticker-meta-row"><span class="label">Optimisation Lever</span><span class="val green">{{ node.lever }}</span></div>{% endif %}
+                {% if node.description %}<div class="ticker-meta-row"><span class="label">Description</span><span class="val">{{ node.description }}</span></div>{% endif %}
+                {% for k, v in node.metadata.items() %}<div class="ticker-meta-row"><span class="label">{{ k.replace("_", " ").title() }}</span><span class="val">{{ v }}</span></div>{% endfor %}
             </div>
             {% endif %}
         </div>
+
+        <!-- Constraints Panel -->
+        {% if constraints %}
+        <div class="constraints-panel">
+            <div class="constraints-header" onclick="this.nextElementSibling.classList.toggle('open')">
+                <h3>⚡ Active Constraints</h3>
+                <span class="count">{{ constraints|length }} constraint{% if constraints|length != 1 %}s{% endif %} ({{ constraints|selectattr('severity', 'equalto', 'hard')|list|length }} hard, {{ constraints|selectattr('severity', 'equalto', 'soft')|list|length }} soft)</span>
+            </div>
+            <div class="constraints-body open">
+                {% for c in constraints %}
+                <div class="constraint-item">
+                    <div class="ci-header">
+                        <span class="ci-severity {% if c.severity == 'hard' %}ci-hard{% else %}ci-soft{% endif %}">{{ c.severity|upper }}</span>
+                        <span class="ci-name">{{ c.name }}</span>
+                        <span class="ci-type">{{ c.type }}</span>
+                    </div>
+                    <div class="ci-desc">{{ c.description }}</div>
+                    {% if c.parameters %}<div class="ci-params">{% for k, v in c.parameters.items() %}{{ k }}={{ v }}{% if not loop.last %}, {% endif %}{% endfor %}</div>{% endif %}
+                    {% if c.penalty_per_unit > 0 %}<div class="ci-penalty">Penalty: £{{ "%.2f"|format(c.penalty_per_unit) }} per {{ c.penalty_unit }}</div>{% endif %}
+                    {% if c.source %}<div class="ci-source">Source: {{ c.source }}</div>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
 
         <!-- Graph -->
         {% if subgraph.edges %}
@@ -197,6 +214,17 @@
             <canvas id="graphCanvas"></canvas>
         </div>
         {% endif %}
+
+        <!-- Insights Panel -->
+        <div class="insights-section">
+            <div class="insights-header">
+                <h3>💡 AI Insights & Hypotheses</h3>
+                <button onclick="generateInsights()" id="insightsBtn" style="background:#1a1a3e;color:#4caf50;border:1px solid #4caf50;padding:0.3rem 0.8rem;border-radius:4px;cursor:pointer;font-size:0.8rem;">Generate</button>
+            </div>
+            <div class="insights-body" id="insightsBody">
+                <p style="color:#555;font-size:0.8rem;">Click Generate to get constraint-aware hypotheses from the AI model. The model will consider all {{ constraints|length if constraints else 0 }} active constraints, research context, and current performance data for <strong>{{ node.label }}</strong> (£{{ "{:,.2f}".format(node.value) }}/mo, 7d trend: {{ node.trend }} {{ "%+.1f"|format(node.change_7d_pct) }}%).</p>
+            </div>
+        </div>
 
         <!-- Child nodes table -->
         {% if node.children %}
@@ -215,26 +243,9 @@
                         <td class="icon">{{ child.icon or '📊' }}</td>
                         <td>{{ child.label }}</td>
                         <td class="val">£{{ "{:,.2f}".format(child.value) }}</td>
-                        <td class="val">
-                            <span class="change-mini {% if child.trend == 'up' %}up{% elif child.trend == 'down' %}down{% else %}flat{% endif %}">
-                                {% if child.trend == 'up' %}▲{% elif child.trend == 'down' %}▼{% else %}─{% endif %}
-                                {{ "%+.1f"|format(child.change_7d_pct) }}%
-                            </span>
-                        </td>
-                        <td class="val">
-                            <span class="change-mini {% if child.change_30d_pct > 3 %}up{% elif child.change_30d_pct < -3 %}down{% else %}flat{% endif %}">
-                                {{ "%+.1f"|format(child.change_30d_pct) }}%
-                            </span>
-                        </td>
-                        <td class="val">
-                            {% if contrib > 30 %}
-                            <span class="contrib-badge contrib-high">{{ contrib }}%</span>
-                            {% elif contrib > 10 %}
-                            <span class="contrib-badge contrib-mid">{{ contrib }}%</span>
-                            {% else %}
-                            <span class="contrib-badge contrib-low">{{ contrib }}%</span>
-                            {% endif %}
-                        </td>
+                        <td class="val"><span class="change-mini {% if child.trend == 'up' %}up{% elif child.trend == 'down' %}down{% else %}flat{% endif %}">{% if child.trend == 'up' %}▲{% elif child.trend == 'down' %}▼{% else %}─{% endif %} {{ "%+.1f"|format(child.change_7d_pct) }}%</span></td>
+                        <td class="val"><span class="change-mini {% if child.change_30d_pct > 3 %}up{% elif child.change_30d_pct < -3 %}down{% else %}flat{% endif %}">{{ "%+.1f"|format(child.change_30d_pct) }}%</span></td>
+                        <td class="val">{% if contrib > 30 %}<span class="contrib-badge contrib-high">{{ contrib }}%</span>{% elif contrib > 10 %}<span class="contrib-badge contrib-mid">{{ contrib }}%</span>{% else %}<span class="contrib-badge contrib-low">{{ contrib }}%</span>{% endif %}</td>
                     </tr>
                     {% endif %}
                     {% endfor %}
@@ -243,7 +254,6 @@
         </div>
         {% endif %}
     </div>
-
     <div class="footer">Business as a Machine · Click any row to drill deeper</div>
 
     <script>
@@ -252,86 +262,50 @@
         const focusNode = '{{ node.id }}';
         let showLabels = true;
         let showAnnotations = true;
-
-        const typeColors = {
-            revenue: '#4caf50', cost: '#f44336', process: '#2196f3',
-            input: '#ff9800', asset: '#00bcd4', liability: '#e91e63',
-            metric: '#9c27b0', aggregate: '#607d8b'
-        };
-
+        const typeColors = { revenue:'#4caf50', cost:'#f44336', process:'#2196f3', input:'#ff9800', asset:'#00bcd4', liability:'#e91e63', metric:'#9c27b0', aggregate:'#607d8b' };
         const positions = {};
         const velocities = {};
 
         function initPositions() {
             const canvas = document.getElementById('graphCanvas');
             if (!canvas) return;
-            const W = canvas.clientWidth;
-            const H = canvas.clientHeight;
-            const cx = W / 2, cy = H / 2;
-            const nodeIds = graphNodes.map(n => n.id);
-            const n = nodeIds.length;
-
-            nodeIds.forEach((id, i) => {
-                if (id === focusNode) {
-                    positions[id] = { x: cx, y: cy };
-                } else {
-                    const angle = (2 * Math.PI * i) / n;
-                    const radius = Math.min(W, H) * 0.3;
-                    positions[id] = { x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius };
-                }
-                velocities[id] = { x: 0, y: 0 };
+            const W = canvas.clientWidth, H = canvas.clientHeight;
+            const cx = W/2, cy = H/2;
+            graphNodes.forEach((n, i) => {
+                if (n.id === focusNode) { positions[n.id] = {x:cx, y:cy}; }
+                else { const a = (2*Math.PI*i)/graphNodes.length, r = Math.min(W,H)*0.3; positions[n.id] = {x:cx+Math.cos(a)*r, y:cy+Math.sin(a)*r}; }
+                velocities[n.id] = {x:0, y:0};
             });
         }
 
         function simulate() {
             const canvas = document.getElementById('graphCanvas');
             if (!canvas) return;
-            const W = canvas.clientWidth;
-            const H = canvas.clientHeight;
-            const cx = W / 2, cy = H / 2;
+            const W = canvas.clientWidth, H = canvas.clientHeight;
             const nodeIds = graphNodes.map(n => n.id);
-
-            // Repulsion
-            for (let i = 0; i < nodeIds.length; i++) {
-                for (let j = i + 1; j < nodeIds.length; j++) {
+            for (let i=0; i<nodeIds.length; i++) {
+                for (let j=i+1; j<nodeIds.length; j++) {
                     const a = positions[nodeIds[i]], b = positions[nodeIds[j]];
-                    let dx = a.x - b.x, dy = a.y - b.y;
-                    let dist = Math.sqrt(dx * dx + dy * dy) || 1;
-                    let force = 8000 / (dist * dist);
-                    velocities[nodeIds[i]].x += (dx / dist) * force;
-                    velocities[nodeIds[i]].y += (dy / dist) * force;
-                    velocities[nodeIds[j]].x -= (dx / dist) * force;
-                    velocities[nodeIds[j]].y -= (dy / dist) * force;
+                    let dx = a.x-b.x, dy = a.y-b.y, dist = Math.sqrt(dx*dx+dy*dy)||1;
+                    let force = 8000/(dist*dist);
+                    velocities[nodeIds[i]].x += (dx/dist)*force; velocities[nodeIds[i]].y += (dy/dist)*force;
+                    velocities[nodeIds[j]].x -= (dx/dist)*force; velocities[nodeIds[j]].y -= (dy/dist)*force;
                 }
             }
-
-            // Attraction
             graphEdges.forEach(e => {
-                if (!positions[e.source] || !positions[e.target]) return;
+                if (!positions[e.source]||!positions[e.target]) return;
                 const a = positions[e.source], b = positions[e.target];
-                let dx = b.x - a.x, dy = b.y - a.y;
-                let dist = Math.sqrt(dx * dx + dy * dy) || 1;
-                let force = (dist - 120) * 0.005;
-                velocities[e.source].x += (dx / dist) * force;
-                velocities[e.source].y += (dy / dist) * force;
-                velocities[e.target].x -= (dx / dist) * force;
-                velocities[e.target].y -= (dy / dist) * force;
+                let dx = b.x-a.x, dy = b.y-a.y, dist = Math.sqrt(dx*dx+dy*dy)||1;
+                let force = (dist-120)*0.005;
+                velocities[e.source].x += (dx/dist)*force; velocities[e.source].y += (dy/dist)*force;
+                velocities[e.target].x -= (dx/dist)*force; velocities[e.target].y -= (dy/dist)*force;
             });
-
-            // Center pull
+            nodeIds.forEach(id => { velocities[id].x += (W/2-positions[id].x)*0.002; velocities[id].y += (H/2-positions[id].y)*0.002; });
             nodeIds.forEach(id => {
-                velocities[id].x += (cx - positions[id].x) * 0.002;
-                velocities[id].y += (cy - positions[id].y) * 0.002;
-            });
-
-            // Apply
-            nodeIds.forEach(id => {
-                velocities[id].x *= 0.85;
-                velocities[id].y *= 0.85;
-                positions[id].x += velocities[id].x;
-                positions[id].y += velocities[id].y;
-                positions[id].x = Math.max(40, Math.min(W - 40, positions[id].x));
-                positions[id].y = Math.max(40, Math.min(H - 40, positions[id].y));
+                velocities[id].x *= 0.85; velocities[id].y *= 0.85;
+                positions[id].x += velocities[id].x; positions[id].y += velocities[id].y;
+                positions[id].x = Math.max(40, Math.min(W-40, positions[id].x));
+                positions[id].y = Math.max(40, Math.min(H-40, positions[id].y));
             });
         }
 
@@ -339,160 +313,106 @@
             const canvas = document.getElementById('graphCanvas');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
-            canvas.width = canvas.clientWidth * 2;
-            canvas.height = canvas.clientHeight * 2;
-            ctx.scale(2, 2);
+            canvas.width = canvas.clientWidth*2; canvas.height = canvas.clientHeight*2;
+            ctx.scale(2,2);
             const W = canvas.clientWidth, H = canvas.clientHeight;
-            ctx.clearRect(0, 0, W, H);
-
-            // Edges with annotations
+            ctx.clearRect(0,0,W,H);
             graphEdges.forEach(e => {
-                if (!positions[e.source] || !positions[e.target]) return;
+                if (!positions[e.source]||!positions[e.target]) return;
                 const a = positions[e.source], b = positions[e.target];
-
-                // Edge line
-                ctx.beginPath();
-                ctx.moveTo(a.x, a.y);
-                ctx.lineTo(b.x, b.y);
-                ctx.strokeStyle = 'rgba(255,255,255,0.12)';
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
-
-                // Arrow
-                const angle = Math.atan2(b.y - a.y, b.x - a.x);
-                const arrowLen = 8;
-                ctx.beginPath();
-                ctx.moveTo(b.x - Math.cos(angle) * 22, b.y - Math.sin(angle) * 22);
-                ctx.lineTo(b.x - Math.cos(angle - 0.4) * (22 + arrowLen), b.y - Math.sin(angle - 0.4) * (22 + arrowLen));
-                ctx.lineTo(b.x - Math.cos(angle + 0.4) * (22 + arrowLen), b.y - Math.sin(angle + 0.4) * (22 + arrowLen));
-                ctx.closePath();
-                ctx.fillStyle = 'rgba(255,255,255,0.25)';
-                ctx.fill();
-
-                // Annotations
-                if (showAnnotations) {
-                    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
-                    const perpX = -Math.sin(angle) * 12;
-                    const perpY = Math.cos(angle) * 12;
-
-                    // Contribution badge
-                    if (e.contribution_pct !== undefined) {
-                        const contribText = e.contribution_pct.toFixed(0) + '%';
-                        ctx.font = '9px monospace';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-
-                        // Background
-                        const tw = ctx.measureText(contribText).width + 8;
-                        ctx.fillStyle = 'rgba(0,0,0,0.7)';
-                        ctx.beginPath();
-                        ctx.roundRect(mx + perpX - tw/2, my + perpY - 7, tw, 14, 3);
-                        ctx.fill();
-
-                        // Text
-                        ctx.fillStyle = e.trend === 'up' ? '#4caf50' : e.trend === 'down' ? '#f44336' : '#888';
-                        ctx.fillText(contribText, mx + perpX, my + perpY);
-
-                        // Change % on other side
-                        const changeText = (e.change_pct >= 0 ? '+' : '') + e.change_pct.toFixed(1) + '%';
-                        const tw2 = ctx.measureText(changeText).width + 8;
-                        ctx.fillStyle = 'rgba(0,0,0,0.7)';
-                        ctx.beginPath();
-                        ctx.roundRect(mx - perpX - tw2/2, my - perpY - 7, tw2, 14, 3);
-                        ctx.fill();
-
-                        ctx.fillStyle = e.change_pct > 0 ? '#4caf50' : e.change_pct < 0 ? '#f44336' : '#666';
-                        ctx.fillText(changeText, mx - perpX, my - perpY);
-                    }
+                ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y);
+                ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = 1.5; ctx.stroke();
+                const angle = Math.atan2(b.y-a.y, b.x-a.x);
+                ctx.beginPath(); ctx.moveTo(b.x-Math.cos(angle)*22, b.y-Math.sin(angle)*22);
+                ctx.lineTo(b.x-Math.cos(angle-0.4)*(22+8), b.y-Math.sin(angle-0.4)*(22+8));
+                ctx.lineTo(b.x-Math.cos(angle+0.4)*(22+8), b.y-Math.sin(angle+0.4)*(22+8));
+                ctx.closePath(); ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fill();
+                if (showAnnotations && e.contribution_pct !== undefined) {
+                    const mx = (a.x+b.x)/2, my = (a.y+b.y)/2;
+                    const perpX = -Math.sin(angle)*12, perpY = Math.cos(angle)*12;
+                    ctx.font = '9px monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    const contribText = Math.round(e.contribution_pct) + '%';
+                    const tw = ctx.measureText(contribText).width + 8;
+                    ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.beginPath(); ctx.roundRect(mx+perpX-tw/2, my+perpY-7, tw, 14, 3); ctx.fill();
+                    ctx.fillStyle = e.trend === 'up' ? '#4caf50' : e.trend === 'down' ? '#f44336' : '#888'; ctx.fillText(contribText, mx+perpX, my+perpY);
+                    const changeText = (e.change_pct>=0?'+':'') + e.change_pct.toFixed(1) + '%';
+                    const tw2 = ctx.measureText(changeText).width + 8;
+                    ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.beginPath(); ctx.roundRect(mx-perpX-tw2/2, my-perpY-7, tw2, 14, 3); ctx.fill();
+                    ctx.fillStyle = e.change_pct>0?'#4caf50':e.change_pct<0?'#f44336':'#666'; ctx.fillText(changeText, mx-perpX, my-perpY);
                 }
             });
-
-            // Nodes
             graphNodes.forEach(n => {
-                const pos = positions[n.id];
-                if (!pos) return;
+                const pos = positions[n.id]; if (!pos) return;
                 const color = typeColors[n.node_type] || '#607d8b';
-                const radius = Math.max(16, Math.min(32, Math.sqrt(Math.abs(n.value)) * 1.0));
+                const radius = Math.max(16, Math.min(32, Math.sqrt(Math.abs(n.value))*1.0));
                 const isFocus = n.id === focusNode;
-
-                // Glow
-                if (isFocus) {
-                    ctx.beginPath();
-                    ctx.arc(pos.x, pos.y, radius + 8, 0, Math.PI * 2);
-                    ctx.fillStyle = color + '22';
-                    ctx.fill();
-                }
-
-                // Circle
-                ctx.beginPath();
-                ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
-                ctx.fillStyle = color + '33';
-                ctx.fill();
-                ctx.strokeStyle = color;
-                ctx.lineWidth = isFocus ? 2.5 : 1.5;
-                ctx.stroke();
-
-                // Icon
-                if (n.icon) {
-                    ctx.font = `${Math.min(14, radius)}px sans-serif`;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(n.icon, pos.x, pos.y);
-                }
-
-                // Label + value
+                if (isFocus) { ctx.beginPath(); ctx.arc(pos.x, pos.y, radius+8, 0, Math.PI*2); ctx.fillStyle = color+'22'; ctx.fill(); }
+                ctx.beginPath(); ctx.arc(pos.x, pos.y, radius, 0, Math.PI*2); ctx.fillStyle = color+'33'; ctx.fill();
+                ctx.strokeStyle = color; ctx.lineWidth = isFocus?2.5:1.5; ctx.stroke();
+                if (n.icon) { ctx.font = Math.min(14,radius)+'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(n.icon, pos.x, pos.y); }
                 if (showLabels) {
-                    ctx.font = '10px -apple-system, sans-serif';
-                    ctx.fillStyle = '#aaa';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'top';
-                    const label = n.label.length > 18 ? n.label.slice(0, 17) + '…' : n.label;
-                    ctx.fillText(label, pos.x, pos.y + radius + 5);
-
-                    ctx.font = '9px monospace';
-                    ctx.fillStyle = '#555';
-                    ctx.fillText('£' + n.value.toLocaleString(), pos.x, pos.y + radius + 17);
-
-                    // Trend arrow
-                    if (n.trend) {
-                        ctx.font = '11px sans-serif';
-                        ctx.fillStyle = n.trend === 'up' ? '#4caf50' : n.trend === 'down' ? '#f44336' : '#444';
-                        const arrow = n.trend === 'up' ? '↗' : n.trend === 'down' ? '↘' : '→';
-                        ctx.fillText(arrow, pos.x, pos.y + radius + 28);
-                    }
+                    ctx.font = '10px -apple-system, sans-serif'; ctx.fillStyle = '#aaa'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+                    ctx.fillText(n.label.length>18?n.label.slice(0,17)+'…':n.label, pos.x, pos.y+radius+5);
+                    ctx.font = '9px monospace'; ctx.fillStyle = '#555'; ctx.fillText('£'+n.value.toLocaleString(), pos.x, pos.y+radius+17);
+                    ctx.font = '11px sans-serif'; ctx.fillStyle = n.trend==='up'?'#4caf50':n.trend==='down'?'#f44336':'#444';
+                    ctx.fillText(n.trend==='up'?'↗':n.trend==='down'?'↘':'→', pos.x, pos.y+radius+28);
                 }
             });
         }
 
-        function tick() {
-            for (let i = 0; i < 5; i++) simulate();
-            draw();
-            requestAnimationFrame(tick);
-        }
-
+        function tick() { for (let i=0;i<5;i++) simulate(); draw(); requestAnimationFrame(tick); }
         function resetLayout() { initPositions(); }
         function toggleLabels() { showLabels = !showLabels; }
         function toggleAnnotations() { showAnnotations = !showAnnotations; }
 
-        // Polyfill roundRect
         if (!CanvasRenderingContext2D.prototype.roundRect) {
-            CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
-                this.moveTo(x + r, y);
-                this.lineTo(x + w - r, y);
-                this.quadraticCurveTo(x + w, y, x + w, y + r);
-                this.lineTo(x + w, y + h - r);
-                this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-                this.lineTo(x + r, y + h);
-                this.quadraticCurveTo(x, y + h, x, y + h - r);
-                this.lineTo(x, y + r);
-                this.quadraticCurveTo(x, y, x + r, y);
-                this.closePath();
+            CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h,r) {
+                this.moveTo(x+r,y); this.lineTo(x+w-r,y); this.quadraticCurveTo(x+w,y,x+w,y+r);
+                this.lineTo(x+w,y+h-r); this.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+                this.lineTo(x+r,y+h); this.quadraticCurveTo(x,y+h,x,y+h-r);
+                this.lineTo(x,y+r); this.quadraticCurveTo(x,y,x+r,y); this.closePath();
             };
         }
 
-        initPositions();
-        tick();
+        initPositions(); tick();
         window.addEventListener('resize', () => { initPositions(); });
+
+        // Insights generation
+        async function generateInsights() {
+            const btn = document.getElementById('insightsBtn');
+            const body = document.getElementById('insightsBody');
+            btn.textContent = 'Generating...'; btn.disabled = true;
+            body.innerHTML = '<p style="color:#4caf50;">⏳ Thinking...</p>';
+            try {
+                const res = await fetch('/api/insights/{{ node.id }}', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({model:'z-ai/glm-4.5-air'}) });
+                const data = await res.json();
+                if (data.error) {
+                    body.innerHTML = '<p style="color:#f44336;">Error: ' + data.error + '</p>';
+                } else {
+                    let html = '<p style="color:#4caf50;margin-bottom:0.8rem;">' + (data.hypotheses||[]).length + ' hypotheses for ' + data.node_label + ' (£' + data.current_value.toLocaleString() + '/mo)</p>';
+                    (data.hypotheses||[]).forEach((h, i) => {
+                        const confColor = h.confidence==='high'?'#4caf50':h.confidence==='medium'?'#ff9800':'#888';
+                        html += '<div class="hypothesis-card">';
+                        html += '<h4>' + (i+1) + '. ' + h.title + '</h4>';
+                        html += '<p class="desc">' + h.description + '</p>';
+                        html += '<div class="meta">';
+                        html += '<span style="color:#4caf50;">💷 £' + (h.expected_impact_gbp||0).toLocaleString() + '/mo</span>';
+                        html += '<span style="color:'+confColor+';">🎯 '+h.confidence+'</span>';
+                        html += '<span style="color:#888;">⏱ '+h.timeline+'</span>';
+                        html += '</div>';
+                        if (h.constraints_affected && h.constraints_affected.length) html += '<p class="metrics">⚡ Constraints: '+h.constraints_affected.join(', ')+'</p>';
+                        if (h.risk) html += '<p class="risk">⚠️ '+h.risk+'</p>';
+                        if (h.counterfactual) html += '<p class="counterfactual">↩️ '+h.counterfactual+'</p>';
+                        if (h.metrics_to_track && h.metrics_to_track.length) html += '<p class="metrics">📊 Track: '+h.metrics_to_track.join(', ')+'</p>';
+                        html += '</div>';
+                    });
+                    body.innerHTML = html;
+                }
+            } catch(e) {
+                body.innerHTML = '<p style="color:#f44336;">Error: '+e.message+'</p>';
+            }
+            btn.textContent = 'Regenerate'; btn.disabled = false;
+        }
     </script>
 </body>
 </html>

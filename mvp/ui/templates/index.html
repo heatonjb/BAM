@@ -7,19 +7,14 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'SF Mono', 'Fira Code', monospace; background: #0a0a0a; color: #e0e0e0; }
-
         .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 1.2rem 2rem; border-bottom: 1px solid #333; }
         .header h1 { font-size: 1.5rem; color: #fff; font-family: -apple-system, sans-serif; }
         .header .sub { color: #555; font-size: 0.8rem; margin-top: 0.2rem; }
-
         .container { max-width: 960px; margin: 0 auto; padding: 1.5rem 1rem; }
 
         /* KPI strip */
         .kpi-strip { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
-        .kpi-chip {
-            background: #111; border: 1px solid #1a1a1a; border-radius: 6px;
-            padding: 0.5rem 0.8rem; font-size: 0.75rem; min-width: 140px;
-        }
+        .kpi-chip { background: #111; border: 1px solid #1a1a1a; border-radius: 6px; padding: 0.5rem 0.8rem; font-size: 0.75rem; min-width: 140px; }
         .kpi-chip .label { color: #555; margin-bottom: 0.2rem; }
         .kpi-chip .val { font-weight: 600; color: #fff; font-size: 0.9rem; }
         .kpi-chip .bench { color: #444; font-size: 0.7rem; }
@@ -28,57 +23,42 @@
         .pnl-section { margin-bottom: 0.3rem; }
         .pnl-row {
             display: grid;
-            grid-template-columns: 36px 1fr 140px 90px 50px 40px;
-            align-items: center;
-            padding: 0.7rem 0.8rem;
-            border-radius: 6px;
-            margin-bottom: 2px;
-            transition: all 0.2s;
-            cursor: default;
+            grid-template-columns: 36px 1fr 140px 90px 50px 40px 28px;
+            align-items: center; gap: 0;
+            padding: 0.7rem 0.8rem; border-radius: 6px; margin-bottom: 2px;
+            transition: all 0.2s; cursor: default;
         }
         .pnl-row:hover { background: #111; }
         .pnl-row.clickable { cursor: pointer; }
         .pnl-row.clickable:hover { background: #151520; }
         .pnl-row.total-row { background: #0d0d0d; border-top: 1px solid #333; border-bottom: 1px solid #333; margin: 0.5rem 0; }
-        .pnl-row.profit-row { background: #0d0d0d; border-top: 2px solid #333; border-bottom: 2px solid #333; margin: 0.8rem 0 0.3rem; }
-
         .pnl-icon { font-size: 1.2rem; width: 36px; text-align: center; }
         .pnl-label { font-size: 0.9rem; font-family: -apple-system, sans-serif; }
         .pnl-label small { display: block; color: #444; font-size: 0.7rem; margin-top: 0.1rem; }
-
-        /* Main value */
         .pnl-value { text-align: right; font-size: 1rem; font-weight: 600; font-variant-numeric: tabular-nums; }
-
-        /* Change badge */
-        .change-badge {
-            text-align: right; font-size: 0.7rem; font-variant-numeric: tabular-nums;
-            padding: 0.15rem 0.4rem; border-radius: 3px; display: inline-block;
-            min-width: 70px;
-        }
-        .change-up { background: rgba(76, 175, 80, 0.15); color: #4caf50; }
-        .change-down { background: rgba(244, 67, 54, 0.15); color: #f44336; }
-        .change-flat { background: rgba(100, 100, 100, 0.1); color: #888; }
-
-        /* Sparkline */
+        .change-badge { text-align: right; font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 3px; display: inline-block; min-width: 70px; font-variant-numeric: tabular-nums; }
+        .change-up { background: rgba(76,175,80,0.15); color: #4caf50; }
+        .change-down { background: rgba(244,67,54,0.15); color: #f44336; }
+        .change-flat { background: rgba(100,100,100,0.1); color: #888; }
         .sparkline-container { width: 50px; height: 24px; }
-
-        /* Arrow */
         .trend-arrow { text-align: center; font-size: 1rem; }
+        .constraint-badge { text-align: center; font-size: 0.65rem; }
+        .constraint-badge .badge { display: inline-block; padding: 0.1rem 0.3rem; border-radius: 2px; background: rgba(255,152,0,0.15); color: #ff9800; font-variant-numeric: tabular-nums; }
+        .constraint-badge .hard { color: #f44336; background: rgba(244,67,54,0.15); }
 
-        @keyframes pulse-up {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        /* Insights button */
+        .insights-btn {
+            width: 28px; height: 28px; border-radius: 50%; border: 1px solid #333;
+            background: #111; color: #888; cursor: pointer; font-size: 0.8rem;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
         }
-        @keyframes pulse-down {
-            0%, 100% { opacity: 1; transform: rotate(0deg); }
-            50% { opacity: 0.5; transform: rotate(180deg); }
-        }
-        @keyframes slide-in {
-            from { opacity: 0; transform: translateX(-10px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
+        .insights-btn:hover { background: #1a1a3e; color: #4caf50; border-color: #4caf50; }
+
+        @keyframes slide-in { from { opacity:0; transform:translateX(-10px); } to { opacity:1; transform:translateX(0); } }
+        @keyframes pulse-up { 0%,100%{opacity:1} 50%{opacity:0.5} }
         .trend-up { animation: pulse-up 2s ease-in-out infinite; color: #4caf50; }
-        .trend-down { animation: pulse-down 2s ease-in-out infinite; color: #f44336; }
+        .trend-down { animation: pulse-up 2s ease-in-out infinite; color: #f44336; }
         .trend-flat { color: #555; }
         .pnl-row { animation: slide-in 0.3s ease-out both; }
         .pnl-row:nth-child(1) { animation-delay: 0.05s; }
@@ -87,16 +67,12 @@
         .pnl-row:nth-child(4) { animation-delay: 0.2s; }
         .pnl-row:nth-child(5) { animation-delay: 0.25s; }
         .pnl-row:nth-child(6) { animation-delay: 0.3s; }
-
         .positive { color: #4caf50; }
         .negative { color: #f44336; }
-
         .footer { text-align: center; padding: 2rem; color: #333; font-size: 0.75rem; border-top: 1px solid #1a1a1a; }
-
         @media (max-width: 700px) {
             .pnl-row { grid-template-columns: 30px 1fr 100px 70px; }
-            .sparkline-container { display: none; }
-            .trend-arrow { display: none; }
+            .sparkline-container, .trend-arrow, .constraint-badge, .insights-btn { display: none; }
         }
     </style>
 </head>
@@ -105,9 +81,7 @@
         <h1>⚙️ Business as a Machine</h1>
         <div class="sub">{{ company.name }} · {{ company.number }} · {{ company.period }}</div>
     </div>
-
     <div class="container">
-        <!-- KPI strip -->
         {% if kpis %}
         <div class="kpi-strip">
             {% for k in kpis %}
@@ -119,68 +93,99 @@
             {% endfor %}
         </div>
         {% endif %}
-
-        <!-- P&L -->
-        <div style="margin-bottom: 0.5rem;">
-            <h2 style="font-size: 1rem; color: #888; font-family: -apple-system, sans-serif; font-weight: 400;">Profit & Loss</h2>
-            <p style="color: #333; font-size: 0.7rem; margin-bottom: 0.8rem;">Click any line to drill into the transformation graph</p>
+        <div style="margin-bottom:0.5rem;">
+            <h2 style="font-size:1rem;color:#888;font-family:-apple-system,sans-serif;font-weight:400;">Profit & Loss</h2>
+            <p style="color:#333;font-size:0.7rem;margin-bottom:0.8rem;">Click a row to drill in · 💡 for AI hypotheses</p>
         </div>
-
         <div class="pnl-section">
         {% for row in pnl %}
         {% if row.type == 'metric' %}</div><div class="pnl-section">{% endif %}
-        <a href="/drill/{{ row.id }}" style="text-decoration: none; color: inherit; display: block;">
-        <div class="pnl-row {% if row.has_children %}clickable{% endif %} {% if row.type == 'metric' %}total-row{% endif %}">
-            <div class="pnl-icon">{{ row.icon }}</div>
-            <div class="pnl-label">
-                {{ row.label }}
-                {% if row.efficiency_label %}<small>{{ row.efficiency_label }}</small>{% endif %}
-            </div>
-            <div class="pnl-value {% if row.type == 'metric' and row.value < 0 %}negative{% elif row.type == 'metric' and row.value > 0 %}positive{% endif %}">
-                £{{ "{:,.2f}".format(row.value) }}
-            </div>
-            <div>
-                {% if row.sparkline|length > 0 %}
-                <div class="change-badge {% if row.trend == 'up' %}change-up{% elif row.trend == 'down' %}change-down{% else %}change-flat{% endif %}">
-                    {% if row.trend == 'up' %}▲{% elif row.trend == 'down' %}▼{% else %}─{% endif %}
-                    {{ "%+.1f"|format(row.change_7d_pct) }}%
+        <div style="display:flex;gap:0;">
+            <a href="/drill/{{ row.id }}" style="text-decoration:none;color:inherit;display:contents;">
+            <div class="pnl-row {% if row.has_children %}clickable{% endif %} {% if row.type == 'metric' %}total-row{% endif %}" style="border-radius:6px 0 0 6px;">
+                <div class="pnl-icon">{{ row.icon }}</div>
+                <div class="pnl-label">{{ row.label }}{% if row.efficiency_label %}<small>{{ row.efficiency_label }}</small>{% endif %}</div>
+                <div class="pnl-value {% if row.type == 'metric' and row.value < 0 %}negative{% elif row.type == 'metric' and row.value > 0 %}positive{% endif %}">£{{ "{:,.2f}".format(row.value) }}</div>
+                <div>
+                    {% if row.sparkline|length > 0 %}
+                    <div class="change-badge {% if row.trend == 'up' %}change-up{% elif row.trend == 'down' %}change-down{% else %}change-flat{% endif %}">{% if row.trend == 'up' %}▲{% elif row.trend == 'down' %}▼{% else %}─{% endif %} {{ "%+.1f"|format(row.change_7d_pct) }}%</div>
+                    <div style="font-size:0.6rem;color:#444;text-align:right;margin-top:2px;">30d {{ "%+.1f"|format(row.change_30d_pct) }}%</div>
+                    {% endif %}
                 </div>
-                <div style="font-size:0.6rem;color:#444;text-align:right;margin-top:2px;">30d {{ "%+.1f"|format(row.change_30d_pct) }}%</div>
-                {% endif %}
+                <div class="sparkline-container">
+                    {% if row.sparkline|length > 0 %}
+                    <svg width="50" height="24" viewBox="0 0 50 24">
+                        {% set vals = row.sparkline %}{% set min_v = vals|min %}{% set max_v = vals|max %}{% set range_v = max_v - min_v if max_v != min_v else 1 %}
+                        {% set trend_color = '#4caf50' if row.trend == 'up' else '#f44336' if row.trend == 'down' else '#555' %}
+                        <polyline fill="none" stroke="{{ trend_color }}" stroke-width="1.2" points="{% for v in vals %}{{ (loop.index0 / (vals|length - 1)) * 50 }},{{ 22 - ((v - min_v) / range_v) * 20 }}{% endfor %}" />
+                    </svg>{% endif %}
+                </div>
+                <div class="trend-arrow {% if row.trend == 'up' %}trend-up{% elif row.trend == 'down' %}trend-down{% else %}trend-flat{% endif %}">{% if row.trend == 'up' %}↗{% elif row.trend == 'down' %}↘{% else %}→{% endif %}</div>
+                <div class="constraint-badge">{% if row.constraint_count > 0 %}<span class="badge {% if row.hard_constraints > 0 %}hard{% endif %}">⚡{{ row.constraint_count }}</span>{% endif %}</div>
             </div>
-            <div class="sparkline-container">
-                {% if row.sparkline|length > 0 %}
-                <svg width="50" height="24" viewBox="0 0 50 24">
-                    {% set vals = row.sparkline %}
-                    {% set min_v = vals|min %}
-                    {% set max_v = vals|max %}
-                    {% set range_v = max_v - min_v if max_v != min_v else 1 %}
-                    {% set trend_color = '#4caf50' if row.trend == 'up' else '#f44336' if row.trend == 'down' else '#555' %}
-                    <polyline fill="none" stroke="{{ trend_color }}" stroke-width="1.2"
-                        points="{% for v in vals %}{{ (loop.index0 / (vals|length - 1)) * 50 }},{{ 22 - ((v - min_v) / range_v) * 20 }}{% endfor %}" />
-                </svg>
-                {% endif %}
-            </div>
-            <div class="trend-arrow {% if row.trend == 'up' %}trend-up{% elif row.trend == 'down' %}trend-down{% else %}trend-flat{% endif %}">
-                {% if row.trend == 'up' %}↗{% elif row.trend == 'down' %}↘{% else %}→{% endif %}
-            </div>
+            </a>
+            <button class="insights-btn" onclick="showInsights('{{ row.id }}', '{{ row.label }}', {{ row.value }}, '{{ row.trend }}', {{ row.change_7d_pct }})" title="Generate AI hypotheses">💡</button>
         </div>
-        </a>
         {% endfor %}
         </div>
     </div>
-
     <div class="footer">Business as a Machine MVP · JonCo Coffee</div>
 
+    <!-- Insights Panel (hidden by default) -->
+    <div id="insightsPanel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;overflow-y:auto;">
+        <div style="max-width:700px;margin:2rem auto;background:#111;border:1px solid #333;border-radius:10px;padding:1.5rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                <h3 style="color:#fff;font-family:-apple-system,sans-serif;" id="insightsTitle">💡 AI Insights</h3>
+                <button onclick="document.getElementById('insightsPanel').style.display='none'" style="background:#222;color:#888;border:1px solid #444;padding:0.3rem 0.8rem;border-radius:4px;cursor:pointer;">✕</button>
+            </div>
+            <div id="insightsContent" style="color:#ccc;font-size:0.85rem;">
+                <p style="color:#555;">Click "Generate" to get AI-powered hypotheses...</p>
+            </div>
+            <button id="insightsGenerate" onclick="generateInsights()" style="width:100%;padding:0.7rem;background:#1a1a3e;color:#4caf50;border:1px solid #4caf50;border-radius:6px;cursor:pointer;font-size:0.9rem;margin-top:1rem;">Generate Hypotheses</button>
+        </div>
+    </div>
     <script>
-        // Animate sparklines on load
-        document.querySelectorAll('polyline').forEach(poly => {
-            const len = poly.getTotalLength();
-            poly.style.strokeDasharray = len;
-            poly.style.strokeDashoffset = len;
-            poly.style.transition = 'stroke-dashoffset 1s ease-out';
-            setTimeout(() => { poly.style.strokeDashoffset = '0'; }, 200);
-        });
+        let currentNodeId = '', currentNodeLabel = '', currentNodeValue = 0, currentNodeTrend = '', currentNodeChange = 0;
+        document.querySelectorAll('polyline').forEach(p => { const l = p.getTotalLength(); p.style.strokeDasharray = l; p.style.strokeDashoffset = l; p.style.transition = 'stroke-dashoffset 1s ease-out'; setTimeout(() => { p.style.strokeDashoffset = '0'; }, 200); });
+        function showInsights(id, label, value, trend, change) {
+            currentNodeId = id; currentNodeLabel = label; currentNodeValue = value; currentNodeTrend = trend; currentNodeChange = change;
+            document.getElementById('insightsTitle').textContent = '💡 ' + label + ' — AI Insights';
+            document.getElementById('insightsContent').innerHTML = '<p style="color:#555;">Current: £' + value.toLocaleString() + '/mo · 7d trend: ' + trend + ' (' + (change >= 0 ? '+' : '') + change.toFixed(1) + '%)</p><p style="color:#444;font-size:0.8rem;">Click Generate to get constraint-aware hypotheses from the AI model.</p>';
+            document.getElementById('insightsPanel').style.display = 'block';
+        }
+        async function generateInsights() {
+            const btn = document.getElementById('insightsGenerate');
+            btn.textContent = 'Generating...'; btn.disabled = true;
+            document.getElementById('insightsContent').innerHTML = '<p style="color:#4caf50;">⏳ Thinking...</p>';
+            try {
+                const res = await fetch('/api/insights/' + currentNodeId, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({model:'z-ai/glm-4.5-air'}) });
+                const data = await res.json();
+                if (data.error) {
+                    document.getElementById('insightsContent').innerHTML = '<p style="color:#f44336;">Error: ' + data.error + '</p>';
+                } else {
+                    let html = '<p style="color:#4caf50;margin-bottom:0.8rem;">Found ' + (data.hypotheses||[]).length + ' hypotheses for ' + data.node_label + ' (£' + data.current_value.toLocaleString() + '/mo)</p>';
+                    (data.hypotheses||[]).forEach((h, i) => {
+                        const confColor = h.confidence === 'high' ? '#4caf50' : h.confidence === 'medium' ? '#ff9800' : '#888';
+                        html += '<div style="background:#0a0a0a;border:1px solid #222;border-radius:6px;padding:1rem;margin-bottom:0.8rem;">';
+                        html += '<h4 style="color:#fff;margin:0 0 0.3rem;">' + (i+1) + '. ' + h.title + '</h4>';
+                        html += '<p style="color:#aaa;font-size:0.8rem;margin:0.3rem 0;">' + h.description + '</p>';
+                        html += '<div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:0.5rem;">';
+                        html += '<span style="color:#4caf50;font-size:0.75rem;">💷 £' + (h.expected_impact_gbp||0).toLocaleString() + '/mo</span>';
+                        html += '<span style="color:' + confColor + ';font-size:0.75rem;">🎯 ' + h.confidence + ' confidence</span>';
+                        html += '<span style="color:#888;font-size:0.75rem;">⏱ ' + h.timeline + '</span>';
+                        html += '</div>';
+                        if (h.risk) html += '<p style="color:#f44336;font-size:0.75rem;margin-top:0.5rem;">⚠️ ' + h.risk + '</p>';
+                        if (h.counterfactual) html += '<p style="color:#666;font-size:0.75rem;margin-top:0.3rem;">↩️ ' + h.counterfactual + '</p>';
+                        if (h.metrics_to_track && h.metrics_to_track.length) html += '<p style="color:#555;font-size:0.7rem;margin-top:0.3rem;">📊 Track: ' + h.metrics_to_track.join(', ') + '</p>';
+                        html += '</div>';
+                    });
+                    document.getElementById('insightsContent').innerHTML = html;
+                }
+            } catch(e) {
+                document.getElementById('insightsContent').innerHTML = '<p style="color:#f44336;">Error: ' + e.message + '</p>';
+            }
+            btn.textContent = 'Generate Hypotheses'; btn.disabled = false;
+        }
     </script>
 </body>
 </html>
