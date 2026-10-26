@@ -1,194 +1,150 @@
-"""Flask web UI for Business as a Machine MVP."""
+"""Flask web UI for Business as a Machine MVP — hierarchical drill-down."""
 
 import os
 import sys
-import json
 
-# Add project root to path
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, PROJECT_ROOT)
 
 from flask import Flask, render_template, jsonify, request
-from mvp.loader import load_all
-from mvp.transform import TransformationGraph
-from mvp.kpi import KPITree
-from mvp.agent import AgentHarness
+from mvp.model.core import NodeType
+from mvp.loader import load_graph
 
 app = Flask(__name__,
             template_folder=os.path.join(os.path.dirname(__file__), "templates"),
             static_folder=os.path.join(os.path.dirname(__file__), "static"))
 
-_state = {}
+_graph = None
 
-def get_state():
-    if "harness" not in _state:
-        business = load_all()
-        graph = TransformationGraph(business)
-        kpi_tree = KPITree(business, graph)
-        harness = AgentHarness(business, graph, kpi_tree)
-        _state["business"] = business
-        _state["graph"] = graph
-        _state["kpi_tree"] = kpi_tree
-        _state["harness"] = harness
-    return _state["harness"]
+def get_graph():
+    global _graph
+    if _graph is None:
+        _graph = load_graph()
+    return _graph
 
 
 @app.route("/")
 def index():
-    harness = get_state()
-
-    monthly = []
-    for month, pnl in sorted(harness.business.monthly_pnl.items()):
-        monthly.append({
-            "month": month,
-            "revenue": pnl.revenue,
-            "cogs": pnl.cogs,
-            "staff_costs": pnl.staff_costs,
-            "overheads": pnl.overheads,
-            "operating_profit": pnl.operating_profit,
-            "net_profit": pnl.net_profit,
-            "transactions": pnl.transactions
-        })
-
-    kpis = {}
-    for name, kpi in harness.kpi_tree.kpis.items():
-        kpis[name] = {
-            "name": name,
-            "value": kpi.value,
-            "unit": kpi.unit,
-            "benchmark": kpi.benchmark,
-            "status": kpi.status,
-            "parent": kpi.parent
-        }
-
-    opps = harness.kpi_tree.optimisation_opportunities()
-
-    nodes = []
-    for nid, node in harness.graph.nodes.items():
-        nodes.append({
-            "id": nid,
+    """Top-level P&L view."""
+    g = get_graph()
+    level0 = g.get_level(0)
+    
+    # Build P&L rows
+    pnl = []
+    for node in level0:
+        pnl.append({
+            "id": node.id,
             "label": node.label,
-            "value": round(node.value, 2) if node.value else 0,
-            "type": node.node_type,
-            "efficiency": round(node.efficiency, 2) if node.efficiency else None,
-            "constraint": node.constraint,
-            "lever": node.lever,
-            "parents": node.parents
+            "value": round(node.value, 2),
+            "unit": node.unit,
+            "icon": node.icon or "📊",
+            "color": node.color or "#607d8b",
+            "efficiency": node.efficiency,
+            "efficiency_label": node.efficiency_label,
+            "type": node.node_type.value,
+            "has_children": len(node.children) > 0
         })
-
-    staff_data = []
-    role_hours = {}
-    role_costs = {}
-    for p in harness.business.payroll:
-        role = p["role"]
-        role_hours[role] = role_hours.get(role, 0) + p["actual_hours_worked"] / 3
-        role_costs[role] = role_costs.get(role, 0) + p["total_employer_cost"] / 3
-
-    for role in sorted(role_hours):
-        hours = role_hours[role]
-        cost = role_costs[role]
-        rev_per_hour = harness._revenue_for_role(role) / 3 / hours if hours > 0 else 0
-        staff_data.append({
-            "role": role,
-            "hours": round(hours, 1),
-            "cost": round(cost, 2),
-            "revenue_per_hour": round(rev_per_hour, 2)
-        })
-
-    products = []
-    product_stats = {}
-    for t in harness.business.transactions:
-        for item in t.items:
-            name = item["item"]
-            if name not in product_stats:
-                product_stats[name] = {"count": 0, "revenue": 0, "category": item["category"], "price": item["price"]}
-            product_stats[name]["count"] += 1
-            product_stats[name]["revenue"] += item["price"]
-
-    for name, stats in sorted(product_stats.items(), key=lambda x: -x[1]["revenue"]):
-        products.append({
-            "name": name,
-            "count": stats["count"],
-            "revenue": round(stats["revenue"], 2),
-            "avg_price": round(stats["revenue"] / stats["count"], 2) if stats["count"] > 0 else 0,
-            "category": stats["category"]
-        })
-
-    cat_revenue = {}
-    for t in harness.business.transactions:
-        for item in t.items:
-            cat = item["category"]
-            cat_revenue[cat] = cat_revenue.get(cat, 0) + item["price"]
-
-    hourly = {}
-    for t in harness.business.transactions:
-        hour = int(t.timestamp.split("T")[1].split(":")[0])
-        if hour not in hourly:
-            hourly[hour] = {"revenue": 0, "transactions": 0}
-        hourly[hour]["revenue"] += t.total
-        hourly[hour]["transactions"] += 1
-
-    hourly_data = [{"hour": h, "revenue": round(hourly[h]["revenue"], 2), "transactions": hourly[h]["transactions"]} for h in sorted(hourly)]
-
+    
     company = {
-        "name": harness.business.company_name,
-        "number": harness.business.company_number,
-        "period": "Oct-Dec 2024",
-        "total_revenue": sum(pnl.revenue for pnl in harness.business.monthly_pnl.values()),
-        "total_profit": sum(pnl.net_profit for pnl in harness.business.monthly_pnl.values())
+        "name": "JONCO COFFEE LIMITED",
+        "number": "15999847",
+        "period": "Oct–Dec 2024 (monthly averages)"
     }
-
-    return render_template("dashboard.html",
+    
+    # Monthly trend data
+    monthly_data = [
+        {"month": "2024-10", "revenue": 19415.10, "cogs": 4790.00, "staff": 11124.30, "oh": 4674.00, "op": -1173.20},
+        {"month": "2024-11", "revenue": 19122.40, "cogs": 4518.10, "staff": 10387.65, "oh": 4674.00, "op": -457.35},
+        {"month": "2024-12", "revenue": 23752.30, "cogs": 5502.10, "staff": 11674.10, "oh": 4674.00, "op": 1902.10},
+    ]
+    
+    # Benchmarked KPIs
+    kpis = []
+    for node in g.get_by_type(NodeType.METRIC):
+        if node.benchmark is not None:
+            kpis.append({
+                "name": node.label,
+                "value": round(node.value, 2),
+                "unit": node.unit,
+                "benchmark": node.benchmark,
+                "id": node.id
+            })
+    
+    return render_template("index.html",
                          company=company,
-                         monthly=monthly,
-                         kpis=kpis,
-                         opps=opps,
-                         nodes=nodes,
-                         staff=staff_data,
-                         products=products,
-                         cat_revenue=cat_revenue,
-                         hourly=hourly_data)
+                         pnl=pnl,
+                         monthly_data=monthly_data,
+                         kpis=kpis)
 
 
-@app.route("/api/query", methods=["POST"])
-def api_query():
-    data = request.json
-    question = data.get("question", "")
-    harness = get_state()
-    answer = harness.query(question)
-    return jsonify({"question": question, "answer": answer})
+@app.route("/drill/<node_id>")
+def drill(node_id):
+    """Drill-down page for a specific P&L line."""
+    g = get_graph()
+    node = g.get(node_id)
+    
+    if not node:
+        return "Not found", 404
+    
+    # Get subgraph (children + their children)
+    subgraph = g.get_subgraph(node_id, depth=2)
+    
+    # Build the drill path (breadcrumb)
+    path = g.get_drill_path(node_id)
+    
+    # Format nodes for the template
+    graph_nodes = []
+    for nid, ndata in subgraph["nodes"].items():
+        graph_nodes.append(ndata)
+    
+    return render_template("drill.html",
+                         node=node.to_dict(),
+                         subgraph=subgraph,
+                         path=path,
+                         graph_nodes=graph_nodes)
 
 
-@app.route("/api/experiment", methods=["POST"])
-def api_experiment():
-    data = request.json
-    harness = get_state()
-    exp = harness.propose_experiment(
-        name=data.get("name", "experiment"),
-        description=data.get("description", ""),
-        params=data.get("params", {})
-    )
-    return jsonify({
-        "name": exp.name,
-        "description": exp.description,
-        "change": exp.change,
-        "impact": exp.projected_impact,
-        "assumptions": exp.assumptions
-    })
+@app.route("/api/node/<node_id>")
+def api_node(node_id):
+    """Get a single node's data."""
+    g = get_graph()
+    node = g.get(node_id)
+    if not node:
+        return jsonify({"error": "not found"}), 404
+    return jsonify(node.to_dict())
 
 
-@app.route("/api/experiments")
-def api_list_experiments():
-    harness = get_state()
-    experiments = []
-    for exp in harness.list_experiments():
-        experiments.append({
-            "name": exp.name,
-            "description": exp.description,
-            "change": exp.change,
-            "impact": exp.projected_impact
-        })
-    return jsonify(experiments)
+@app.route("/api/subgraph/<node_id>")
+def api_subgraph(node_id):
+    """Get the subgraph for drill-down."""
+    g = get_graph()
+    depth = request.args.get("depth", 2, type=int)
+    subgraph = g.get_subgraph(node_id, depth=depth)
+    return jsonify(subgraph)
+
+
+@app.route("/api/levels")
+def api_levels():
+    """Get nodes grouped by level."""
+    g = get_graph()
+    result = {}
+    for level in range(3):
+        result[f"level_{level}"] = [n.to_dict() for n in g.get_level(level)]
+    return jsonify(result)
+
+
+@app.route("/api/search")
+def api_search():
+    """Search nodes by label or tag."""
+    g = get_graph()
+    q = request.args.get("q", "").lower()
+    if not q:
+        return jsonify([])
+    results = []
+    for node in g.nodes.values():
+        if q in node.label.lower() or any(q in t.lower() for t in node.tags):
+            results.append(node.to_dict())
+    return jsonify(results)
 
 
 if __name__ == "__main__":

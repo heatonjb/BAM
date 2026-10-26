@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drill: {{ node.label }} — Business as a Machine</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0a; color: #e0e0e0; }
+
+        .header { background: #111; padding: 1rem 2rem; border-bottom: 1px solid #222; }
+        .header .back { color: #4caf50; text-decoration: none; font-size: 0.85rem; }
+        .header h1 { font-size: 1.3rem; color: #fff; margin-top: 0.3rem; }
+
+        .breadcrumb { padding: 0.6rem 2rem; background: #0d0d0d; border-bottom: 1px solid #1a1a1a; display: flex; gap: 0.3rem; align-items: center; font-size: 0.8rem; flex-wrap: wrap; }
+        .breadcrumb a { color: #4caf50; text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .breadcrumb .sep { color: #333; }
+        .breadcrumb .current { color: #fff; font-weight: 600; }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem; }
+
+        /* Node detail card */
+        .node-card { background: #111; border: 1px solid #222; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .node-card .main h2 { color: #fff; font-size: 1.3rem; margin-bottom: 0.3rem; }
+        .node-card .main .value { font-size: 2rem; font-weight: 700; color: #4caf50; font-family: 'SF Mono', 'Fira Code', monospace; }
+        .node-card .main .value.negative { color: #f44336; }
+        .node-card .meta { display: flex; flex-direction: column; gap: 0.5rem; justify-content: center; }
+        .node-card .meta-row { display: flex; justify-content: space-between; padding: 0.3rem 0; border-bottom: 1px solid #1a1a1a; }
+        .node-card .meta-row .label { color: #666; font-size: 0.8rem; }
+        .node-card .meta-row .val { color: #ccc; font-size: 0.85rem; }
+
+        /* Graph canvas */
+        .graph-section { background: #111; border: 1px solid #222; border-radius: 8px; margin-bottom: 1.5rem; overflow: hidden; }
+        .graph-section .toolbar { padding: 0.6rem 1rem; background: #0d0d0d; border-bottom: 1px solid #1a1a1a; display: flex; gap: 0.5rem; align-items: center; }
+        .graph-section .toolbar span { color: #666; font-size: 0.8rem; }
+        .graph-section .toolbar button { background: #222; color: #ccc; border: 1px solid #333; padding: 0.3rem 0.8rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
+        .graph-section .toolbar button:hover { background: #333; }
+        #graphCanvas { width: 100%; height: 500px; display: block; }
+
+        /* Node list below graph */
+        .node-list { margin-bottom: 1.5rem; }
+        .node-list h3 { color: #fff; font-size: 0.95rem; margin-bottom: 0.5rem; }
+        .node-table { width: 100%; border-collapse: collapse; }
+        .node-table th { text-align: left; color: #666; font-size: 0.7rem; text-transform: uppercase; padding: 0.5rem 0.8rem; border-bottom: 1px solid #1a1a1a; letter-spacing: 0.5px; }
+        .node-table td { padding: 0.6rem 0.8rem; border-bottom: 1px solid #111; font-size: 0.85rem; }
+        .node-table tr { cursor: pointer; transition: background 0.1s; }
+        .node-table tr:hover { background: #151515; }
+        .node-table .icon { width: 30px; text-align: center; }
+        .node-table .val { font-family: 'SF Mono', 'Fira Code', monospace; text-align: right; }
+
+        .footer { text-align: center; padding: 2rem; color: #333; font-size: 0.75rem; border-top: 1px solid #1a1a1a; }
+
+        .green { color: #4caf50; }
+        .red { color: #f44336; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="/" class="back">← Back to P&L</a>
+        <h1>{{ node.icon }} {{ node.label }}</h1>
+    </div>
+
+    <div class="breadcrumb">
+        <a href="/">P&L</a>
+        {% for p in path[:-1] %}
+        <span class="sep">›</span>
+        <a href="/drill/{{ p }}">{{ subgraph.nodes[p].label if p in subgraph.nodes else p }}</a>
+        {% endfor %}
+        {% if path|length > 1 %}
+        <span class="sep">›</span>
+        {% endif %}
+        <span class="current">{{ node.label }}</span>
+    </div>
+
+    <div class="container">
+        <!-- Node detail -->
+        <div class="node-card">
+            <div class="main">
+                <h2>{{ node.label }}</h2>
+                <div class="value {% if node.value < 0 %}negative{% endif %}">
+                    {% if node.node_type in ['cost', 'revenue', 'process', 'input', 'aggregate'] %}£{% endif %}{{ "{:,.2f}".format(node.value) }}
+                </div>
+                <div style="color: #666; font-size: 0.85rem; margin-top: 0.3rem;">{{ node.unit }}{% if node.efficiency is not none %} · {{ "%.2f"|format(node.efficiency) }}x efficiency{% endif %}</div>
+            </div>
+            <div class="meta">
+                {% if node.efficiency_label %}
+                <div class="meta-row"><span class="label">Efficiency</span><span class="val">{{ node.efficiency_label }}</span></div>
+                {% endif %}
+                {% if node.constraint %}
+                <div class="meta-row"><span class="label">Constraint</span><span class="val">{{ node.constraint }}</span></div>
+                {% endif %}
+                {% if node.lever %}
+                <div class="meta-row"><span class="label">Optimisation Lever</span><span class="val green">{{ node.lever }}</span></div>
+                {% endif %}
+                {% if node.description %}
+                <div class="meta-row"><span class="label">Description</span><span class="val">{{ node.description }}</span></div>
+                {% endif %}
+                {% if node.metadata %}
+                {% for k, v in node.metadata.items() %}
+                <div class="meta-row"><span class="label">{{ k.replace("_", " ").title() }}</span><span class="val">{{ v }}</span></div>
+                {% endfor %}
+                {% endif %}
+                <div class="meta-row"><span class="label">Parents</span><span class="val">{{ node.parents|join(', ') or '—' }}</span></div>
+                <div class="meta-row"><span class="label">Children</span><span class="val">{{ node.children|join(', ') or '—' }}</span></div>
+                <div class="meta-row"><span class="label">Level</span><span class="val">{{ node.level }}</span></div>
+            </div>
+        </div>
+
+        <!-- Graph -->
+        <div class="graph-section">
+            <div class="toolbar">
+                <span>Transformation Graph</span>
+                <button onclick="resetLayout()">Reset Layout</button>
+                <button onclick="toggleLabels()">Toggle Labels</button>
+            </div>
+            <canvas id="graphCanvas"></canvas>
+        </div>
+
+        <!-- Child nodes table -->
+        {% if node.children %}
+        <div class="node-list">
+            <h3>Components ({{ node.children|length }})</h3>
+            <table class="node-table">
+                <thead>
+                    <tr><th></th><th>Name</th><th>Type</th><th style="text-align:right">Value</th><th style="text-align:right">Efficiency</th></tr>
+                </thead>
+                <tbody>
+                    {% for child_id in node.children %}
+                    {% set child = subgraph.nodes.get(child_id) %}
+                    {% if child %}
+                    <tr onclick="location.href='/drill/{{ child_id }}'">
+                        <td class="icon">{{ child.icon or '📊' }}</td>
+                        <td>{{ child.label }}</td>
+                        <td style="color:#666;font-size:0.75rem;">{{ child.node_type }}</td>
+                        <td class="val">£{{ "{:,.2f}".format(child.value) }}</td>
+                        <td class="val">{{ "%.2f"|format(child.efficiency) if child.efficiency is not none else '—' }}x</td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="footer">Business as a Machine · Click any row to drill deeper</div>
+
+    <script>
+        // Graph data from the server
+        const graphNodes = {{ graph_nodes | tojson }};
+        const graphEdges = {{ subgraph.edges | tojson }};
+        const showLabels = { on: true };
+
+        // Node positions (force-directed layout, simple)
+        const positions = {};
+        const velocities = {};
+
+        // Color by node type
+        const typeColors = {
+            revenue: '#4caf50', cost: '#f44336', process: '#2196f3',
+            input: '#ff9800', asset: '#00bcd4', liability: '#e91e63',
+            metric: '#9c27b0', aggregate: '#607d8b'
+        };
+
+        function initPositions() {
+            const canvas = document.getElementById('graphCanvas');
+            const W = canvas.clientWidth;
+            const H = canvas.clientHeight;
+            const centerX = W / 2;
+            const centerY = H / 2;
+            const nodeIds = graphNodes.map(n => n.id);
+            const n = nodeIds.length;
+
+            // Place the focus node at center, others in a circle
+            nodeIds.forEach((id, i) => {
+                if (id === '{{ node.id }}') {
+                    positions[id] = { x: centerX, y: centerY };
+                } else {
+                    const angle = (2 * Math.PI * i) / n;
+                    const radius = Math.min(W, H) * 0.3;
+                    positions[id] = { x: centerX + Math.cos(angle) * radius, y: centerY + Math.sin(angle) * radius };
+                }
+                velocities[id] = { x: 0, y: 0 };
+            });
+        }
+
+        function simulate() {
+            const canvas = document.getElementById('graphCanvas');
+            const W = canvas.clientWidth;
+            const H = canvas.clientHeight;
+            const damping = 0.85;
+            const repulsion = 8000;
+            const attraction = 0.005;
+            const centerPull = 0.002;
+            const centerX = W / 2;
+            const centerY = H / 2;
+
+            // Repulsion between all pairs
+            const nodeIds = graphNodes.map(n => n.id);
+            for (let i = 0; i < nodeIds.length; i++) {
+                for (let j = i + 1; j < nodeIds.length; j++) {
+                    const a = positions[nodeIds[i]];
+                    const b = positions[nodeIds[j]];
+                    let dx = a.x - b.x;
+                    let dy = a.y - b.y;
+                    let dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                    let force = repulsion / (dist * dist);
+                    velocities[nodeIds[i]].x += (dx / dist) * force;
+                    velocities[nodeIds[i]].y += (dy / dist) * force;
+                    velocities[nodeIds[j]].x -= (dx / dist) * force;
+                    velocities[nodeIds[j]].y -= (dy / dist) * force;
+                }
+            }
+
+            // Attraction along edges
+            graphEdges.forEach(e => {
+                if (!positions[e.source] || !positions[e.target]) return;
+                const a = positions[e.source];
+                const b = positions[e.target];
+                let dx = b.x - a.x;
+                let dy = b.y - a.y;
+                let dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                let idealDist = 120;
+                let force = (dist - idealDist) * attraction;
+                velocities[e.source].x += (dx / dist) * force;
+                velocities[e.source].y += (dy / dist) * force;
+                velocities[e.target].x -= (dx / dist) * force;
+                velocities[e.target].y -= (dy / dist) * force;
+            });
+
+            // Center pull
+            nodeIds.forEach(id => {
+                velocities[id].x += (centerX - positions[id].x) * centerPull;
+                velocities[id].y += (centerY - positions[id].y) * centerPull;
+            });
+
+            // Apply velocities
+            nodeIds.forEach(id => {
+                velocities[id].x *= damping;
+                velocities[id].y *= damping;
+                positions[id].x += velocities[id].x;
+                positions[id].y += velocities[id].y;
+                // Clamp
+                positions[id].x = Math.max(40, Math.min(W - 40, positions[id].x));
+                positions[id].y = Math.max(40, Math.min(H - 40, positions[id].y));
+            });
+        }
+
+        function draw() {
+            const canvas = document.getElementById('graphCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.clientWidth * 2;
+            canvas.height = canvas.clientHeight * 2;
+            ctx.scale(2, 2);
+            const W = canvas.clientWidth;
+            const H = canvas.clientHeight;
+
+            ctx.clearRect(0, 0, W, H);
+
+            // Draw edges
+            graphEdges.forEach(e => {
+                if (!positions[e.source] || !positions[e.target]) return;
+                const a = positions[e.source];
+                const b = positions[e.target];
+                ctx.beginPath();
+                ctx.moveTo(a.x, a.y);
+                ctx.lineTo(b.x, b.y);
+                ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                // Arrow
+                const angle = Math.atan2(b.y - a.y, b.x - a.x);
+                const arrowLen = 8;
+                ctx.beginPath();
+                ctx.moveTo(b.x - Math.cos(angle) * 20, b.y - Math.sin(angle) * 20);
+                ctx.lineTo(b.x - Math.cos(angle - 0.4) * (20 + arrowLen), b.y - Math.sin(angle - 0.4) * (20 + arrowLen));
+                ctx.lineTo(b.x - Math.cos(angle + 0.4) * (20 + arrowLen), b.y - Math.sin(angle + 0.4) * (20 + arrowLen));
+                ctx.closePath();
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.fill();
+            });
+
+            // Draw nodes
+            const nodeMap = {};
+            graphNodes.forEach(n => { nodeMap[n.id] = n; });
+
+            graphNodes.forEach(n => {
+                const pos = positions[n.id];
+                if (!pos) return;
+                const color = typeColors[n.node_type] || '#607d8b';
+                const radius = Math.max(18, Math.min(35, Math.sqrt(Math.abs(n.value)) * 1.2));
+                const isFocus = n.id === '{{ node.id }}';
+
+                // Glow for focus
+                if (isFocus) {
+                    ctx.beginPath();
+                    ctx.arc(pos.x, pos.y, radius + 6, 0, Math.PI * 2);
+                    ctx.fillStyle = color + '33';
+                    ctx.fill();
+                }
+
+                // Node circle
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
+                ctx.fillStyle = color + '44';
+                ctx.fill();
+                ctx.strokeStyle = color;
+                ctx.lineWidth = isFocus ? 2.5 : 1.5;
+                ctx.stroke();
+
+                // Icon
+                ctx.font = `${Math.min(16, radius)}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                if (n.icon) {
+                    ctx.fillText(n.icon, pos.x, pos.y);
+                }
+
+                // Label
+                if (showLabels.on) {
+                    ctx.font = '10px -apple-system, sans-serif';
+                    ctx.fillStyle = '#aaa';
+                    ctx.textBaseline = 'top';
+                    const label = n.label.length > 16 ? n.label.slice(0, 15) + '…' : n.label;
+                    ctx.fillText(label, pos.x, pos.y + radius + 4);
+                    ctx.font = '9px monospace';
+                    ctx.fillStyle = '#666';
+                    ctx.fillText('£' + n.value.toLocaleString(), pos.x, pos.y + radius + 16);
+                }
+            });
+        }
+
+        function tick() {
+            for (let i = 0; i < 5; i++) simulate();
+            draw();
+            requestAnimationFrame(tick);
+        }
+
+        function resetLayout() {
+            initPositions();
+        }
+
+        function toggleLabels() {
+            showLabels.on = !showLabels.on;
+        }
+
+        initPositions();
+        tick();
+
+        // Resize handling
+        window.addEventListener('resize', () => {
+            initPositions();
+        });
+    </script>
+</body>
+</html>
