@@ -101,7 +101,8 @@ def _build_constraints_text(constraints: List[Constraint], node_id: str) -> str:
     return "\n".join(lines)
 
 
-def call_llm(messages: List[dict], model: str = "z-ai/glm-4.5-air", timeout: int = 60) -> str:
+def call_llm(messages: List[dict], model: str = "deepseek/deepseek-v4.1-flash", timeout: int = 120,
+             max_tokens: int = 4000) -> str:
     """Call OpenRouter API directly via curl."""
     api_key = os.environ.get("OPENROUTER_API_KEY", "")
     if not api_key:
@@ -129,7 +130,8 @@ def call_llm(messages: List[dict], model: str = "z-ai/glm-4.5-air", timeout: int
         "model": model,
         "messages": messages,
         "temperature": 0.7,
-        "max_tokens": 4000
+        "max_tokens": max_tokens,
+        "reasoning": {"max_tokens": 1200, "exclude": False}
     })
     
     req = urllib.request.Request(
@@ -144,10 +146,21 @@ def call_llm(messages: List[dict], model: str = "z-ai/glm-4.5-air", timeout: int
         method="POST"
     )
     
-    try:
+    import concurrent.futures
+    def _do_request():
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             body = json.loads(resp.read().decode("utf-8"))
-            return body["choices"][0]["message"]["content"]
+            return body["choices"][0]["message"].get("content")
+
+    try:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
+            fut = ex.submit(_do_request)
+            content = fut.result(timeout=timeout + 10)
+        if not content:
+            return json.dumps({"error": "empty response from model", "hypotheses": []})
+        return content
+    except concurrent.futures.TimeoutError:
+        return json.dumps({"error": f"LLM hard timeout after {timeout+10}s", "hypotheses": []})
     except Exception as e:
         return json.dumps({"error": str(e), "hypotheses": []})
 
@@ -162,7 +175,7 @@ def generate_insights(
     node_type: str,
     constraint_store: ConstraintStore,
     graph=None,
-    model: str = "z-ai/glm-4.5-air"
+    model: str = "deepseek/deepseek-v4.1-flash"
 ) -> dict:
     """Generate AI-powered insights for a node."""
     
@@ -175,7 +188,7 @@ def generate_insights(
     
     # Build prompt
     system_prompt = SYSTEM_PROMPT.format(
-        research_context=research_context[:12000],
+        research_context=research_context[:6000],
         constraints_text=constraints_text,
         node_id=node_id,
         node_label=node_label,

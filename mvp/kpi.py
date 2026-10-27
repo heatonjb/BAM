@@ -7,7 +7,7 @@ computes bottom-up metrics, and benchmarks against industry standards.
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 from collections import defaultdict
-from .loader import BusinessGraph, Transaction
+from .loader import BusinessGraph
 from .transform import TransformationGraph
 
 

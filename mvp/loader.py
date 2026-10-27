@@ -513,3 +513,65 @@ def load_graph() -> BusinessGraph:
                 })
 
     return g
+
+
+
+# ---------------------------------------------------------------------------
+# Legacy flat loader — kept for the CLI / transform.py / KPI path.
+# The hierarchical load_graph() above powers the UI. This returns a plain
+# object with the flat attributes those older modules expect.
+# ---------------------------------------------------------------------------
+
+def load_all():
+    """Load every data source into a flat business object (legacy API)."""
+    from types import SimpleNamespace
+
+    with open(os.path.join(DATA_DIR, "company_profile.json")) as f:
+        profile = json.load(f)
+    with open(os.path.join(DATA_DIR, "transactions.json")) as f:
+        raw_txns = json.load(f)
+    with open(os.path.join(DATA_DIR, "payroll.json")) as f:
+        payroll = json.load(f)
+    with open(os.path.join(DATA_DIR, "cogs_purchases.json")) as f:
+        cogs = json.load(f)
+    with open(os.path.join(DATA_DIR, "overheads.json")) as f:
+        overheads = json.load(f)
+    with open(os.path.join(DATA_DIR, "menu.json")) as f:
+        menu = json.load(f)
+    with open(os.path.join(DATA_DIR, "bottom_up_pl.json")) as f:
+        pl_data = json.load(f)
+    with open(os.path.join(DATA_DIR, "balance_sheet.json")) as f:
+        balance_sheet = json.load(f)
+
+    with open(os.path.join(DATA_DIR, "staff_roster.json")) as f:
+        staff_list = json.load(f)
+    staff = {s["id"]: SimpleNamespace(**s) for s in staff_list}
+
+    txns = [SimpleNamespace(**t) for t in raw_txns]
+
+    monthly_pnl = {}
+    for month, data in pl_data["monthly"].items():
+        monthly_pnl[month] = SimpleNamespace(
+            month=month,
+            revenue=data["revenue"]["total"],
+            cogs=data["cost_of_goods_sold"]["total"],
+            gross_profit=data["gross_profit"]["amount"],
+            staff_costs=data["staff_costs"]["total_employer_cost"],
+            overheads=data["overheads"]["total"],
+            operating_profit=data["operating_profit"]["amount"],
+            net_profit=data["net_profit"]["amount"],
+            transactions=data["revenue"]["transaction_count"],
+        )
+
+    return SimpleNamespace(
+        company_name=profile["company_name"],
+        company_number=profile["company_number"],
+        transactions=txns,
+        staff=staff,
+        payroll=payroll,
+        cogs=cogs,
+        overheads=overheads,
+        menu=menu,
+        monthly_pnl=monthly_pnl,
+        balance_sheet=balance_sheet,
+    )

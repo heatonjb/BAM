@@ -1,0 +1,60 @@
+{
+  "quotes": [
+    {
+      "id": "sup_001",
+      "supplier": "Bean Bros Roastery",
+      "item": "espresso beans",
+      "unit": "kg",
+      "price_gbp": 14.5,
+      "lead_time_days": 3,
+      "reliability_pct": 98,
+      "min_order": 5,
+      "notes": "Single origin, direct trade"
+    },
+    {
+      "id": "sup_002",
+      "supplier": "Dairy Direct",
+      "item": "whole milk",
+      "unit": "litre",
+      "price_gbp": 1.12,
+      "lead_time_days": 1,
+      "reliability_pct": 99,
+      "min_order": 20,
+      "notes": "Daily delivery, local farm"
+    },
+    {
+      "id": "sup_003",
+      "supplier": "Bakery Wholesale Ltd",
+      "item": "croissants",
+      "unit": "unit",
+      "price_gbp": 0.72,
+      "lead_time_days": 2,
+      "reliability_pct": 95,
+      "min_order": 30,
+      "notes": "Frozen, bake-off"
+    },
+    {
+      "id": "sup_004",
+      "supplier": "GreenLeaf Produce",
+      "item": "seasonal fruit",
+      "unit": "kg",
+      "price_gbp": 3.4,
+      "lead_time_days": 2,
+      "reliability_pct": 92,
+      "min_order": 10,
+      "notes": "Market pricing, variable quality"
+    },
+    {
+      "id": "sup_005",
+      "supplier": "EcoPack Supplies",
+      "item": "takeaway cups",
+      "unit": "unit",
+      "price_gbp": 0.09,
+      "lead_time_days": 5,
+      "reliability_pct": 97,
+      "min_order": 1000,
+      "notes": "Compostable, bulk discount at 5k"
+    }
+  ],
+  "notes": "Bean Bros is 12% above market but reliability is highest. Switching dairy to a 3x weekly schedule could reduce cost by 8% but risks stockouts."
+}

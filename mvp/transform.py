@@ -7,10 +7,10 @@ Each node is an asset/liability/cost pool. Each edge is a transformation
 with associated efficiency metrics, constraints, and optimisation levers.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from typing import Dict, List, Optional, Tuple
 from collections import defaultdict
-from .loader import BusinessGraph, Transaction
+from .loader import BusinessGraph
 
 
 @dataclass
@@ -265,6 +265,100 @@ class TransformationGraph:
         }
         return mapping.get(product_id, [])
     
+    def _financial_snapshot(self) -> Dict[str, float]:
+        """Capture headline financials for before/after comparison."""
+        keys = ["total_revenue", "gross_profit", "operating_profit"]
+        snap = {k: self.nodes[k].value for k in keys if k in self.nodes}
+        if "total_labour" in self.nodes:
+            snap["total_labour"] = self.nodes["total_labour"].value
+        if "total_overheads" in self.nodes:
+            snap["total_overheads"] = self.nodes["total_overheads"].value
+        snap["total_cogs"] = self._cogs_from_nodes()
+        return snap
+
+    def _cogs_from_nodes(self) -> float:
+        """Sum input-node values — mutation-aware COGS total."""
+        input_nodes = [
+            "coffee_beans", "milk", "pastries", "packaging", "consumables",
+        ]
+        return sum(self.nodes[k].value for k in input_nodes if k in self.nodes)
+
+    def apply_mutation(
+        self, node_id: str, attribute: str, new_value
+    ) -> Dict[str, Dict[str, float]]:
+        """Mutate a node attribute and recompute the financial flow.
+
+        Returns ``{"before": {...}, "after": {...}, "delta": {...}}``.
+        """
+        if node_id not in self.nodes:
+            raise ValueError(
+                f"Node '{node_id}' not found. "
+                f"Available: {sorted(self.nodes)[:12]}..."
+            )
+        node = self.nodes[node_id]
+        if not hasattr(node, attribute):
+            available = [f.name for f in fields(node)]
+            raise ValueError(
+                f"Node '{node_id}' has no attribute '{attribute}'. "
+                f"Available: {available}"
+            )
+
+        before = self._financial_snapshot()
+        setattr(node, attribute, new_value)
+        self._recompute_financial_flow()
+        after = self._financial_snapshot()
+
+        delta = {k: after.get(k, 0.0) - before.get(k, 0.0) for k in after}
+        return {"before": before, "after": after, "delta": delta}
+
+    def _recompute_financial_flow(self) -> None:
+        """Recompute aggregate nodes and efficiencies after a mutation."""
+        product_nodes = [
+            "coffee_products", "pastry_products", "hot_drinks", "cold_drinks",
+        ]
+        present = [p for p in product_nodes if p in self.nodes]
+        if present and "total_revenue" in self.nodes:
+            self.nodes["total_revenue"].value = sum(
+                self.nodes[p].value for p in present
+            )
+
+        labour_nodes = [k for k in self.nodes if k.startswith("labour_")]
+        if labour_nodes and "total_labour" in self.nodes:
+            self.nodes["total_labour"].value = sum(
+                self.nodes[k].value for k in labour_nodes
+            )
+
+        overhead_nodes = [k for k in self.nodes if k.startswith("overhead_")]
+        if overhead_nodes and "total_overheads" in self.nodes:
+            self.nodes["total_overheads"].value = sum(
+                self.nodes[k].value for k in overhead_nodes
+            )
+
+        monthly_rev = (
+            self.nodes["total_revenue"].value if "total_revenue" in self.nodes else 0.0
+        )
+        monthly_cogs = self._cogs_from_nodes()
+        monthly_labour = (
+            self.nodes["total_labour"].value if "total_labour" in self.nodes else 0.0
+        )
+        monthly_oh = (
+            self.nodes["total_overheads"].value
+            if "total_overheads" in self.nodes
+            else 0.0
+        )
+
+        if "gross_profit" in self.nodes:
+            gp = self.nodes["gross_profit"]
+            gp.value = monthly_rev - monthly_cogs
+            gp.efficiency = (gp.value / monthly_rev) if monthly_rev > 0 else 0.0
+
+        if "operating_profit" in self.nodes:
+            op = self.nodes["operating_profit"]
+            op.value = monthly_rev - monthly_cogs - monthly_labour - monthly_oh
+            op.efficiency = (op.value / monthly_rev) if monthly_rev > 0 else 0.0
+
+        self._compute_efficiencies()
+
     def get_critical_path(self) -> List[str]:
         """Find the path from inputs to profit with lowest efficiency."""
         # Simple approach: find nodes with lowest efficiency

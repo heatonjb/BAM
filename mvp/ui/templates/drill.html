@@ -384,8 +384,32 @@
             btn.textContent = 'Generating...'; btn.disabled = true;
             body.innerHTML = '<p style="color:#4caf50;">⏳ Thinking...</p>';
             try {
-                const res = await fetch('/api/insights/{{ node.id }}', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({model:'z-ai/glm-4.5-air'}) });
-                const data = await res.json();
+                const startRes = await fetch('/api/insights/{{ node.id }}', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({model:'deepseek/deepseek-v4.1-flash'}) });
+                const startData = await startRes.json();
+                if (!startData.ok) {
+                    body.innerHTML = '<p style="color:#f44336;">Error: ' + (startData.error||'failed to start') + '</p>';
+                    btn.textContent = 'Regenerate'; btn.disabled = false;
+                    return;
+                }
+                const jobId = startData.job_id;
+                let data = null;
+                for (let attempt = 0; attempt < 120; attempt++) {
+                    await new Promise(r => setTimeout(r, 2000));
+                    const pollRes = await fetch('/api/insights/jobs/' + jobId);
+                    const pollData = await pollRes.json();
+                    if (pollData.status === 'completed') { data = pollData.result; break; }
+                    if (pollData.status === 'error') {
+                        body.innerHTML = '<p style="color:#f44336;">Error: ' + pollData.error + '</p>';
+                        btn.textContent = 'Regenerate'; btn.disabled = false;
+                        return;
+                    }
+                    body.innerHTML = '<p style="color:#4caf50;">⏳ Thinking... (' + (attempt*2) + 's)</p>';
+                }
+                if (!data) {
+                    body.innerHTML = '<p style="color:#f44336;">Timed out waiting for insights.</p>';
+                    btn.textContent = 'Regenerate'; btn.disabled = false;
+                    return;
+                }
                 if (data.error) {
                     body.innerHTML = '<p style="color:#f44336;">Error: ' + data.error + '</p>';
                 } else {
