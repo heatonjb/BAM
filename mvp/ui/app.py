@@ -82,6 +82,7 @@ def _run_insights_job(job_id, node_id, model, tenant_id="jonco"):
             constraint_store=cs,
             graph=g,
             model=model,
+            tenant_id=tenant_id,
         )
         _job_set(job_id, status="completed", result=result, finished_at=datetime.now(timezone.utc).isoformat())
     except Exception as e:
@@ -223,7 +224,8 @@ def drill(node_id):
                          graph_nodes=graph_nodes,
                          constraints=constraints_list,
                          all_constraints=all_constraints,
-                         current_tenant=tenant_id)
+                         current_tenant=tenant_id,
+                         tenants=list_tenants())
 
 
 @app.route("/api/insights/<node_id>", methods=["POST"])

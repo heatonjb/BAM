@@ -17,19 +17,10 @@ from .model.constraints import ConstraintStore, Constraint
 from .context import get_research_context
 
 
-SYSTEM_PROMPT = """You are a business strategy advisor for an independent UK coffee shop called JonCo Coffee Limited in Handcross, West Sussex.
+SYSTEM_PROMPT = """You are a business strategy advisor for {company_name}.
 
 ## CONTEXT
-JonCo is a small independent coffee shop operating at barely break-even (0.4% operating margin).
-- Monthly revenue: ~£20,763
-- Monthly COGS: ~£4,937 (23.8% of revenue)
-- Monthly staff costs: ~£11,062 (53.3% of revenue — benchmark: 30%)
-- Monthly overheads: ~£4,674 (22.5% of revenue — benchmark: 20%)
-- Monthly operating profit: ~£91 (0.4% margin — benchmark: 10%)
-- 9,432 transactions over 3 months (Oct-Dec 2024)
-- 5 staff: 3 baristas, 1 shift supervisor, 1 manager
-- 17 menu items across coffee, pastry, hot drinks, cold drinks
-- 5 suppliers: Has Bean Coffee Co (beans), Arla/Oatly/Alpro (milk), Bakers Delight (pastries), Vegware (packaging), various (consumables)
+{company_context}
 
 The business is modelled as a transformation graph: inputs → processes → revenue → costs → profit.
 Every node has rolling 7-day and 30-day change metrics, benchmarks, and optimisation levers.
@@ -165,6 +156,76 @@ def call_llm(messages: List[dict], model: str = "deepseek/deepseek-v4.1-flash", 
         return json.dumps({"error": str(e), "hypotheses": []})
 
 
+
+def _build_company_context(tenant_id: str):
+    """Load tenant-specific company data and return (name, description, context_text)."""
+    try:
+        from .loader import load_tenant_config
+        tenant = load_tenant_config(tenant_id)
+        data_dir = tenant.get("data_dir", "jonco")
+        base = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", data_dir)
+
+        data = {}
+        for fname in ["company.json", "company_profile.json"]:
+            fpath = os.path.join(base, fname)
+            if os.path.exists(fpath):
+                with open(fpath) as f:
+                    data = json.load(f)
+                break
+
+        if "company" in data:
+            # SaaS format
+            comp = data["company"]
+            name = comp.get("name", tenant.get("name", "Business"))
+            description = comp.get("description", "")
+            industry = comp.get("industry", "")
+            fin = data.get("financials", {})
+
+            lines = [f"{name} is a {industry} business."]
+            if description:
+                lines.append(description)
+            if fin:
+                lines.append(f"- Monthly recurring revenue: ~GBP {fin.get('mrr', 0):,.0f}")
+                lines.append(f"- Annual recurring revenue: ~GBP {fin.get('arr', 0):,.0f}")
+                lines.append(f"- Gross margin: {fin.get('gross_margin_pct', 0)}%")
+                lines.append(f"- CAC: GBP {fin.get('cac', 0):,.0f}, LTV: GBP {fin.get('ltv', 0):,.0f}")
+                lines.append(f"- Burn rate: ~GBP {fin.get('burn_rate', 0):,.0f}/mo, Runway: {fin.get('runway_months', 0)} months")
+
+            pirate = data.get("pirate_metrics", {})
+            if pirate:
+                lines.append("Key metrics:")
+                acq = pirate.get("acquisition", {})
+                if acq:
+                    lines.append(f"- Acquisition: {acq.get('visitors_monthly', 0):,.0f} visitors/mo, {acq.get('signups_monthly', 0):,.0f} signups/mo")
+                ret = pirate.get("retention", {})
+                if ret:
+                    lines.append(f"- Retention: {ret.get('monthly_churn_pct', 0)}% monthly churn, {ret.get('net_revenue_retention_pct', 0)}% NRR")
+                rev = pirate.get("revenue", {})
+                if rev:
+                    lines.append(f"- Revenue: GBP {rev.get('arpu', 0):,.0f} ARPU, {rev.get('free_to_paid_pct', 0)}% free-to-paid")
+
+            context = "\n".join(lines)
+            return name, description, context
+
+        elif "company_name" in data:
+            # Cafe format
+            name = data.get("company_name", tenant.get("name", "Business"))
+            sic_codes = data.get("sic_codes", [])
+            industry = sic_codes[0].get("description", "Cafe") if sic_codes else "Cafe"
+            reg = data.get("registered_office", {})
+            location = f"{reg.get('locality', '')}, {reg.get('region', '')}"
+            lines = [f"{name} is an independent UK coffee shop in {location}."]
+            lines.append("The business is a small independent coffee shop operating at barely break-even (0.4% operating margin).")
+            context = "\n".join(lines)
+            return name, "independent coffee shop", context
+
+        else:
+            return tenant.get("name", "Business"), "", "No specific company context available."
+
+    except Exception as e:
+        return "Business", "", f"No specific company context available. ({e})"
+
+
 def generate_insights(
     node_id: str,
     node_label: str,
@@ -175,7 +236,8 @@ def generate_insights(
     node_type: str,
     constraint_store: ConstraintStore,
     graph=None,
-    model: str = "deepseek/deepseek-v4.1-flash"
+    model: str = "deepseek/deepseek-v4.1-flash",
+    tenant_id: str = "jonco"
 ) -> dict:
     """Generate AI-powered insights for a node."""
     
@@ -185,9 +247,15 @@ def generate_insights(
     
     # Get research context
     research_context = get_research_context(node_id, node_type, node_label)
-    
+
+    # Build tenant-specific company context
+    company_name, company_description, company_context = _build_company_context(tenant_id)
+
     # Build prompt
     system_prompt = SYSTEM_PROMPT.format(
+        company_name=company_name,
+        company_description=company_description,
+        company_context=company_context,
         research_context=research_context[:6000],
         constraints_text=constraints_text,
         node_id=node_id,
