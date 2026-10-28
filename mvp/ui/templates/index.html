@@ -133,7 +133,7 @@
         {% for row in pnl %}
         {% if row.type == 'metric' %}</div><div class="pnl-section">{% endif %}
         <div style="display:flex;gap:0;">
-            <a href="/drill/{{ row.id }}" style="text-decoration:none;color:inherit;display:contents;">
+            <a href="/drill/{{ row.id }}?tenant={{ current_tenant }}" style="text-decoration:none;color:inherit;display:contents;">
             <div class="pnl-row {% if row.has_children %}clickable{% endif %} {% if row.type == 'metric' %}total-row{% endif %}" style="border-radius:6px 0 0 6px;">
                 <div class="pnl-icon">{{ row.icon }}</div>
                 <div class="pnl-label">{{ row.label }}{% if row.efficiency_label %}<small>{{ row.efficiency_label }}</small>{% endif %}</div>

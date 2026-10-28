@@ -38,7 +38,7 @@ app = Flask(__name__,
 _graph = None
 _graphs = {}
 _constraints = None
-_orchestrator = None
+_orchestrators = {}
 _last_plan = None
 _controller = None
 _controller_lock = threading.Lock()
@@ -88,18 +88,23 @@ def _run_insights_job(job_id, node_id, model, tenant_id="jonco"):
         import traceback
         _job_set(job_id, status="error", error=str(e), traceback=traceback.format_exc(), finished_at=datetime.now(timezone.utc).isoformat())
 
-def get_orchestrator():
-    global _orchestrator
-    if _orchestrator is None:
-        _orchestrator = MultiAgentOrchestrator(OrchestratorConfig(
+def get_orchestrator(tenant_id=None):
+    """Return a tenant-scoped orchestrator with its own initiative database."""
+    global _orchestrators
+    if tenant_id is None:
+        tenant_id = _current_tenant()
+    if tenant_id not in _orchestrators:
+        db_path = os.path.join(PROJECT_ROOT, 'data', f'initiatives_{tenant_id}.db')
+        orch = MultiAgentOrchestrator(OrchestratorConfig(
             control_model=ControlModel.HIERARCHICAL,
             budget_effort=20.0,
             max_initiatives=6,
-            db_path=os.path.join(PROJECT_ROOT, 'data', 'initiatives.db'),
+            db_path=db_path,
         ))
-        _orchestrator.constraint_store = get_constraints()
-        _orchestrator.checker = _orchestrator.checker or __import__('mvp.multiagent.constraint_checker', fromlist=['ConstraintCheckerAgent']).ConstraintCheckerAgent(_orchestrator.constraint_store)
-    return _orchestrator
+        orch.constraint_store = get_constraints()
+        orch.checker = orch.checker or __import__('mvp.multiagent.constraint_checker', fromlist=['ConstraintCheckerAgent']).ConstraintCheckerAgent(orch.constraint_store)
+        _orchestrators[tenant_id] = orch
+    return _orchestrators[tenant_id]
 
 def get_graph(tenant_id=None):
     global _graphs
@@ -190,7 +195,8 @@ def api_tenants():
 
 @app.route("/drill/<node_id>")
 def drill(node_id):
-    g = get_graph(_current_tenant())
+    tenant_id = _current_tenant()
+    g = get_graph(tenant_id)
     cs = get_constraints()
     node = g.get(node_id)
     if not node:
@@ -216,7 +222,8 @@ def drill(node_id):
                          path=path,
                          graph_nodes=graph_nodes,
                          constraints=constraints_list,
-                         all_constraints=all_constraints)
+                         all_constraints=all_constraints,
+                         current_tenant=tenant_id)
 
 
 @app.route("/api/insights/<node_id>", methods=["POST"])
@@ -307,11 +314,11 @@ def api_multiagent_plan():
     return jsonify({"ok": True, "plan": _last_plan.to_dict()})
 
 
-def _run_arbiter_job(job_id, use_llm, control_model, budget, max_init):
+def _run_arbiter_job(job_id, use_llm, control_model, budget, max_init, tenant_id=None):
     """Background worker: run specialists -> arbiter -> register initiatives."""
     global _last_plan
     try:
-        orch = get_orchestrator()
+        orch = get_orchestrator(tenant_id)
         orch.config.control_model = ControlModel(control_model)
         orch.config.budget_effort = budget
         orch.config.max_initiatives = max_init
@@ -319,7 +326,7 @@ def _run_arbiter_job(job_id, use_llm, control_model, budget, max_init):
             sp.use_llm = use_llm
         orch.arbiter.use_llm = use_llm
 
-        g = get_graph(_current_tenant())
+        g = get_graph(tenant_id)
 
         # Proven path (run_cycle wrapper is buggy — see run_bam.py).
         recommendations = []
@@ -354,7 +361,7 @@ def api_multiagent_run():
     _jobs[job_id] = {"status": "running"}
     t = threading.Thread(
         target=_run_arbiter_job,
-        args=(job_id, use_llm, control_model, budget, max_init),
+        args=(job_id, use_llm, control_model, budget, max_init, _current_tenant()),
         daemon=True,
     )
     t.start()

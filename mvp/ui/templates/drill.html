@@ -117,14 +117,14 @@
 </head>
 <body>
     <div class="header">
-        <a href="/" class="back">← P&L</a>
+        <a href="/?tenant={{ current_tenant }}" class="back">← P&L</a>
         <h1>{{ node.icon }} {{ node.label }}</h1>
     </div>
     <div class="breadcrumb">
-        <a href="/">P&L</a>
+        <a href="/?tenant={{ current_tenant }}">P&L</a>
         {% for p in path[:-1] %}
         <span class="sep">›</span>
-        <a href="/drill/{{ p }}">{{ subgraph.nodes[p].label if p in subgraph.nodes else p }}</a>
+        <a href="/drill/{{ p }}?tenant={{ current_tenant }}">{{ subgraph.nodes[p].label if p in subgraph.nodes else p }}</a>
         {% endfor %}
         {% if path|length > 1 %}<span class="sep">›</span>{% endif %}
         <span class="current">{{ node.label }}</span>
@@ -239,7 +239,7 @@
                     {% set child = subgraph.nodes.get(child_id) %}
                     {% if child %}
                     {% set contrib = node.child_contribution_pct.get(child_id, 0) %}
-                    <tr onclick="location.href='/drill/{{ child_id }}'">
+                    <tr onclick="location.href='/drill/{{ child_id }}?tenant={{ current_tenant }}'">
                         <td class="icon">{{ child.icon or '📊' }}</td>
                         <td>{{ child.label }}</td>
                         <td class="val">£{{ "{:,.2f}".format(child.value) }}</td>
