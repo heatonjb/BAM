@@ -61,11 +61,11 @@ def _job_set(job_id, **fields):
     with _jobs_lock:
         _jobs.setdefault(job_id, {}).update(fields)
 
-def _run_insights_job(job_id, node_id, model):
+def _run_insights_job(job_id, node_id, model, tenant_id="jonco"):
     """Background worker: generates insights and stores result in _jobs."""
     try:
         _job_set(job_id, status="running", started_at=datetime.now(timezone.utc).isoformat())
-        g = get_graph()
+        g = get_graph(tenant_id)
         cs = get_constraints()
         node = g.get(node_id)
         if not node:
@@ -156,16 +156,8 @@ def index():
         "period": tenant_cfg.get("period", ""),
     }
 
+    # Metrics are graph nodes, reachable by drilling down — not custom homepage chips.
     kpis = []
-    for node in g.get_by_type(NodeType.METRIC):
-        if node.benchmark is not None:
-            kpis.append({
-                "name": node.label,
-                "value": round(node.value, 2),
-                "unit": node.unit,
-                "benchmark": node.benchmark,
-                "id": node.id,
-            })
 
     # ── Projections: "nothing changes" — hold current monthly averages flat ──
     projections = []
@@ -198,7 +190,7 @@ def api_tenants():
 
 @app.route("/drill/<node_id>")
 def drill(node_id):
-    g = get_graph()
+    g = get_graph(_current_tenant())
     cs = get_constraints()
     node = g.get(node_id)
     if not node:
@@ -230,7 +222,7 @@ def drill(node_id):
 @app.route("/api/insights/<node_id>", methods=["POST"])
 def api_insights(node_id):
     """Queue AI-powered insights generation. Returns a job_id immediately."""
-    g = get_graph()
+    g = get_graph(_current_tenant())
     node = g.get(node_id)
     if not node:
         return jsonify({"error": "node not found"}), 404
@@ -241,7 +233,7 @@ def api_insights(node_id):
     job_id = uuid.uuid4().hex[:12]
     _job_set(job_id, status="queued", node_id=node_id, node_label=node.label,
              queued_at=datetime.now(timezone.utc).isoformat())
-    _insights_pool.submit(_run_insights_job, job_id, node_id, model)
+    _insights_pool.submit(_run_insights_job, job_id, node_id, model, _current_tenant())
     return jsonify({"ok": True, "job_id": job_id, "status": "queued",
                     "poll": f"/api/insights/jobs/{job_id}"}), 202
 
@@ -272,7 +264,7 @@ def api_constraints():
 
 @app.route("/api/constraints/<node_id>")
 def api_node_constraints(node_id):
-    g = get_graph()
+    g = get_graph(_current_tenant())
     cs = get_constraints()
     constraints = cs.get_for_node(node_id, g)
     return jsonify([c.to_dict() for c in constraints])
@@ -280,7 +272,7 @@ def api_node_constraints(node_id):
 
 @app.route("/api/node/<node_id>")
 def api_node(node_id):
-    g = get_graph()
+    g = get_graph(_current_tenant())
     node = g.get(node_id)
     if not node:
         return jsonify({"error": "not found"}), 404
@@ -289,7 +281,7 @@ def api_node(node_id):
 
 @app.route("/api/subgraph/<node_id>")
 def api_subgraph(node_id):
-    g = get_graph()
+    g = get_graph(_current_tenant())
     depth = request.args.get("depth", 2, type=int)
     subgraph = g.get_subgraph(node_id, depth=depth)
     return jsonify(subgraph)
@@ -297,7 +289,7 @@ def api_subgraph(node_id):
 
 @app.route("/api/levels")
 def api_levels():
-    g = get_graph()
+    g = get_graph(_current_tenant())
     result = {}
     for level in range(3):
         result[f"level_{level}"] = [n.to_dict() for n in g.get_level(level)]
@@ -327,7 +319,7 @@ def _run_arbiter_job(job_id, use_llm, control_model, budget, max_init):
             sp.use_llm = use_llm
         orch.arbiter.use_llm = use_llm
 
-        g = get_graph()
+        g = get_graph(_current_tenant())
 
         # Proven path (run_cycle wrapper is buggy — see run_bam.py).
         recommendations = []
@@ -430,7 +422,7 @@ def api_initiative_detail(initiative_id):
         ini = _find_initiative(initiative_id)
         if not ini:
             return jsonify({"ok": False, "error": "Initiative not found"}), 404
-        g = get_graph()
+        g = get_graph(_current_tenant())
         node = g.get(ini.node_id)
         impact = analyse_impact(ini, g, baseline_values=ini.metadata.get("activation_snapshot"))
         ids = [i["node_id"] for i in impact["impacted"]]
@@ -481,7 +473,7 @@ def api_activate_initiative(initiative_id):
             return jsonify({"ok": False, "error": "Initiative already measured"}), 409
         updates = {}
         if not ini.metadata.get("activation_snapshot"):
-            updates["activation_snapshot"] = baseline_snapshot(ini, get_graph())
+            updates["activation_snapshot"] = baseline_snapshot(ini, get_graph(_current_tenant()))
         ini = get_orchestrator().knowledge.set_status(initiative_id, InitiativeStatus(status), updates)
         return jsonify({"ok": True, "initiative": ini.to_dict(), "active": True})
     except Exception as e:
@@ -517,7 +509,7 @@ def api_initiative_progress(initiative_id):
         if ini.status.value not in ("approved", "running"):
             return jsonify({"ok": False, "error": "Progress can only be checked for active initiatives"}), 409
         kb = get_orchestrator().knowledge
-        report = ProgressAgent().check(ini, get_graph(),
+        report = ProgressAgent().check(ini, get_graph(_current_tenant()),
                                        constraint_store=get_constraints(),
                                        other_active=kb.active_initiatives())
         history = (ini.metadata.get("progress_history") or [])[-9:]
@@ -610,7 +602,7 @@ def api_controller_diagnose():
             th.change_30d_pct = float(data.get("change_30d_pct", th.change_30d_pct))
             th.min_abs_value_gbp = float(data.get("min_abs_value_gbp", th.min_abs_value_gbp))
             ctrl.monitor.thresholds = th
-        payload = ctrl.diagnose(get_graph())
+        payload = ctrl.diagnose(get_graph(_current_tenant()))
         return jsonify(payload)
     except Exception as e:
         import traceback
@@ -625,7 +617,7 @@ def api_controller_dispatch():
         return jsonify({"ok": False, "error": "specialist_ids must be a non-empty list"}), 400
     use_llm = bool(data.get("use_llm", False))
     try:
-        payload = get_controller().dispatch(ids, get_graph(), use_llm=use_llm)
+        payload = get_controller().dispatch(ids, get_graph(_current_tenant()), use_llm=use_llm)
         return jsonify(payload), (200 if payload.get("ok") else 409)
     except Exception as e:
         import traceback
