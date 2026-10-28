@@ -24,7 +24,7 @@ if os.path.exists(_env_path):
 from flask import Flask, render_template, jsonify, request
 from mvp.model.core import NodeType
 from mvp.model.constraints import ConstraintStore, build_default_constraints
-from mvp.loader import load_graph
+from mvp.loader import load_graph, list_tenants, load_tenant_config
 from mvp.insights import generate_insights
 from mvp.multiagent import MultiAgentOrchestrator, OrchestratorConfig
 from mvp.multiagent.control_models import ControlModel
@@ -36,11 +36,21 @@ app = Flask(__name__,
             static_folder=os.path.join(os.path.dirname(__file__), "static"))
 
 _graph = None
+_graphs = {}
 _constraints = None
 _orchestrator = None
 _last_plan = None
 _controller = None
 _controller_lock = threading.Lock()
+
+
+def _current_tenant():
+    """Resolve the active tenant from the query string or default to jonco."""
+    tenant_id = request.args.get("tenant", "jonco")
+    try:
+        return load_tenant_config(tenant_id)["id"]
+    except Exception:
+        return "jonco"
 
 # --- Async insight job infrastructure ---
 _jobs = {}
@@ -91,11 +101,13 @@ def get_orchestrator():
         _orchestrator.checker = _orchestrator.checker or __import__('mvp.multiagent.constraint_checker', fromlist=['ConstraintCheckerAgent']).ConstraintCheckerAgent(_orchestrator.constraint_store)
     return _orchestrator
 
-def get_graph():
-    global _graph
-    if _graph is None:
-        _graph = load_graph()
-    return _graph
+def get_graph(tenant_id=None):
+    global _graphs
+    if tenant_id is None:
+        tenant_id = _current_tenant()
+    if tenant_id not in _graphs:
+        _graphs[tenant_id] = load_graph(tenant_id)
+    return _graphs[tenant_id]
 
 def get_constraints():
     global _constraints
@@ -108,7 +120,8 @@ def get_constraints():
 
 @app.route("/")
 def index():
-    g = get_graph()
+    tenant_id = _current_tenant()
+    g = get_graph(tenant_id)
     cs = get_constraints()
     level0 = g.get_level(0)
 
@@ -136,10 +149,11 @@ def index():
             "hard_constraints": sum(1 for c in constraints if c.severity.value == "hard"),
         })
 
+    tenant_cfg = load_tenant_config(tenant_id)
     company = {
-        "name": "JONCO COFFEE LIMITED",
-        "number": "15999847",
-        "period": "Oct–Dec 2024 (monthly averages)"
+        "name": tenant_cfg.get("name", "Unknown"),
+        "number": tenant_cfg.get("number", ""),
+        "period": tenant_cfg.get("period", ""),
     }
 
     kpis = []
@@ -171,7 +185,15 @@ def index():
                          company=company,
                          pnl=pnl,
                          kpis=kpis,
-                         projections=projections)
+                         projections=projections,
+                         tenants=list_tenants(),
+                         current_tenant=tenant_id)
+
+
+@app.route("/api/tenants")
+def api_tenants():
+    """Return the list of tenants for the company selector."""
+    return jsonify(list_tenants())
 
 
 @app.route("/drill/<node_id>")

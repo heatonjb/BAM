@@ -101,17 +101,36 @@
 </head>
 <body>
     <div class="header">
-        <h1>⚙️ Business as a Machine</h1>
-        <div class="sub">{{ company.name }} · {{ company.number }} · {{ company.period }}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+            <div>
+                <h1>⚙️ Business as a Machine</h1>
+                <div class="sub">{{ company.name }} · {{ company.number }} · {{ company.period }}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.4rem;">
+                <label for="tenantSelect" style="color:#888;font-size:0.75rem;">Company:</label>
+                <select id="tenantSelect" onchange="switchTenant(this.value)" style="background:#111;color:#ddd;border:1px solid #333;border-radius:4px;padding:0.35rem 0.6rem;font-size:0.8rem;cursor:pointer;">
+                    {% for tid, t in tenants.items() %}
+                    <option value="{{ tid }}" {% if tid == current_tenant %}selected{% endif %}>{{ t.icon or '' }} {{ t.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
     </div>
+    <script>
+        function switchTenant(tid) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('tenant', tid);
+            window.location.href = url.toString();
+        }
+    </script>
     <div class="container">
         {% if kpis %}
         <div class="kpi-strip">
             {% for k in kpis %}
             <div class="kpi-chip">
                 <div class="label">{{ k.name }}</div>
-                <span class="val">{{ "%.1f"|format(k.value) }}{{ k.unit }}</span>
-                <span class="bench"> / {{ "%.1f"|format(k.benchmark) }}</span>
+                <span class="val">{% if k.value is number %}{{ "%.1f"|format(k.value) }}{% else %}{{ k.value }}{% endif %}{{ k.unit }}</span>
+                <span class="bench"> / {% if k.benchmark is number %}{{ "%.1f"|format(k.benchmark) }}{% else %}{{ k.benchmark }}{% endif %}</span>
             </div>
             {% endfor %}
         </div>
