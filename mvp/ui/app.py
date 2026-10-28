@@ -39,7 +39,7 @@ _graph = None
 _graphs = {}
 _constraints = None
 _orchestrators = {}
-_last_plan = None
+_last_plans = {}
 _controller = None
 _controller_lock = threading.Lock()
 
@@ -308,15 +308,15 @@ def api_levels():
 @app.route("/api/multiagent/plan", methods=["GET"])
 def api_multiagent_plan():
     """Return the most recent optimisation plan."""
-    global _last_plan
-    if _last_plan is None:
+    plan = _last_plans.get(_current_tenant())
+    if plan is None:
         return jsonify({"ok": False, "error": "No plan yet. POST to /api/multiagent/run first."}), 404
-    return jsonify({"ok": True, "plan": _last_plan.to_dict()})
+    return jsonify({"ok": True, "plan": plan.to_dict()})
 
 
 def _run_arbiter_job(job_id, use_llm, control_model, budget, max_init, tenant_id=None):
     """Background worker: run specialists -> arbiter -> register initiatives."""
-    global _last_plan
+    global _last_plans
     try:
         orch = get_orchestrator(tenant_id)
         orch.config.control_model = ControlModel(control_model)
@@ -341,8 +341,8 @@ def _run_arbiter_job(job_id, use_llm, control_model, budget, max_init, tenant_id
             except Exception:
                 pass
 
-        _last_plan = plan
-        _jobs[job_id] = {"status": "done", "plan": plan.to_dict()}
+        _last_plans[tenant_id or "jonco"] = plan
+        _jobs[job_id] = {"status": "done", "plan": plan.to_dict(), "tenant": tenant_id}
     except Exception as e:
         import traceback
         _jobs[job_id] = {"status": "error", "error": str(e), "traceback": traceback.format_exc()}
@@ -392,12 +392,15 @@ def api_multiagent_initiatives():
         return jsonify({"ok": False, "error": str(e)}), 500
 
 
-def _find_initiative(initiative_id):
-    """Load from the knowledge base; fall back to (and persist) the in-memory last plan."""
-    kb = get_orchestrator().knowledge
+def _find_initiative(initiative_id, tenant_id=None):
+    """Load from the knowledge base; fall back to (and persist) the tenant's last plan."""
+    if tenant_id is None:
+        tenant_id = _current_tenant()
+    kb = get_orchestrator(tenant_id).knowledge
     ini = kb.get_initiative(initiative_id)
-    if ini is None and _last_plan is not None:
-        for candidate in _last_plan.initiatives:
+    last_plan = _last_plans.get(tenant_id)
+    if ini is None and last_plan is not None:
+        for candidate in last_plan.initiatives:
             if candidate.id == initiative_id:
                 kb.record_initiative(candidate)
                 ini = kb.get_initiative(initiative_id)

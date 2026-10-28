@@ -117,6 +117,11 @@
         </div>
     </div>
     <script>
+        const CURRENT_TENANT = "{{ current_tenant }}";
+        function tenantQS(url) {
+            const sep = url.includes('?') ? '&' : '?';
+            return url + sep + 'tenant=' + encodeURIComponent(CURRENT_TENANT);
+        }
         function switchTenant(tid) {
             const url = new URL(window.location.href);
             url.searchParams.set('tenant', tid);
@@ -256,7 +261,7 @@
             btn.textContent = 'Generating...'; btn.disabled = true;
             document.getElementById('insightsContent').innerHTML = '<p style="color:#4caf50;">⏳ Thinking...</p>';
             try {
-                const startRes = await fetch('/api/insights/' + currentNodeId, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({model:'deepseek/deepseek-v4.1-flash'}) });
+                const startRes = await fetch(tenantQS('/api/insights/' + currentNodeId), { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({model:'deepseek/deepseek-v4.1-flash'}) });
                 const startData = await startRes.json();
                 if (!startData.ok) {
                     document.getElementById('insightsContent').innerHTML = '<p style="color:#f44336;">Error: ' + (startData.error||'failed to start') + '</p>';
@@ -267,7 +272,7 @@
                 let data = null;
                 for (let attempt = 0; attempt < 120; attempt++) {
                     await new Promise(r => setTimeout(r, 2000));
-                    const pollRes = await fetch('/api/insights/jobs/' + jobId);
+                    const pollRes = await fetch(tenantQS('/api/insights/jobs/' + jobId));
                     const pollData = await pollRes.json();
                     if (pollData.status === 'completed') { data = pollData.result; break; }
                     if (pollData.status === 'error') {
@@ -322,7 +327,7 @@
 
             try {
                 // 1. Kick off the job — returns immediately with a job_id
-                const startResp = await fetch('/api/multiagent/run', {
+                const startResp = await fetch(tenantQS('/api/multiagent/run'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ use_llm: true, max_initiatives: 5, budget_effort: 15.0 })
@@ -340,7 +345,7 @@
                 while (attempts < maxAttempts) {
                     await new Promise(r => setTimeout(r, 2000));
                     attempts++;
-                    const pollResp = await fetch('/api/multiagent/job/' + jobId);
+                    const pollResp = await fetch(tenantQS('/api/multiagent/job/' + jobId));
                     job = await pollResp.json();
                     if (job.status === 'done') break;
                     if (job.status === 'error') throw new Error(job.error || 'Arbiter failed');
@@ -442,7 +447,7 @@
             document.getElementById('ipActions').innerHTML = '';
             document.getElementById('ipBody').innerHTML = '<p style="color:#666;margin-top:1rem;">Loading initiative analysis…</p>';
             try {
-                const r = await fetch('/api/multiagent/initiatives/' + id);
+                const r = await fetch(tenantQS('/api/multiagent/initiatives/' + id));
                 const d = await r.json();
                 if (!d.ok) throw new Error(d.error || 'Failed to load initiative');
                 ipData = d;
@@ -644,7 +649,7 @@
             const btns = document.querySelectorAll('#ipActions button');
             btns.forEach(b => b.disabled = true);
             try {
-                const r = await fetch('/api/multiagent/initiatives/' + id + '/' + (activate ? 'activate' : 'deactivate'), {
+                const r = await fetch(tenantQS('/api/multiagent/initiatives/' + id + '/' + (activate ? 'activate' : 'deactivate')), {
                     method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(activate ? {status: 'running'} : {})
                 });
                 const d = await r.json();
@@ -662,7 +667,7 @@
             btn.disabled = true; btn.textContent = 'Checking…';
             out.innerHTML = '<p style="color:#888;">Progress Agent is comparing current node values with the projection…</p>';
             try {
-                const r = await fetch('/api/multiagent/initiatives/' + id + '/progress', { method: 'POST' });
+                const r = await fetch(tenantQS('/api/multiagent/initiatives/' + id + '/progress'), { method: 'POST' });
                 const d = await r.json();
                 if (!d.ok) throw new Error(d.error || 'Progress check failed');
                 const rep = d.report, st = STATUS[rep.status];
@@ -697,7 +702,7 @@
 
         async function loadActiveInitiatives() {
             try {
-                const r = await fetch('/api/multiagent/initiatives?status=active');
+                const r = await fetch(tenantQS('/api/multiagent/initiatives?status=active'));
                 const d = await r.json();
                 if (!d.ok) return;
                 const box = document.getElementById('activeInitiatives'), list = document.getElementById('activeInitiativesList');
