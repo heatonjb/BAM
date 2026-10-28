@@ -21,7 +21,7 @@ from typing import Any, Dict, List, Optional
 from ..insights import call_llm
 from ..model.core import BaseNode, BusinessGraph, NodeType, TrendDirection
 from ..model.constraints import ConstraintStore
-from .hypothesis import Hypothesis, LeverType, Prediction
+from .hypothesis import Hypothesis, Initiative, LeverType, Prediction, find_active_duplicate
 from .knowledge import HistoricalKnowledgeBase
 
 SPECIALIST_SYSTEM_PROMPT = """You are the {agent_name}, a specialist agent inside the
@@ -43,6 +43,9 @@ narrow, expert operator who thinks only about your domain.
 ## What has worked and failed before (historical calibration)
 {history_text}
 
+## Work already in flight
+{active_text}
+
 ## Research context
 {research_context}
 
@@ -56,6 +59,8 @@ narrow, expert operator who thinks only about your domain.
 7. Do NOT propose anything that violates a hard constraint.
 8. Prefer 3-6 hypotheses spanning different levers. Rank matters more than volume.
 9. For each hypothesis, give 1-3 predictions with baseline, predicted value, metric name, and rationale.
+10. Never re-propose an initiative listed under "Work already in flight". Their impact is not yet visible in
+    the current numbers — do not count it again. Prefer hypotheses that complement them (different lever or node).
 
 Return ONLY valid JSON matching this schema:
 {{
@@ -199,12 +204,28 @@ class SpecialistAgent:
         """Override in subclasses."""
         return [LeverType.OTHER]
 
+    def _active_initiatives(self) -> List[Initiative]:
+        if not self.knowledge:
+            return []
+        try:
+            return self.knowledge.active_initiatives()
+        except Exception:
+            return []
+
     def generate(self, graph: BusinessGraph, research_context: str = "") -> List[Hypothesis]:
-        """Propose hypotheses using the LLM, calibrated by history."""
+        """Propose hypotheses using the LLM, calibrated by history.
+
+        Active-initiative awareness: initiatives the business has APPROVED or set
+        RUNNING are read from the knowledge base. They are shown to the LLM as
+        "work already in flight" (so it proposes complementary work), and any
+        hypothesis — LLM or heuristic — that duplicates one (same node + lever,
+        or same title) is dropped before ranking.
+        """
         assessment = self.assess(graph)
         if assessment["node_count"] == 0:
             return []
 
+        active = self._active_initiatives()
         system_prompt = SPECIALIST_SYSTEM_PROMPT.format(
             agent_name=self.name,
             owned_description=self.description,
@@ -212,6 +233,7 @@ class SpecialistAgent:
             performance_text=self._performance_text(assessment),
             constraints_text=self._constraints_text(graph),
             history_text=self._history_text(),
+            active_text=self.knowledge.active_initiatives_text() if self.knowledge else "None.",
             research_context=research_context[:8000] or "None provided.",
         )
         user_prompt = (
@@ -242,6 +264,10 @@ class SpecialistAgent:
         for h in heuristics:
             if h.title.lower() not in seen_titles:
                 merged.append(h)
+
+        # 4. Drop anything that duplicates committed work.
+        if active:
+            merged = [h for h in merged if find_active_duplicate(h, active) is None]
         return merged
 
     def _parse_hypotheses(self, raw: str, graph: Optional[BusinessGraph] = None) -> List[Hypothesis]:

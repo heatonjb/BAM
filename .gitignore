@@ -1,21 +1,32 @@
-
-# Data files (large, generated)
-data/jonco/transactions.json
-data/jonco/staff_schedules.json
-
 # Python
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*.egg-info/
 .venv/
 venv/
-dist/
-*.egg-info/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
-# IDE
-.vscode/
-.idea/
+# Databases & runtime data
+*.db
+*.sqlite
+*.sqlite3
+*.pkl
+data/initiatives.db
 
-# OS
+# Secrets & local config
+.env
+.env.*
+!.env.example
+
+# OS & editor
 .DS_Store
-Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Repomix artifacts
+repomix-mvp*.xml

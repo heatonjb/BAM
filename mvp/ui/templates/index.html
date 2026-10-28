@@ -70,6 +70,29 @@
         .positive { color: #4caf50; }
         .negative { color: #f44336; }
         .footer { text-align: center; padding: 2rem; color: #333; font-size: 0.75rem; border-top: 1px solid #1a1a1a; }
+
+        /* Initiative cards + detail view */
+        .ini-card { background:#111; border:1px solid #1a1a1a; border-radius:6px; padding:0.8rem; margin-bottom:0.5rem; cursor:pointer; transition:border-color 0.2s, background 0.2s; }
+        .ini-card:hover { border-color:#3987e5; background:#141420; }
+        .ini-card.active { border-color:#0ca30c; box-shadow: inset 3px 0 0 #0ca30c; }
+        .active-pill { display:inline-block; font-size:0.6rem; padding:0.1rem 0.45rem; border-radius:10px; background:rgba(12,163,12,0.15); color:#0ca30c; border:1px solid #0ca30c; margin-left:0.4rem; vertical-align:middle; letter-spacing:0.03em; }
+        .ip-section { margin-top:1.2rem; }
+        .ip-section h4 { color:#888; font-size:0.75rem; font-weight:500; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.5rem; font-family:-apple-system,sans-serif; }
+        .ip-stats { display:flex; gap:0.5rem; flex-wrap:wrap; }
+        .ip-stat { background:#0a0a0a; border:1px solid #1e1e1e; border-radius:4px; padding:0.45rem 0.7rem; flex:1; min-width:90px; }
+        .ip-stat .k { color:#666; font-size:0.6rem; }
+        .ip-stat .v { color:#e0e0e0; font-size:0.9rem; font-weight:600; font-variant-numeric:tabular-nums; }
+        .ip-btn { padding:0.5rem 0.9rem; border-radius:6px; cursor:pointer; font-size:0.8rem; font-family:-apple-system,sans-serif; border:1px solid #444; background:#1a1a1a; color:#ccc; }
+        .ip-btn:disabled { opacity:0.5; cursor:wait; }
+        .ip-btn.primary { background:#10240f; color:#0ca30c; border-color:#0ca30c; }
+        .ip-btn.blue { background:#101a2a; color:#6fa8f0; border-color:#3987e5; }
+        .ip-table { width:100%; border-collapse:collapse; font-size:0.72rem; font-variant-numeric:tabular-nums; }
+        .ip-table th { color:#666; font-weight:500; text-align:right; padding:0.35rem 0.5rem; border-bottom:1px solid #222; }
+        .ip-table td { color:#bbb; text-align:right; padding:0.35rem 0.5rem; border-bottom:1px solid #151515; }
+        .ip-table th:first-child, .ip-table td:first-child { text-align:left; }
+        .role-chip { display:inline-block; font-size:0.6rem; padding:0.05rem 0.35rem; border-radius:3px; margin-right:0.35rem; color:#fff; }
+        .ip-tooltip { position:fixed; pointer-events:none; background:#1b1b1b; border:1px solid #333; border-radius:4px; padding:0.4rem 0.55rem; font-size:0.7rem; color:#ddd; z-index:200; max-width:280px; display:none; line-height:1.4; }
+        .status-banner { border-radius:6px; padding:0.7rem 0.9rem; border:1px solid; margin-bottom:0.6rem; }
         @media (max-width: 700px) {
             .pnl-row { grid-template-columns: 30px 1fr 100px 70px; }
             .sparkline-container, .trend-arrow, .constraint-badge, .insights-btn { display: none; }
@@ -128,6 +151,57 @@
         </div>
         {% endfor %}
         </div>
+
+        <!-- Multi-Agent Strategy Arbiter -->
+        <div style="margin-top:2.5rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;">
+                <div>
+                    <h2 style="font-size:1rem;color:#888;font-family:-apple-system,sans-serif;font-weight:400;">Strategy Arbiter</h2>
+                    <p style="color:#333;font-size:0.7rem;margin-top:0.15rem;">Runs the root agent — specialists generate growth hypotheses, the arbiter selects the portfolio</p>
+                </div>
+                <button id="arbiterBtn" onclick="runStrategyArbiter()" style="background:#1a1a3e;color:#4caf50;border:1px solid #4caf50;border-radius:6px;padding:0.5rem 1rem;cursor:pointer;font-size:0.8rem;font-family:-apple-system,sans-serif;white-space:nowrap;">▶ Run Arbiter</button>
+            </div>
+            <div id="arbiterResult" style="display:none;background:#0d0d0d;border:1px solid #1a1a1a;border-radius:8px;padding:1rem;margin-top:0.8rem;">
+                <div id="arbiterContent" style="color:#ccc;font-size:0.8rem;font-family:-apple-system,sans-serif;"></div>
+            </div>
+            <div id="activeInitiatives" style="display:none;margin-top:1rem;">
+                <h4 style="color:#777;font-size:0.75rem;margin:0 0 0.5rem;font-weight:500;font-family:-apple-system,sans-serif;">Active Initiatives <span style="color:#444;font-weight:400;">· the arbiter plans around these</span></h4>
+                <div id="activeInitiativesList" style="font-family:-apple-system,sans-serif;"></div>
+            </div>
+        </div>
+
+        <!-- P&L Projections (Nothing Changes) -->
+        <div style="margin-top:2.5rem;">
+            <h2 style="font-size:1rem;color:#888;font-family:-apple-system,sans-serif;font-weight:400;margin-bottom:0.2rem;">P&L Projections</h2>
+            <p style="color:#333;font-size:0.7rem;margin-bottom:0.8rem;">Assuming nothing changes · current monthly averages held flat</p>
+            <div style="background:#0d0d0d;border:1px solid #1a1a1a;border-radius:8px;overflow:hidden;">
+                <table style="width:100%;border-collapse:collapse;font-size:0.8rem;">
+                    <thead>
+                        <tr style="border-bottom:1px solid #222;color:#555;font-weight:400;text-align:right;">
+                            <th style="text-align:left;padding:0.7rem 1rem;font-weight:500;font-family:-apple-system,sans-serif;">Line Item</th>
+                            <th style="padding:0.7rem 1rem;font-weight:500;font-family:-apple-system,sans-serif;">Current (mo)</th>
+                            <th style="padding:0.7rem 1rem;font-weight:500;font-family:-apple-system,sans-serif;">1 Month</th>
+                            <th style="padding:0.7rem 1rem;font-weight:500;font-family:-apple-system,sans-serif;">3 Months</th>
+                            <th style="padding:0.7rem 1rem;font-weight:500;font-family:-apple-system,sans-serif;">1 Year</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in projections %}
+                        <tr style="border-bottom:1px solid #111;{% if p.type == 'metric' %}background:#080808;{% endif %}">
+                            <td style="padding:0.6rem 1rem;color:{% if p.type == 'metric' %}#fff{% else %}#ccc{% endif %};font-family:-apple-system,sans-serif;">
+                                <span style="margin-right:0.4rem;">{{ p.icon }}</span>{{ p.label }}
+                            </td>
+                            <td style="padding:0.6rem 1rem;text-align:right;color:#888;font-variant-numeric:tabular-nums;font-family:-apple-system,sans-serif;">£{{ "{:,.2f}".format(p.current) }}</td>
+                            <td style="padding:0.6rem 1rem;text-align:right;color:#ccc;font-variant-numeric:tabular-nums;font-family:-apple-system,sans-serif;">£{{ "{:,.2f}".format(p.m1) }}</td>
+                            <td style="padding:0.6rem 1rem;text-align:right;color:#ccc;font-variant-numeric:tabular-nums;font-family:-apple-system,sans-serif;">£{{ "{:,.2f}".format(p.m3) }}</td>
+                            <td style="padding:0.6rem 1rem;text-align:right;color:#ccc;font-variant-numeric:tabular-nums;font-family:-apple-system,sans-serif;">£{{ "{:,.2f}".format(p.y1) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <p style="color:#444;font-size:0.65rem;margin-top:0.6rem;font-family:-apple-system,sans-serif;">This is a flat projection — no growth, no cost inflation, no seasonal variation. It shows what happens if every month looks like the current average.</p>
+        </div>
     </div>
     <div class="footer">Business as a Machine MVP · JonCo Coffee</div>
 
@@ -144,6 +218,21 @@
             <button id="insightsGenerate" onclick="generateInsights()" style="width:100%;padding:0.7rem;background:#1a1a3e;color:#4caf50;border:1px solid #4caf50;border-radius:6px;cursor:pointer;font-size:0.9rem;margin-top:1rem;">Generate Hypotheses</button>
         </div>
     </div>
+    <!-- Initiative detail panel (hidden by default) -->
+    <div id="initiativePanel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:100;overflow-y:auto;" onclick="if(event.target===this)closeInitiative()">
+        <div style="max-width:820px;margin:2rem auto;background:#111;border:1px solid #333;border-radius:10px;padding:1.5rem;font-family:-apple-system,sans-serif;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;">
+                <div>
+                    <h3 id="ipTitle" style="color:#fff;font-size:1.05rem;"></h3>
+                    <div id="ipSub" style="color:#666;font-size:0.72rem;margin-top:0.25rem;"></div>
+                </div>
+                <button onclick="closeInitiative()" style="background:#222;color:#888;border:1px solid #444;padding:0.3rem 0.8rem;border-radius:4px;cursor:pointer;">✕</button>
+            </div>
+            <div id="ipActions" style="display:flex;gap:0.5rem;margin-top:1rem;flex-wrap:wrap;align-items:center;"></div>
+            <div id="ipBody" style="color:#ccc;font-size:0.8rem;"></div>
+        </div>
+    </div>
+    <div id="ipTooltip" class="ip-tooltip"></div>
     <script>
         let currentNodeId = '', currentNodeLabel = '', currentNodeValue = 0, currentNodeTrend = '', currentNodeChange = 0;
         document.querySelectorAll('polyline').forEach(p => { const l = p.getTotalLength(); p.style.strokeDasharray = l; p.style.strokeDashoffset = l; p.style.transition = 'stroke-dashoffset 1s ease-out'; setTimeout(() => { p.style.strokeDashoffset = '0'; }, 200); });
@@ -210,6 +299,423 @@
             }
             btn.textContent = 'Generate Hypotheses'; btn.disabled = false;
         }
+
+        // ── Multi-Agent Strategy Arbiter (async with polling) ──
+        async function runStrategyArbiter() {
+            const btn = document.getElementById('arbiterBtn');
+            const resultDiv = document.getElementById('arbiterResult');
+            const contentDiv = document.getElementById('arbiterContent');
+
+            btn.textContent = 'Running...';
+            btn.disabled = true;
+            resultDiv.style.display = 'block';
+            contentDiv.innerHTML = '<p style="color:#888;">Starting the arbiter…</p>';
+
+            try {
+                // 1. Kick off the job — returns immediately with a job_id
+                const startResp = await fetch('/api/multiagent/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ use_llm: true, max_initiatives: 5, budget_effort: 15.0 })
+                });
+                const startData = await startResp.json();
+                if (!startData.ok) throw new Error(startData.error || 'Failed to start arbiter');
+
+                const jobId = startData.job_id;
+                contentDiv.innerHTML = '<p style="color:#888;">Specialists are generating hypotheses… the arbiter is selecting a portfolio. Polling for results…</p>';
+
+                // 2. Poll the job status endpoint until done/error
+                let job = null;
+                let attempts = 0;
+                const maxAttempts = 120; // 120 * 2s = 4 minutes max
+                while (attempts < maxAttempts) {
+                    await new Promise(r => setTimeout(r, 2000));
+                    attempts++;
+                    const pollResp = await fetch('/api/multiagent/job/' + jobId);
+                    job = await pollResp.json();
+                    if (job.status === 'done') break;
+                    if (job.status === 'error') throw new Error(job.error || 'Arbiter failed');
+                    contentDiv.innerHTML = '<p style="color:#888;">Arbiter still running… (' + attempts + ' polls)</p>';
+                }
+
+                if (!job || job.status !== 'done') throw new Error('Timed out waiting for arbiter');
+
+                // 3. Render the plan
+                const plan = job.plan;
+                let html = '';
+
+                html += '<div style="margin-bottom:1rem;border-bottom:1px solid #222;padding-bottom:0.6rem;">'
+                     +  '<h3 style="color:#4caf50;margin:0 0 0.4rem;font-size:0.95rem;">' + (plan.title || 'Strategy Plan') + '</h3>'
+                     +  '<p style="color:#999;font-size:0.78rem;line-height:1.5;">' + (plan.narrative || 'No narrative.') + '</p>'
+                     +  '</div>';
+
+                html += '<div style="display:flex;gap:0.6rem;margin-bottom:1rem;flex-wrap:wrap;">'
+                     +  '<div style="background:#111;padding:0.5rem 0.8rem;border-radius:4px;flex:1;min-width:100px;"><div style="color:#555;font-size:0.6rem;">Expected Impact</div><div style="color:#4caf50;font-size:0.95rem;font-weight:600;">£' + (plan.total_expected_impact_gbp || 0).toLocaleString() + '/mo</div></div>'
+                     +  '<div style="background:#111;padding:0.5rem 0.8rem;border-radius:4px;flex:1;min-width:100px;"><div style="color:#555;font-size:0.6rem;">Total Effort</div><div style="color:#ccc;font-size:0.95rem;font-weight:600;">' + (plan.total_effort || 0).toFixed(1) + ' units</div></div>'
+                     +  '<div style="background:#111;padding:0.5rem 0.8rem;border-radius:4px;flex:1;min-width:100px;"><div style="color:#555;font-size:0.6rem;">Budget Used</div><div style="color:#ccc;font-size:0.95rem;font-weight:600;">' + (plan.budget_used_pct || 0).toFixed(0) + '%</div></div>'
+                     +  '</div>';
+
+                if (plan.initiatives && plan.initiatives.length) {
+                    html += '<h4 style="color:#777;font-size:0.75rem;margin:1rem 0 0.5rem;font-weight:500;">Selected Initiatives (' + plan.initiatives.length + ')</h4>';
+                    plan.initiatives.forEach(function(ini, idx) {
+                        const m = ini.metadata || {};
+                        html += '<div class="ini-card" data-ini="' + ini.id + '" onclick="openInitiative(\'' + ini.id + '\')" title="Open detailed analysis">'
+                             +  '<div style="display:flex;justify-content:space-between;align-items:flex-start;">'
+                             +  '<div><span style="color:#4caf50;font-weight:600;margin-right:0.5rem;">' + (idx+1) + '.</span>'
+                             +  '<strong style="color:#fff;font-size:0.85rem;">' + ini.title + '</strong><span class="ini-active-slot"></span></div>'
+                             +  '<span style="color:#4caf50;font-size:0.75rem;font-weight:600;">+£' + (ini.predicted_impact_gbp || 0).toLocaleString() + '/mo</span>'
+                             +  '</div>'
+                             +  '<p style="color:#999;font-size:0.75rem;margin:0.35rem 0;">' + ini.description + '</p>'
+                             +  '<div style="display:flex;gap:0.9rem;color:#555;font-size:0.65rem;">'
+                             +  '<span>Effort: ' + (ini.effort || m.effort || 0) + '</span>'
+                             +  '<span>Risk: ' + (ini.risk || m.risk || 0).toFixed(2) + '</span>'
+                             +  '<span>Confidence: ' + ((ini.confidence || m.confidence || 0) * 100).toFixed(0) + '%</span>'
+                             +  '<span style="margin-left:auto;color:#3987e5;">View details →</span>'
+                             +  '</div></div>';
+                    });
+                }
+
+                if (plan.rejected && plan.rejected.length) {
+                    html += '<h4 style="color:#777;font-size:0.75rem;margin:1rem 0 0.5rem;font-weight:500;">Rejected Hypotheses (' + plan.rejected.length + ')</h4>';
+                    plan.rejected.slice(0, 5).forEach(function(h) {
+                        html += '<div style="background:#0d0d0d;border:1px solid #2a2a2a;border-radius:4px;padding:0.6rem;margin-bottom:0.4rem;opacity:0.7;">'
+                             +  '<div style="display:flex;justify-content:space-between;"><span style="color:#888;font-size:0.75rem;">' + h.title + '</span><span style="color:#f44336;font-size:0.7rem;">Rejected</span></div>'
+                             +  '<p style="color:#555;font-size:0.65rem;margin:0.2rem 0 0;">' + h.description + '</p></div>';
+                    });
+                    if (plan.rejected.length > 5) {
+                        html += '<p style="color:#555;font-size:0.65rem;">… and ' + (plan.rejected.length - 5) + ' more</p>';
+                    }
+                }
+
+                if (plan.metadata && plan.metadata.active_initiatives && plan.metadata.active_initiatives.length) {
+                    html += '<p style="color:#555;font-size:0.65rem;margin-top:0.6rem;">Planned around ' + plan.metadata.active_initiatives.length
+                         +  ' active initiative(s) — duplicates excluded, ' + (plan.metadata.effort_reserved_for_active || 0) + ' effort units reserved.</p>';
+                }
+
+                contentDiv.innerHTML = html;
+                loadActiveInitiatives();
+            } catch (e) {
+                contentDiv.innerHTML = '<p style="color:#f44336;">Error running arbiter: ' + e.message + '</p>';
+            } finally {
+                btn.textContent = '▶ Run Arbiter';
+                btn.disabled = false;
+            }
+        }
+
+        // ── Initiative detail view ──
+        // Role colours: validated categorical slots 1-4 (dark surface); roles are always also labelled in text.
+        const ROLE = {
+            target:  { c: '#3987e5', l: 'Target' },
+            driver:  { c: '#d95926', l: 'Driver' },
+            rollup:  { c: '#199e70', l: 'Roll-up' },
+            outcome: { c: '#9085e9', l: 'Outcome' },
+        };
+        // Reserved status colours, always shipped with icon + label.
+        const STATUS = {
+            on_track: { c: '#0ca30c', i: '✓', l: 'On track' },
+            ahead:    { c: '#0ca30c', i: '▲', l: 'Ahead' },
+            behind:   { c: '#ec835a', i: '▼', l: 'Behind' },
+        };
+        let ipData = null;
+
+        function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+        function gbp(v, dp) { dp = dp == null ? 0 : dp; const n = Number(v || 0); return (n < 0 ? '-£' : '£') + Math.abs(n).toLocaleString(undefined, {minimumFractionDigits: dp, maximumFractionDigits: dp}); }
+        function signedGbp(v) { return (v >= 0 ? '+' : '') + gbp(v); }
+        function closeInitiative() { document.getElementById('initiativePanel').style.display = 'none'; hideTip(); }
+        function showTip(html, ev) { const t = document.getElementById('ipTooltip'); t.innerHTML = html; t.style.display = 'block'; moveTip(ev); }
+        function moveTip(ev) { const t = document.getElementById('ipTooltip'); t.style.left = Math.min(ev.clientX + 14, window.innerWidth - 290) + 'px'; t.style.top = (ev.clientY + 14) + 'px'; }
+        function hideTip() { document.getElementById('ipTooltip').style.display = 'none'; }
+
+        async function openInitiative(id) {
+            document.getElementById('initiativePanel').style.display = 'block';
+            document.getElementById('ipTitle').textContent = 'Loading…';
+            document.getElementById('ipSub').textContent = '';
+            document.getElementById('ipActions').innerHTML = '';
+            document.getElementById('ipBody').innerHTML = '<p style="color:#666;margin-top:1rem;">Loading initiative analysis…</p>';
+            try {
+                const r = await fetch('/api/multiagent/initiatives/' + id);
+                const d = await r.json();
+                if (!d.ok) throw new Error(d.error || 'Failed to load initiative');
+                ipData = d;
+                renderInitiative();
+            } catch (e) {
+                document.getElementById('ipBody').innerHTML = '<p style="color:#f44336;margin-top:1rem;">Error: ' + esc(e.message) + '</p>';
+            }
+        }
+
+        function renderInitiative() {
+            const d = ipData, ini = d.initiative, a = d.analysis, imp = d.impact;
+            document.getElementById('ipTitle').innerHTML = esc(ini.title) + (d.active ? '<span class="active-pill">● ACTIVE · ' + esc(ini.status.toUpperCase()) + '</span>' : '');
+            document.getElementById('ipSub').textContent = (ini.node_label || ini.node_id) + ' · ' + ini.lever_type.replace(/_/g, ' ') + ' · proposed by ' + (ini.agent_id || 'arbiter').replace(/_/g, ' ') + ' · status: ' + ini.status;
+
+            let act = '';
+            if (ini.status === 'measured') {
+                act += '<span style="color:#666;font-size:0.75rem;">Measured — actual ' + gbp(ini.actual_impact_gbp) + '/mo</span>';
+            } else if (d.active) {
+                act += '<button class="ip-btn blue" id="ipProgressBtn" onclick="runProgress(\'' + ini.id + '\')">📈 Run Progress Agent</button>';
+                act += '<button class="ip-btn" onclick="toggleActive(\'' + ini.id + '\', false)">Deactivate</button>';
+                act += '<span style="color:#666;font-size:0.7rem;">Active since ' + esc((ini.started_at || ini.approved_at || '').slice(0, 10)) + '</span>';
+            } else {
+                act += '<button class="ip-btn primary" onclick="toggleActive(\'' + ini.id + '\', true)">★ Save as active initiative</button>';
+                act += '<span style="color:#555;font-size:0.7rem;">Active initiatives are tracked by the Progress Agent and planned around by future arbiter runs.</span>';
+            }
+            document.getElementById('ipActions').innerHTML = act;
+
+            let h = '';
+            // 1. Analysis
+            h += '<div class="ip-section"><h4>Analysis</h4><div class="ip-stats">'
+              +  stat('Predicted impact', signedGbp(ini.predicted_impact_gbp) + '/mo')
+              +  stat('6-month cumulative', signedGbp(imp.projection.cumulative_benefit_gbp || 0))
+              +  stat('Effort', a.effort != null ? a.effort : '—')
+              +  stat('Risk', a.risk != null ? Number(a.risk).toFixed(2) : '—')
+              +  stat('Confidence', a.confidence != null ? (a.confidence * 100).toFixed(0) + '%' : '—')
+              +  '</div>';
+            h += '<p style="color:#bbb;line-height:1.55;margin-top:0.8rem;">' + esc(a.description) + '</p>';
+            if (a.why_now) h += '<p style="margin-top:0.6rem;line-height:1.5;"><span style="color:#888;">Why now — </span><span style="color:#ddd;">' + esc(a.why_now) + '</span></p>';
+            if (a.rationale && a.rationale !== a.why_now) h += '<p style="margin-top:0.4rem;line-height:1.5;"><span style="color:#888;">Specialist rationale — </span><span style="color:#aaa;">' + esc(a.rationale) + '</span></p>';
+            if (a.validation && ((a.validation.soft_violations || []).length || a.validation.soft_penalty_gbp)) {
+                h += '<p style="margin-top:0.4rem;color:#aaa;">⚠️ Soft constraint penalty ' + gbp(a.validation.soft_penalty_gbp, 2) + '/mo already deducted.</p>';
+            }
+            if (a.predictions && a.predictions.length) {
+                h += '<table class="ip-table" style="margin-top:0.8rem;"><thead><tr><th>Predicted metric</th><th>Baseline</th><th>Predicted</th><th>Δ</th><th>Horizon</th><th>Conf.</th></tr></thead><tbody>';
+                a.predictions.forEach(p => {
+                    h += '<tr><td>' + esc(p.metric) + (p.rationale ? '<div style="color:#666;font-size:0.65rem;">' + esc(p.rationale) + '</div>' : '') + '</td><td>' + gbp(p.baseline) + '</td><td>' + gbp(p.predicted) + '</td><td>' + (p.delta_pct >= 0 ? '+' : '') + p.delta_pct + '%</td><td>' + p.horizon_days + 'd</td><td>' + (p.confidence * 100).toFixed(0) + '%</td></tr>';
+                });
+                h += '</tbody></table>';
+            }
+            h += '</div>';
+
+            if (imp.warning) {
+                h += '<p style="color:#ec835a;margin-top:1rem;">⚠️ ' + esc(imp.warning) + '</p>';
+                document.getElementById('ipBody').innerHTML = h;
+                return;
+            }
+
+            // 2. Graph
+            h += '<div class="ip-section"><h4>Impacted nodes</h4>' + roleLegend() + '<div id="ipGraph" style="margin-top:0.4rem;"></div>'
+              +  '<p style="color:#555;font-size:0.65rem;margin-top:0.3rem;">Hover a node for the reasoning. Values show the monthly change at full effect.</p></div>';
+
+            // 3. Reasoning
+            h += '<div class="ip-section"><h4>Why these nodes move</h4>';
+            imp.impacted.forEach(n => {
+                h += '<div style="display:flex;gap:0.6rem;padding:0.45rem 0;border-bottom:1px solid #181818;">'
+                  +  '<div style="min-width:170px;"><span class="role-chip" style="background:' + ROLE[n.role].c + ';">' + ROLE[n.role].l + '</span><span style="color:#ddd;">' + esc(n.label) + '</span></div>'
+                  +  '<div style="min-width:90px;text-align:right;color:#ddd;font-variant-numeric:tabular-nums;">' + signedGbp(n.delta_gbp) + '/mo</div>'
+                  +  '<div style="color:#999;font-size:0.75rem;line-height:1.45;">' + esc(n.reasoning) + '</div></div>';
+            });
+            h += '</div>';
+
+            // 4. Projection
+            h += '<div class="ip-section"><h4>Projected change · ' + imp.projection.months.length + ' months (' + esc(imp.projection.curve_kind) + ' ramp)</h4>'
+              +  '<div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.4rem;"><label style="color:#777;font-size:0.72rem;">Node</label><select id="ipNodeSel" onchange="drawProjection()" style="background:#0a0a0a;color:#ddd;border:1px solid #333;border-radius:4px;padding:0.25rem 0.4rem;font-size:0.75rem;">'
+              +  imp.impacted.map((n, i) => '<option value="' + i + '">' + esc(n.label) + ' (' + ROLE[n.role].l + ')</option>').join('')
+              +  '</select></div><div id="ipChart"></div>'
+              +  '<details style="margin-top:0.5rem;"><summary style="color:#777;font-size:0.72rem;cursor:pointer;">Table view — all impacted nodes</summary>' + projectionTable(imp) + '</details></div>';
+
+            // 5. Progress
+            h += '<div class="ip-section"><h4>Progress</h4><div id="ipProgress">';
+            if (!d.active) h += '<p style="color:#555;">Save this as an active initiative to track progress against the projection.</p>';
+            else h += '<p style="color:#666;">Run the Progress Agent to compare current node values with the projection.</p>';
+            h += '</div>' + progressHistory(d.progress_history) + '</div>';
+
+            document.getElementById('ipBody').innerHTML = h;
+            drawGraph();
+            drawProjection();
+        }
+
+        function stat(k, v) { return '<div class="ip-stat"><div class="k">' + k + '</div><div class="v">' + v + '</div></div>'; }
+        function roleLegend() {
+            return '<div style="display:flex;gap:0.9rem;font-size:0.68rem;color:#999;">' + Object.keys(ROLE).map(k =>
+                '<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:' + ROLE[k].c + ';margin-right:4px;vertical-align:middle;"></span>' + ROLE[k].l + '</span>').join('') + '</div>';
+        }
+
+        function drawGraph() {
+            const imp = ipData.impact, edges = ipData.graph.edges;
+            const outcomes = imp.impacted.filter(n => n.role === 'outcome');
+            // Rows: operating profit at top, then gross profit, then the P&L hierarchy by level.
+            const rowOf = n => n.role === 'outcome' ? outcomes.length - 1 - outcomes.indexOf(n) : outcomes.length + n.level;
+            const rows = {};
+            imp.impacted.forEach(n => { (rows[rowOf(n)] = rows[rowOf(n)] || []).push(n); });
+            const rowKeys = Object.keys(rows).map(Number).sort((a, b) => a - b);
+            const W = 760, RH = 64, PAD = 10, H = rowKeys.length * RH + PAD;
+            const pos = {};
+            rowKeys.forEach((rk, ri) => {
+                const ns = rows[rk], slot = (W - 2 * PAD) / ns.length;
+                const w = Math.min(150, slot - 8);
+                ns.forEach((n, i) => { pos[n.node_id] = { x: PAD + slot * i + (slot - w) / 2, y: PAD + ri * RH, w: w, h: 40, n: n }; });
+            });
+            let s = '<svg width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:6px;">';
+            edges.forEach(e => {
+                const a = pos[e.source], b = pos[e.target];
+                if (!a || !b) return;
+                const [top, bot] = a.y <= b.y ? [a, b] : [b, a];
+                s += '<line x1="' + (top.x + top.w / 2) + '" y1="' + (top.y + top.h) + '" x2="' + (bot.x + bot.w / 2) + '" y2="' + bot.y + '" stroke="#333" stroke-width="1.5"/>';
+            });
+            Object.values(pos).forEach(p => {
+                const n = p.n, col = ROLE[n.role].c, maxCh = Math.max(4, Math.floor(p.w / 6.2));
+                const lbl = n.label.length > maxCh ? n.label.slice(0, maxCh - 1) + '…' : n.label;
+                s += '<g class="ip-node" data-id="' + n.node_id + '" style="cursor:default;">'
+                  +  '<rect x="' + p.x + '" y="' + p.y + '" width="' + p.w + '" height="' + p.h + '" rx="4" fill="#141414" stroke="' + col + '" stroke-width="' + (n.role === 'target' ? 2.5 : 1.5) + '"/>'
+                  +  '<rect x="' + p.x + '" y="' + p.y + '" width="4" height="' + p.h + '" rx="2" fill="' + col + '"/>'
+                  +  '<text x="' + (p.x + p.w / 2 + 2) + '" y="' + (p.y + 16) + '" fill="#e0e0e0" font-size="11" text-anchor="middle">' + esc(lbl) + '</text>'
+                  +  '<text x="' + (p.x + p.w / 2 + 2) + '" y="' + (p.y + 31) + '" fill="#999" font-size="10" text-anchor="middle">' + signedGbp(n.delta_gbp) + '/mo</text></g>';
+            });
+            s += '</svg>';
+            const el = document.getElementById('ipGraph');
+            el.innerHTML = s;
+            el.querySelectorAll('.ip-node').forEach(g => {
+                const n = pos[g.dataset.id].n;
+                const tip = '<b>' + esc(n.label) + '</b> · ' + ROLE[n.role].l + '<br>' + gbp(n.baseline) + ' → ' + gbp(n.baseline + n.delta_gbp) + '/mo (' + signedGbp(n.delta_gbp) + ')<br><span style="color:#999;">' + esc(n.reasoning) + '</span>';
+                g.addEventListener('mouseenter', ev => showTip(tip, ev));
+                g.addEventListener('mousemove', moveTip);
+                g.addEventListener('mouseleave', hideTip);
+            });
+        }
+
+        function drawProjection() {
+            const imp = ipData.impact, n = imp.impacted[Number(document.getElementById('ipNodeSel').value || 0)];
+            const months = [0].concat(imp.projection.months), vals = [n.baseline].concat(n.projection);
+            const W = 760, H = 220, L = 70, R = 20, T = 14, B = 28;
+            let lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+            const padV = (hi - lo) * 0.15 || Math.max(1, Math.abs(hi) * 0.01);
+            lo -= padV; hi += padV;
+            const x = m => L + (W - L - R) * m / months[months.length - 1];
+            const y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
+            let s = '<svg id="ipChartSvg" width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:6px;">';
+            for (let i = 0; i <= 3; i++) {
+                const v = lo + (hi - lo) * i / 3;
+                s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="#1c1c1c"/>'
+                  +  '<text x="' + (L - 8) + '" y="' + (y(v) + 3) + '" fill="#666" font-size="10" text-anchor="end">' + gbp(v) + '</text>';
+            }
+            months.forEach(m => { s += '<text x="' + x(m) + '" y="' + (H - 10) + '" fill="#666" font-size="10" text-anchor="middle">' + (m === 0 ? 'Now' : 'M' + m) + '</text>'; });
+            s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(n.baseline) + '" y2="' + y(n.baseline) + '" stroke="#666" stroke-dasharray="4 4" stroke-width="1"/>'
+              +  '<text x="' + (W - R) + '" y="' + (y(n.baseline) + (n.delta_gbp >= 0 ? 13 : -6)) + '" fill="#888" font-size="10" text-anchor="end">Baseline ' + gbp(n.baseline) + '</text>';
+            s += '<polyline fill="none" stroke="#3987e5" stroke-width="2" stroke-linejoin="round" points="' + months.map((m, i) => x(m) + ',' + y(vals[i])).join(' ') + '"/>';
+            months.forEach((m, i) => { s += '<circle cx="' + x(m) + '" cy="' + y(vals[i]) + '" r="4" fill="#3987e5" stroke="#0a0a0a" stroke-width="2"/>'; });
+            const last = vals.length - 1;
+            s += '<text x="' + (x(months[last]) - 6) + '" y="' + (y(vals[last]) + (n.delta_gbp >= 0 ? -10 : 18)) + '" fill="#e0e0e0" font-size="11" text-anchor="end">' + gbp(vals[last]) + '/mo</text>';
+            s += '<line id="ipCross" x1="0" x2="0" y1="' + T + '" y2="' + (H - B) + '" stroke="#555" stroke-width="1" style="display:none;"/>';
+            const slot = (W - L - R) / (months.length - 1);
+            months.forEach((m, i) => { s += '<rect class="ip-hit" data-i="' + i + '" x="' + (x(m) - slot / 2) + '" y="' + T + '" width="' + slot + '" height="' + (H - T - B) + '" fill="transparent"/>'; });
+            s += '</svg>';
+            const el = document.getElementById('ipChart');
+            el.innerHTML = s;
+            const cross = document.getElementById('ipCross');
+            el.querySelectorAll('.ip-hit').forEach(r => {
+                const i = Number(r.dataset.i), m = months[i];
+                const tip = '<b>' + (m === 0 ? 'Now (baseline)' : 'Month ' + m) + '</b> · ' + esc(n.label) + '<br>' + gbp(vals[i], 2) + '/mo'
+                          + (m === 0 ? '' : '<br><span style="color:#999;">' + signedGbp(vals[i] - n.baseline) + ' vs baseline · ' + (imp.projection.curve[i - 1] * 100).toFixed(0) + '% of full effect</span>');
+                r.addEventListener('mouseenter', ev => { cross.setAttribute('x1', x(m)); cross.setAttribute('x2', x(m)); cross.style.display = ''; showTip(tip, ev); });
+                r.addEventListener('mousemove', moveTip);
+                r.addEventListener('mouseleave', () => { cross.style.display = 'none'; hideTip(); });
+            });
+        }
+
+        function projectionTable(imp) {
+            let t = '<table class="ip-table" style="margin-top:0.4rem;"><thead><tr><th>Node</th><th>Baseline</th>' + imp.projection.months.map(m => '<th>M' + m + '</th>').join('') + '<th>Δ full</th></tr></thead><tbody>';
+            imp.impacted.forEach(n => {
+                t += '<tr><td><span class="role-chip" style="background:' + ROLE[n.role].c + ';">' + ROLE[n.role].l + '</span>' + esc(n.label) + '</td><td>' + gbp(n.baseline) + '</td>'
+                  +  n.projection.map(v => '<td>' + gbp(v) + '</td>').join('') + '<td>' + signedGbp(n.delta_gbp) + '</td></tr>';
+            });
+            t += '<tr><td style="color:#777;">Ramp (% of full effect)</td><td></td>' + imp.projection.curve.map(c => '<td style="color:#777;">' + (c * 100).toFixed(0) + '%</td>').join('') + '<td></td></tr>';
+            return t + '</tbody></table>';
+        }
+
+        function progressHistory(hist) {
+            if (!hist || !hist.length) return '';
+            let h = '<details style="margin-top:0.6rem;"><summary style="color:#777;font-size:0.72rem;cursor:pointer;">Previous checks (' + hist.length + ')</summary>';
+            hist.slice().reverse().forEach(p => {
+                const st = STATUS[p.status] || STATUS.on_track;
+                h += '<div style="font-size:0.72rem;color:#999;padding:0.3rem 0;border-bottom:1px solid #181818;">' + esc(p.checked_at.slice(0, 16).replace('T', ' ')) + ' · <span style="color:' + st.c + ';">' + st.i + ' ' + st.l + '</span> · ' + esc(p.summary) + '</div>';
+            });
+            return h + '</details>';
+        }
+
+        async function toggleActive(id, activate) {
+            const btns = document.querySelectorAll('#ipActions button');
+            btns.forEach(b => b.disabled = true);
+            try {
+                const r = await fetch('/api/multiagent/initiatives/' + id + '/' + (activate ? 'activate' : 'deactivate'), {
+                    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(activate ? {status: 'running'} : {})
+                });
+                const d = await r.json();
+                if (!d.ok) throw new Error(d.error || 'Request failed');
+                await openInitiative(id);
+                loadActiveInitiatives();
+            } catch (e) {
+                btns.forEach(b => b.disabled = false);
+                alert('Could not update initiative: ' + e.message);
+            }
+        }
+
+        async function runProgress(id) {
+            const btn = document.getElementById('ipProgressBtn'), out = document.getElementById('ipProgress');
+            btn.disabled = true; btn.textContent = 'Checking…';
+            out.innerHTML = '<p style="color:#888;">Progress Agent is comparing current node values with the projection…</p>';
+            try {
+                const r = await fetch('/api/multiagent/initiatives/' + id + '/progress', { method: 'POST' });
+                const d = await r.json();
+                if (!d.ok) throw new Error(d.error || 'Progress check failed');
+                const rep = d.report, st = STATUS[rep.status];
+                let h = '<div class="status-banner" style="border-color:' + st.c + ';background:' + st.c + '14;">'
+                      + '<div style="color:' + st.c + ';font-weight:600;font-size:0.9rem;">' + st.i + ' ' + st.l + (rep.too_early ? ' <span style="color:#888;font-weight:400;font-size:0.72rem;">(provisional — too early to judge)</span>' : '') + '</div>'
+                      + '<div style="color:#ccc;margin-top:0.3rem;line-height:1.5;">' + esc(rep.summary) + '</div></div>';
+                h += '<div class="ip-stats">'
+                  +  stat('Elapsed', rep.elapsed_months + ' mo')
+                  +  stat('Ramp expected', (rep.expected_ramp_fraction * 100).toFixed(0) + '%')
+                  +  stat('Expected now', gbp(rep.expected_benefit_now_gbp) + '/mo')
+                  +  stat('Achieved', gbp(rep.achieved_benefit_gbp) + '/mo')
+                  +  stat('Ratio', rep.achievement_ratio == null ? '—' : (rep.achievement_ratio * 100).toFixed(0) + '%')
+                  +  '</div>';
+                if (rep.blockers.length) {
+                    h += '<div style="margin-top:0.7rem;"><div style="color:#ec835a;font-size:0.72rem;margin-bottom:0.25rem;">⚠ Blockers</div>'
+                      +  rep.blockers.map(b => '<div style="color:#bbb;font-size:0.75rem;padding:0.2rem 0 0.2rem 0.8rem;border-left:2px solid #ec835a;margin-bottom:0.25rem;">' + esc(b) + '</div>').join('') + '</div>';
+                }
+                if (rep.deviations.length) {
+                    h += '<div style="margin-top:0.7rem;"><div style="color:#999;font-size:0.72rem;margin-bottom:0.25rem;">Deviations from projection</div>'
+                      +  rep.deviations.map(v => '<div style="color:#aaa;font-size:0.75rem;padding:0.15rem 0;">• ' + esc(v.message) + '</div>').join('') + '</div>';
+                }
+                h += '<details style="margin-top:0.6rem;"><summary style="color:#777;font-size:0.72rem;cursor:pointer;">Node-by-node</summary><table class="ip-table" style="margin-top:0.4rem;"><thead><tr><th>Node</th><th>Baseline</th><th>Expected now</th><th>Current</th><th>Gap</th><th>7d</th></tr></thead><tbody>'
+                  +  rep.nodes.map(n => '<tr><td>' + esc(n.label) + '</td><td>' + gbp(n.baseline) + '</td><td>' + gbp(n.expected_now) + '</td><td>' + gbp(n.current) + '</td><td>' + signedGbp(n.gap_gbp) + '</td><td>' + (n.change_7d_pct >= 0 ? '+' : '') + n.change_7d_pct + '%</td></tr>').join('')
+                  +  '</tbody></table></details>';
+                out.innerHTML = h;
+            } catch (e) {
+                out.innerHTML = '<p style="color:#f44336;">Error: ' + esc(e.message) + '</p>';
+            } finally {
+                btn.disabled = false; btn.textContent = '📈 Run Progress Agent';
+            }
+        }
+
+        async function loadActiveInitiatives() {
+            try {
+                const r = await fetch('/api/multiagent/initiatives?status=active');
+                const d = await r.json();
+                if (!d.ok) return;
+                const box = document.getElementById('activeInitiatives'), list = document.getElementById('activeInitiativesList');
+                const ids = new Set(d.initiatives.map(i => i.id));
+                document.querySelectorAll('.ini-card[data-ini]').forEach(c => {
+                    const on = ids.has(c.dataset.ini);
+                    c.classList.toggle('active', on);
+                    const slot = c.querySelector('.ini-active-slot');
+                    if (slot) slot.innerHTML = on ? '<span class="active-pill">● ACTIVE</span>' : '';
+                });
+                if (!d.initiatives.length) { box.style.display = 'none'; return; }
+                box.style.display = 'block';
+                list.innerHTML = d.initiatives.map(i => {
+                    const last = (i.metadata.progress_history || []).slice(-1)[0];
+                    const st = last ? STATUS[last.status] : null;
+                    return '<div class="ini-card active" onclick="openInitiative(\'' + i.id + '\')">'
+                         + '<div style="display:flex;justify-content:space-between;align-items:center;gap:0.6rem;">'
+                         + '<div><strong style="color:#fff;font-size:0.82rem;">' + esc(i.title) + '</strong><span class="active-pill">● ' + esc(i.status.toUpperCase()) + '</span>'
+                         + '<div style="color:#666;font-size:0.68rem;margin-top:0.2rem;">' + esc(i.node_label || i.node_id) + ' · since ' + esc((i.started_at || i.approved_at || '').slice(0, 10)) + '</div></div>'
+                         + '<div style="text-align:right;"><div style="color:#4caf50;font-size:0.75rem;font-weight:600;">' + signedGbp(i.predicted_impact_gbp) + '/mo</div>'
+                         + '<div style="font-size:0.68rem;color:' + (st ? st.c : '#555') + ';">' + (st ? st.i + ' ' + st.l : 'Not yet checked') + '</div></div>'
+                         + '</div></div>';
+                }).join('');
+            } catch (e) { /* non-critical */ }
+        }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeInitiative(); });
+        loadActiveInitiatives();
     </script>
 </body>
 </html>

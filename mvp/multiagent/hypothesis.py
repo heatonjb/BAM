@@ -244,6 +244,24 @@ class Initiative:
         }
 
 
+def find_active_duplicate(hyp: Hypothesis, active: List[Initiative]) -> Optional[Initiative]:
+    """Return the active initiative that ``hyp`` would duplicate, if any.
+
+    A hypothesis duplicates committed work when it pulls the same lever on the
+    same node, or carries the same title. Used by specialists and the arbiter so
+    approved/running initiatives are not proposed again every cycle.
+    """
+    title = hyp.title.lower().strip()
+    lever = hyp.lever_type.value if isinstance(hyp.lever_type, LeverType) else hyp.lever_type
+    for ini in active:
+        ini_lever = ini.lever_type.value if isinstance(ini.lever_type, LeverType) else ini.lever_type
+        if ini.title.lower().strip() == title:
+            return ini
+        if hyp.node_id and ini.node_id == hyp.node_id and ini_lever == lever:
+            return ini
+    return None
+
+
 @dataclass
 class OptimisationPlan:
     """The arbiter's output: an ordered portfolio of initiatives to execute."""

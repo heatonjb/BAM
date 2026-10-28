@@ -153,10 +153,25 @@ def index():
                 "id": node.id,
             })
 
+    # ── Projections: "nothing changes" — hold current monthly averages flat ──
+    projections = []
+    for row in pnl:
+        base = row["value"]
+        projections.append({
+            "label": row["label"],
+            "icon": row["icon"],
+            "type": row["type"],
+            "current": round(base, 2),
+            "m1": round(base * 1, 2),
+            "m3": round(base * 3, 2),
+            "y1": round(base * 12, 2),
+        })
+
     return render_template("index.html",
                          company=company,
                          pnl=pnl,
-                         kpis=kpis)
+                         kpis=kpis,
+                         projections=projections)
 
 
 @app.route("/drill/<node_id>")
@@ -278,16 +293,9 @@ def api_multiagent_plan():
     return jsonify({"ok": True, "plan": _last_plan.to_dict()})
 
 
-@app.route("/api/multiagent/run", methods=["POST"])
-def api_multiagent_run():
-    """Trigger a full multi-agent optimisation cycle."""
+def _run_arbiter_job(job_id, use_llm, control_model, budget, max_init):
+    """Background worker: run specialists -> arbiter -> register initiatives."""
     global _last_plan
-    data = request.get_json(silent=True) or {}
-    use_llm = bool(data.get("use_llm", False))
-    control_model = data.get("control_model", "hierarchical")
-    budget = float(data.get("budget_effort", 20.0))
-    max_init = int(data.get("max_initiatives", 6))
-
     try:
         orch = get_orchestrator()
         orch.config.control_model = ControlModel(control_model)
@@ -298,24 +306,206 @@ def api_multiagent_run():
         orch.arbiter.use_llm = use_llm
 
         g = get_graph()
-        plan = orch.run_cycle(g)
+
+        # Proven path (run_cycle wrapper is buggy — see run_bam.py).
+        recommendations = []
+        for s in orch.specialists:
+            recommendations.append(s.recommend(g))
+
+        plan = orch.arbiter.decide(g, recommendations)
+
+        for ini in plan.initiatives:
+            try:
+                orch.knowledge.record_initiative(ini)
+            except Exception:
+                pass
+
         _last_plan = plan
-        return jsonify({"ok": True, "plan": plan.to_dict()})
+        _jobs[job_id] = {"status": "done", "plan": plan.to_dict()}
+    except Exception as e:
+        import traceback
+        _jobs[job_id] = {"status": "error", "error": str(e), "traceback": traceback.format_exc()}
+
+
+@app.route("/api/multiagent/run", methods=["POST"])
+def api_multiagent_run():
+    """Start an async multi-agent optimisation cycle. Returns a job_id immediately."""
+    data = request.get_json(silent=True) or {}
+    use_llm = bool(data.get("use_llm", False))
+    control_model = data.get("control_model", "hierarchical")
+    budget = float(data.get("budget_effort", 20.0))
+    max_init = int(data.get("max_initiatives", 6))
+
+    job_id = uuid.uuid4().hex[:12]
+    _jobs[job_id] = {"status": "running"}
+    t = threading.Thread(
+        target=_run_arbiter_job,
+        args=(job_id, use_llm, control_model, budget, max_init),
+        daemon=True,
+    )
+    t.start()
+    return jsonify({"ok": True, "job_id": job_id, "status": "running"})
+
+
+@app.route("/api/multiagent/job/<job_id>", methods=["GET"])
+def api_multiagent_job(job_id):
+    """Poll the status/result of an async arbiter job."""
+    job = _jobs.get(job_id)
+    if job is None:
+        return jsonify({"ok": False, "error": "Unknown job_id"}), 404
+    return jsonify({"ok": True, **job})
+
+
+@app.route("/api/multiagent/initiatives", methods=["GET"])
+def api_multiagent_initiatives():
+    """List tracked initiatives. ``?status=active`` returns APPROVED + RUNNING."""
+    try:
+        orch = get_orchestrator()
+        status = request.args.get("status")
+        if status == "active":
+            inis = orch.knowledge.active_initiatives(limit=50)
+        else:
+            inis = orch.knowledge.list_initiatives(status=status, limit=50)
+        return jsonify({"ok": True, "initiatives": [i.to_dict() for i in inis]})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+def _find_initiative(initiative_id):
+    """Load from the knowledge base; fall back to (and persist) the in-memory last plan."""
+    kb = get_orchestrator().knowledge
+    ini = kb.get_initiative(initiative_id)
+    if ini is None and _last_plan is not None:
+        for candidate in _last_plan.initiatives:
+            if candidate.id == initiative_id:
+                kb.record_initiative(candidate)
+                ini = kb.get_initiative(initiative_id)
+                break
+    return ini
+
+
+def _impact_edges(g, node_ids):
+    """Edges between impacted nodes, following the P&L hierarchy (parent -> child)."""
+    ids = set(node_ids)
+    edges = []
+    for nid in ids:
+        node = g.get(nid)
+        if not node:
+            continue
+        if node.parent_group in ids:
+            edges.append({"source": node.parent_group, "target": nid})
+        for cid in node.children:
+            if cid in ids and g.get(cid) and g.get(cid).parent_group != nid:
+                edges.append({"source": nid, "target": cid})
+    return edges
+
+
+@app.route("/api/multiagent/initiatives/<initiative_id>", methods=["GET"])
+def api_initiative_detail(initiative_id):
+    """Everything the detail view needs: analysis, impacted nodes + reasoning, projection, progress history."""
+    from mvp.multiagent.progress import analyse_impact
+    try:
+        ini = _find_initiative(initiative_id)
+        if not ini:
+            return jsonify({"ok": False, "error": "Initiative not found"}), 404
+        g = get_graph()
+        node = g.get(ini.node_id)
+        impact = analyse_impact(ini, g, baseline_values=ini.metadata.get("activation_snapshot"))
+        ids = [i["node_id"] for i in impact["impacted"]]
+        return jsonify({
+            "ok": True,
+            "initiative": ini.to_dict(),
+            "active": ini.status.value in ("approved", "running"),
+            "node": node.to_dict() if node else None,
+            "analysis": {
+                "description": ini.description,
+                "why_now": ini.metadata.get("why_now") or "",
+                "rationale": ini.metadata.get("rationale") or "",
+                "effort": ini.metadata.get("effort"),
+                "risk": ini.metadata.get("risk"),
+                "confidence": ini.metadata.get("confidence"),
+                "source": ini.metadata.get("source"),
+                "validation": ini.metadata.get("validation"),
+                "predictions": [p.to_dict() for p in ini.predictions],
+            },
+            "impact": impact,
+            "graph": {"nodes": ids, "edges": _impact_edges(g, ids)},
+            "progress_history": ini.metadata.get("progress_history", []),
+        })
     except Exception as e:
         import traceback
         return jsonify({"ok": False, "error": str(e), "traceback": traceback.format_exc()}), 500
 
 
-@app.route("/api/multiagent/initiatives", methods=["GET"])
-def api_multiagent_initiatives():
-    """List tracked initiatives."""
+@app.route("/api/multiagent/initiatives/<initiative_id>/activate", methods=["POST"])
+def api_activate_initiative(initiative_id):
+    """Mark an initiative active (RUNNING by default, or APPROVED).
+
+    Snapshots the impacted nodes' current values so the Progress Agent has a
+    fixed baseline. Active initiatives are read by specialists and the arbiter
+    on every subsequent run (see StrategyArbiter.decide).
+    """
+    from mvp.multiagent.hypothesis import InitiativeStatus
+    from mvp.multiagent.progress import baseline_snapshot
+    data = request.get_json(silent=True) or {}
+    status = data.get("status", "running")
+    if status not in ("running", "approved"):
+        return jsonify({"ok": False, "error": "status must be 'running' or 'approved'"}), 400
     try:
-        orch = get_orchestrator()
-        status = request.args.get("status")
-        inis = orch.knowledge.list_initiatives(status=status, limit=50)
-        return jsonify({"ok": True, "initiatives": [i.to_dict() for i in inis]})
+        ini = _find_initiative(initiative_id)
+        if not ini:
+            return jsonify({"ok": False, "error": "Initiative not found"}), 404
+        if ini.status == InitiativeStatus.MEASURED:
+            return jsonify({"ok": False, "error": "Initiative already measured"}), 409
+        updates = {}
+        if not ini.metadata.get("activation_snapshot"):
+            updates["activation_snapshot"] = baseline_snapshot(ini, get_graph())
+        ini = get_orchestrator().knowledge.set_status(initiative_id, InitiativeStatus(status), updates)
+        return jsonify({"ok": True, "initiative": ini.to_dict(), "active": True})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/multiagent/initiatives/<initiative_id>/deactivate", methods=["POST"])
+def api_deactivate_initiative(initiative_id):
+    """Toggle an active initiative back to PROPOSED (or ABANDONED with {"abandon": true})."""
+    from mvp.multiagent.hypothesis import InitiativeStatus
+    data = request.get_json(silent=True) or {}
+    try:
+        ini = _find_initiative(initiative_id)
+        if not ini:
+            return jsonify({"ok": False, "error": "Initiative not found"}), 404
+        if ini.status not in (InitiativeStatus.APPROVED, InitiativeStatus.RUNNING):
+            return jsonify({"ok": False, "error": f"Initiative is not active (status={ini.status.value})"}), 409
+        new_status = InitiativeStatus.ABANDONED if data.get("abandon") else InitiativeStatus.PROPOSED
+        ini = get_orchestrator().knowledge.set_status(initiative_id, new_status)
+        return jsonify({"ok": True, "initiative": ini.to_dict(), "active": False})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/multiagent/initiatives/<initiative_id>/progress", methods=["POST"])
+def api_initiative_progress(initiative_id):
+    """Run the Progress Agent: current node values vs the time-phased projection."""
+    from mvp.multiagent.progress import ProgressAgent
+    try:
+        ini = _find_initiative(initiative_id)
+        if not ini:
+            return jsonify({"ok": False, "error": "Initiative not found"}), 404
+        if ini.status.value not in ("approved", "running"):
+            return jsonify({"ok": False, "error": "Progress can only be checked for active initiatives"}), 409
+        kb = get_orchestrator().knowledge
+        report = ProgressAgent().check(ini, get_graph(),
+                                       constraint_store=get_constraints(),
+                                       other_active=kb.active_initiatives())
+        history = (ini.metadata.get("progress_history") or [])[-9:]
+        history.append({k: report[k] for k in ("checked_at", "status", "achieved_benefit_gbp",
+                                               "expected_benefit_now_gbp", "summary")})
+        kb.update_metadata(initiative_id, {"progress_history": history})
+        return jsonify({"ok": True, "report": report})
+    except Exception as e:
+        import traceback
+        return jsonify({"ok": False, "error": str(e), "traceback": traceback.format_exc()}), 500
 
 
 @app.route("/api/multiagent/initiatives/<initiative_id>/measure", methods=["POST"])

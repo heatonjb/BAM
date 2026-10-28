@@ -18,7 +18,7 @@ from dataclasses import asdict
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from .hypothesis import Initiative, InitiativeStatus, LeverType
+from .hypothesis import Initiative, InitiativeStatus, LeverType, Prediction
 
 DB_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
@@ -150,7 +150,57 @@ class HistoricalKnowledgeBase:
         self.record_initiative(ini)
         return ini
 
+    def set_status(self, initiative_id: str, status: InitiativeStatus,
+                   metadata_updates: Optional[Dict[str, Any]] = None) -> Optional[Initiative]:
+        """Move an initiative to ``status``, stamping the matching lifecycle timestamp."""
+        ini = self.get_initiative(initiative_id)
+        if not ini:
+            return None
+        now = datetime.now(timezone.utc).isoformat()
+        ini.status = status
+        if status == InitiativeStatus.APPROVED and not ini.approved_at:
+            ini.approved_at = now
+        if status == InitiativeStatus.RUNNING:
+            ini.approved_at = ini.approved_at or now
+            ini.started_at = ini.started_at or now
+        if metadata_updates:
+            ini.metadata.update(metadata_updates)
+        self.record_initiative(ini)
+        return ini
+
+    def update_metadata(self, initiative_id: str, updates: Dict[str, Any]) -> Optional[Initiative]:
+        ini = self.get_initiative(initiative_id)
+        if not ini:
+            return None
+        ini.metadata.update(updates)
+        self.record_initiative(ini)
+        return ini
+
     # ── Queries ───────────────────────────────────────────────────────────
+
+    ACTIVE_STATUSES = (InitiativeStatus.APPROVED.value, InitiativeStatus.RUNNING.value)
+
+    def active_initiatives(self, limit: int = 100) -> List[Initiative]:
+        """Initiatives the business has committed to (APPROVED or RUNNING)."""
+        rows = self._conn.execute(
+            f"SELECT * FROM initiatives WHERE status IN ({','.join('?' * len(self.ACTIVE_STATUSES))}) "
+            "ORDER BY created_at DESC LIMIT ?",
+            (*self.ACTIVE_STATUSES, limit),
+        ).fetchall()
+        return [self._row_to_initiative(r) for r in rows]
+
+    def active_initiatives_text(self) -> str:
+        """LLM-readable summary of committed work, for specialist/arbiter prompts."""
+        active = self.active_initiatives()
+        if not active:
+            return "No active initiatives — the business has not committed to any work yet."
+        lines = ["Initiatives already approved/running (do NOT re-propose; their impact is not yet in the data):"]
+        for i in active:
+            lines.append(
+                f"  - [{i.status.value}] {i.title} on {i.node_label or i.node_id} "
+                f"[{i.lever_type.value}] predicted £{i.predicted_impact_gbp:,.0f}/mo"
+            )
+        return "\n".join(lines)
 
     def get_initiative(self, initiative_id: str) -> Optional[Initiative]:
         row = self._conn.execute("SELECT * FROM initiatives WHERE id=?", (initiative_id,)).fetchone()
@@ -276,6 +326,20 @@ class HistoricalKnowledgeBase:
     # ── Helpers ───────────────────────────────────────────────────────────
 
     def _row_to_initiative(self, row: sqlite3.Row) -> Initiative:
+        predictions = []
+        for p in json.loads(row["predictions_json"] or "[]"):
+            try:
+                predictions.append(Prediction(
+                    metric=p.get("metric", ""),
+                    baseline=float(p.get("baseline", 0)),
+                    predicted=float(p.get("predicted", 0)),
+                    unit=p.get("unit", "GBP"),
+                    horizon_days=int(p.get("horizon_days", 30)),
+                    confidence=float(p.get("confidence", 0.5)),
+                    rationale=p.get("rationale", ""),
+                ))
+            except (TypeError, ValueError, AttributeError):
+                continue
         return Initiative(
             id=row["id"],
             hypothesis_id=row["hypothesis_id"] or "",
@@ -286,8 +350,10 @@ class HistoricalKnowledgeBase:
             description=row["description"] or "",
             lever_type=LeverType(row["lever_type"]) if row["lever_type"] else LeverType.OTHER,
             status=InitiativeStatus(row["status"]) if row["status"] else InitiativeStatus.PROPOSED,
+            predictions=predictions,
             predicted_impact_gbp=row["predicted_impact_gbp"] or 0.0,
             actual_impact_gbp=row["actual_impact_gbp"],
+            actual_metrics=json.loads(row["actual_metrics_json"] or "{}"),
             created_at=row["created_at"] or "",
             approved_at=row["approved_at"],
             started_at=row["started_at"],

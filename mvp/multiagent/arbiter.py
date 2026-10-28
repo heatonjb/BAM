@@ -22,7 +22,9 @@ from ..insights import call_llm
 from ..model.core import BusinessGraph
 from ..model.constraints import ConstraintStore
 from .constraint_checker import ConstraintCheckerAgent, ValidationResult
-from .hypothesis import Hypothesis, Initiative, InitiativeStatus, LeverType, OptimisationPlan
+from .hypothesis import (
+    Hypothesis, Initiative, InitiativeStatus, LeverType, OptimisationPlan, find_active_duplicate,
+)
 from .knowledge import HistoricalKnowledgeBase
 
 ARBITER_SYSTEM_PROMPT = """You are the Strategy Arbiter & Controller of "Business as a Machine"
@@ -48,6 +50,9 @@ and explain your reasoning clearly to the business owner.
 ## Historical lessons
 {history_text}
 
+## Work already in flight
+{active_text}
+
 ## Rules
 1. Select a portfolio of 3-8 initiatives that maximises total risk-adjusted value.
 2. Respect the effort budget of {budget_effort} units. Effort 1 = trivial, 10 = major programme.
@@ -57,6 +62,8 @@ and explain your reasoning clearly to the business owner.
 6. Consider historical calibration: discount levers that have under-delivered before.
 7. Write a short, direct narrative (4-8 sentences) explaining the strategy. No fluff. British English.
 8. Give each selected initiative a one-line "why now" justification.
+9. Active initiatives already hold part of the budget and count towards the per-node limit. Their
+   predicted uplift is committed but not yet in the numbers. Favour work that complements them.
 
 Return ONLY valid JSON:
 {{
@@ -80,6 +87,9 @@ class StrategyArbiter:
     budget_effort: float = 20.0
     max_initiatives: int = 6
     use_llm: bool = True
+    # Active (APPROVED/RUNNING) initiatives consume team capacity, so their
+    # effort is deducted from this cycle's budget. Turn off to plan as if idle.
+    reserve_budget_for_active: bool = True
 
     knowledge: Optional[HistoricalKnowledgeBase] = None
     constraint_store: Optional[ConstraintStore] = None
@@ -157,9 +167,17 @@ class StrategyArbiter:
 
     def select_portfolio(self, pool: List[Hypothesis],
                          validations: List[ValidationResult],
-                         budget_effort: Optional[float] = None) -> List[Hypothesis]:
-        """Greedy knapsack by score/effort ratio, respecting node collision rules."""
+                         budget_effort: Optional[float] = None,
+                         active: Optional[List[Initiative]] = None) -> List[Hypothesis]:
+        """Greedy knapsack by score/effort ratio, respecting node collision rules.
+
+        ``active`` initiatives pre-occupy their nodes (so the max-2-per-node rule
+        counts committed work) and, when ``reserve_budget_for_active`` is set,
+        their recorded effort is reserved out of the budget.
+        """
         budget = budget_effort if budget_effort is not None else self.budget_effort
+        if active and self.reserve_budget_for_active:
+            budget -= self._active_effort(active)
         vmap = {v.hypothesis_id: v for v in validations}
 
         candidates = []
@@ -178,6 +196,8 @@ class StrategyArbiter:
         selected: List[Hypothesis] = []
         used_effort = 0.0
         node_counts: Dict[str, int] = {}
+        for ini in active or []:
+            node_counts[ini.node_id] = node_counts.get(ini.node_id, 0) + 1
         for h in candidates:
             if len(selected) >= self.max_initiatives:
                 break
@@ -189,6 +209,29 @@ class StrategyArbiter:
             used_effort += h.effort
             node_counts[h.node_id] = node_counts.get(h.node_id, 0) + 1
         return selected
+
+    # ── Active-initiative awareness ───────────────────────────────────────
+
+    @staticmethod
+    def _active_effort(active: List[Initiative]) -> float:
+        # Effort is stored in metadata from this version on; older records count as 0.
+        return sum(float(i.metadata.get("effort") or 0) for i in active)
+
+    def _active_initiatives(self) -> List[Initiative]:
+        if not self.knowledge:
+            return []
+        try:
+            return self.knowledge.active_initiatives()
+        except Exception:
+            return []
+
+    def _active_text(self, active: List[Initiative]) -> str:
+        if not active or not self.knowledge:
+            return "None — no initiatives are approved or running."
+        pending = sum(i.predicted_impact_gbp for i in active)
+        return (self.knowledge.active_initiatives_text() +
+                f"\nCommitted but unrealised uplift: £{pending:,.0f}/mo. "
+                f"Effort reserved: {self._active_effort(active):.1f} units.")
 
     # ── LLM narrative ─────────────────────────────────────────────────────
 
@@ -237,13 +280,38 @@ class StrategyArbiter:
     def decide(self, graph: BusinessGraph,
                recommendations: List[Dict[str, Any]],
                research_context: str = "") -> OptimisationPlan:
-        """Full arbiter loop: collect → validate → select → narrate."""
+        """Full arbiter loop: collect → validate → select → narrate.
+
+        Active initiatives (APPROVED/RUNNING in the knowledge base) shape every
+        cycle:
+          * hypotheses duplicating them (same node + lever, or same title) are
+            removed from the pool and listed in ``plan.rejected`` with the reason
+            in ``metadata["rejected_reason"]`` — no duplicate work;
+          * they count towards the max-2-per-node rule and, by default, their
+            effort is reserved from the budget (see ``select_portfolio``);
+          * the LLM sees them, with their committed-but-unrealised uplift, so it
+            treats the current numbers as "before" and favours complementary work.
+        """
+        active = self._active_initiatives()
         pool = self.collect(recommendations)
+        duplicates: List[Hypothesis] = []
+        if active:
+            kept = []
+            for h in pool:
+                dup = find_active_duplicate(h, active)
+                if dup is None:
+                    kept.append(h)
+                else:
+                    h.metadata["rejected_reason"] = f"Duplicates active initiative '{dup.title}' ({dup.id})"
+                    duplicates.append(h)
+            pool = kept
         if not pool:
-            return OptimisationPlan(title="No hypotheses", narrative="No specialist produced a viable hypothesis.")
+            return OptimisationPlan(title="No hypotheses", narrative="No specialist produced a viable hypothesis.",
+                                    rejected=duplicates,
+                                    metadata={"active_initiatives": [self._active_summary(i) for i in active]})
 
         validations = self.validate_pool(pool, graph)
-        selected = self.select_portfolio(pool, validations)
+        selected = self.select_portfolio(pool, validations, active=active)
 
         # LLM narrative — give it the selected set and the full pool
         system_prompt = ARBITER_SYSTEM_PROMPT.format(
@@ -251,6 +319,7 @@ class StrategyArbiter:
             recommendations_text=self._recommendations_text(recommendations),
             constraints_text=self._constraints_text(validations),
             history_text=self._history_text(),
+            active_text=self._active_text(active),
             budget_effort=self.budget_effort,
         )
         selected_ids = [h.id for h in selected]
@@ -307,7 +376,18 @@ class StrategyArbiter:
                 predictions=h.predictions,
                 predicted_impact_gbp=h.net_impact_gbp,
                 owner=self.agent_id,
-                metadata={"why_now": why, "validation": v.to_dict() if v else None},
+                metadata={
+                    "why_now": why,
+                    "validation": v.to_dict() if v else None,
+                    # Carried so the detail view, progress agent and future
+                    # budget reservation don't need the hypothesis record.
+                    "effort": h.effort,
+                    "risk": h.risk,
+                    "confidence": h.confidence,
+                    "rationale": h.rationale,
+                    "expected_impact_pct": h.expected_impact_pct,
+                    "source": h.source,
+                },
             )
             initiatives.append(ini)
             total_impact += h.net_impact_gbp
@@ -322,10 +402,20 @@ class StrategyArbiter:
             total_effort=total_effort,
             total_risk=total_risk / max(len(initiatives), 1),
             budget_used_pct=(total_effort / self.budget_effort * 100) if self.budget_effort else 0,
-            rejected=[h for h in pool if h.id not in chosen_ids],
-            metadata={"validations": [v.to_dict() for v in validations]},
+            rejected=[h for h in pool if h.id not in chosen_ids] + duplicates,
+            metadata={
+                "validations": [v.to_dict() for v in validations],
+                "active_initiatives": [self._active_summary(i) for i in active],
+                "skipped_as_active_duplicate": [h.id for h in duplicates],
+                "effort_reserved_for_active": self._active_effort(active) if self.reserve_budget_for_active else 0.0,
+            },
         )
         return plan
+
+    @staticmethod
+    def _active_summary(ini: Initiative) -> Dict[str, Any]:
+        return {"id": ini.id, "title": ini.title, "node_id": ini.node_id,
+                "status": ini.status.value, "predicted_impact_gbp": round(ini.predicted_impact_gbp, 2)}
 
     def _parse_decision(self, raw: str, pool: List[Hypothesis]) -> Dict[str, Any]:
         text = raw.strip()

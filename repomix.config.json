@@ -1,0 +1,31 @@
+{
+  "output": {
+    "filePath": "repomix-output.md",
+    "style": "xml",
+    "topFilesLength": 10,
+    "showTopFilesLength": true
+  },
+  "include": [
+    "mvp/**/*.py",
+    "mvp/**/*.html",
+    "data/jonco/*.json"
+  ],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "**/node_modules/**",
+      "**/.venv/**",
+      "**/__pycache__/**",
+      "**/research/code/alias-union/cache/**",
+      "**/*.pkl",
+      "**/data/inventory_management*"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": true
+  },
+  "tokenCount": {
+    "encoding": "o200k_base"
+  }
+}

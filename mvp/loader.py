@@ -21,6 +21,8 @@ from .model.core import (
 )
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "jonco")
+DATA_ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
+TENANTS_PATH = os.path.join(DATA_ROOT, "tenants.json")
 STATS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rolling_stats.pkl")
 
 
@@ -42,8 +44,8 @@ def _apply_stats(node, stats_dict):
     node.sparkline = stats_dict.get("sparkline", [])
 
 
-def load_graph() -> BusinessGraph:
-    """Build the full hierarchical graph from data files."""
+def _load_cafe_graph() -> BusinessGraph:
+    """Build the full hierarchical graph from JonCo cafe data files."""
     g = BusinessGraph()
 
     # ── Load raw data ──
@@ -575,3 +577,34 @@ def load_all():
         monthly_pnl=monthly_pnl,
         balance_sheet=balance_sheet,
     )
+
+# ---------------------------------------------------------------------------
+# Multi-tenant dispatcher
+# ---------------------------------------------------------------------------
+
+def load_tenant_config(tenant_id: str = "jonco") -> dict:
+    """Return the registry entry for a tenant, falling back to jonco."""
+    with open(TENANTS_PATH) as f:
+        tenants = json.load(f)
+    return tenants.get(tenant_id) or tenants["jonco"]
+
+
+def list_tenants() -> dict:
+    """Return the full tenant registry."""
+    with open(TENANTS_PATH) as f:
+        return json.load(f)
+
+
+def load_graph(tenant_id: str = "jonco") -> BusinessGraph:
+    """Load the correct graph for the given tenant.
+
+    Dispatches to the SaaS loader for ``type == "saas"`` and the existing
+    cafe loader for ``type == "cafe"``.
+    """
+    tenant = load_tenant_config(tenant_id)
+    if tenant.get("type") == "saas":
+        from .saas_loader import build_saas_graph
+        company_path = os.path.join(DATA_ROOT, tenant["data_dir"], "company.json")
+        return build_saas_graph(company_path)
+    return _load_cafe_graph()
+

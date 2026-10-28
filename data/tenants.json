@@ -1,0 +1,22 @@
+{
+  "jonco": {
+    "id": "jonco",
+    "name": "JONCO COFFEE LIMITED",
+    "number": "15999847",
+    "type": "cafe",
+    "data_dir": "jonco",
+    "period": "Oct\u2013Dec 2024 (monthly averages)",
+    "icon": "\u2615",
+    "color": "#8d6e63"
+  },
+  "joncrm": {
+    "id": "joncrm",
+    "name": "JonCRM",
+    "number": "SAAS-2024",
+    "type": "saas",
+    "data_dir": "joncrm",
+    "period": "Last 30 days (monthly averages)",
+    "icon": "\ud83e\udde9",
+    "color": "#5c6bc0"
+  }
+}
