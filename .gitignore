@@ -20,6 +20,8 @@ data/initiatives.db
 .env
 .env.*
 !.env.example
+data/.secret_key
+data/initial_admin_password.txt
 
 # OS & editor
 .DS_Store

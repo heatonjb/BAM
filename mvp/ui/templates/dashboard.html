@@ -13,6 +13,14 @@
         <h1>Business as a Machine</h1>
         <div class="subtitle">{{ company.name }} — {{ company.period }}</div>
         <div class="company-number">Company Number: {{ company.number }}</div>
+        {% if auth_user %}
+        <div class="company-number" style="display:flex;gap:0.5rem;align-items:center;margin-top:0.35rem;">
+            <span>{{ auth_user.display_name }}</span>
+            <form method="post" action="/logout" style="margin:0;">
+                <button type="submit" style="font-size:0.72rem;padding:0.2rem 0.5rem;border:1px solid #e2e8f0;border-radius:5px;background:#fff;cursor:pointer;">Sign out</button>
+            </form>
+        </div>
+        {% endif %}
     </div>
 
     <div class="nav">

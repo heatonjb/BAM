@@ -21,7 +21,8 @@ if os.path.exists(_env_path):
                 k, v = line.strip().split("=", 1)
                 os.environ.setdefault(k, v)
 
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, session
+from mvp import auth
 from mvp.model.core import NodeType
 from mvp.model.constraints import ConstraintStore, build_default_constraints
 from mvp.loader import load_graph, load_all, list_tenants, load_tenant_config
@@ -36,6 +37,10 @@ app = Flask(__name__,
             template_folder=os.path.join(os.path.dirname(__file__), "templates"),
             static_folder=os.path.join(os.path.dirname(__file__), "static"))
 
+# Authentication + tenant scoping. Must run before any request is served:
+# it installs the global before_request guard and the session secret.
+auth.init_app(app)
+
 _graph = None
 _graphs = {}
 _constraints = None
@@ -46,12 +51,31 @@ _controller_lock = threading.Lock()
 
 
 def _current_tenant():
-    """Resolve the active tenant from the query string or default to jonco."""
-    tenant_id = request.args.get("tenant", "jonco")
+    """Resolve the active tenant from the authenticated session.
+
+    A ?tenant= query parameter is honoured only when it appears in the caller's
+    memberships (auth.current_tenant enforces this), so tenancy can never be
+    changed by editing a URL.
+    """
+    tenant_id = auth.current_tenant()
     try:
         return load_tenant_config(tenant_id)["id"]
     except Exception:
-        return "jonco"
+        return tenant_id
+
+
+def _tenant_allowed(tenant_id):
+    """True when the signed-in user may act on this tenant."""
+    if not tenant_id:
+        return False
+    try:
+        return tenant_id in auth.current_user.tenants  # type: ignore[attr-defined]
+    except Exception:
+        return False
+
+
+def _forbidden():
+    return jsonify({"ok": False, "error": "not authorised for that business"}), 403
 
 # --- Async insight job infrastructure ---
 _jobs = {}
@@ -185,7 +209,7 @@ def index():
                          pnl=pnl,
                          kpis=kpis,
                          projections=projections,
-                         tenants=list_tenants(),
+                         tenants=auth.visible_tenants(),
                          current_tenant=tenant_id)
 
 
@@ -352,14 +376,14 @@ def dashboard():
                          hourly=build_hourly_revenue(business),
                          integration_health=integration_health,
                          status="good",
-                         tenants=list_tenants(),
+                         tenants=auth.visible_tenants(),
                          current_tenant=tenant_id)
 
 
 @app.route("/api/tenants")
 def api_tenants():
     """Return the list of tenants for the company selector."""
-    return jsonify(list_tenants())
+    return jsonify(list(auth.visible_tenants().keys()))
 
 
 @app.route("/drill/<node_id>")
@@ -861,7 +885,14 @@ def api_integrations_connections():
     try:
         from mvp.integrations import store
         tenant = request.args.get("tenant")
-        return jsonify({"ok": True, "connections": store.list_connections(tenant=tenant)})
+        if tenant and not _tenant_allowed(tenant):
+            return _forbidden()
+        # No tenant supplied -> only the caller's own businesses.
+        allowed = auth.current_user.tenants
+        rows = store.list_connections(tenant=tenant) if tenant else [
+            r for r in store.list_connections() if r.get("tenant") in allowed
+        ]
+        return jsonify({"ok": True, "connections": rows})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
@@ -874,6 +905,8 @@ def api_integrations_connect():
     provider = data.get("provider")
     if not tenant or not provider:
         return jsonify({"ok": False, "error": "tenant and provider are required"}), 400
+    if not _tenant_allowed(tenant):
+        return _forbidden()
     try:
         from mvp.integrations import NangoConnector
         result = NangoConnector().execute("create_connect_session", {
@@ -891,6 +924,8 @@ def api_integrations_disconnect():
     tenant, provider = data.get("tenant"), data.get("provider")
     if not tenant or not provider:
         return jsonify({"ok": False, "error": "tenant and provider are required"}), 400
+    if not _tenant_allowed(tenant):
+        return _forbidden()
     try:
         from mvp.integrations import NangoConnector, store
         result = NangoConnector().execute("disconnect", {"tenant": tenant, "provider": provider})
@@ -908,6 +943,8 @@ def api_integrations_sync():
     tenant = data.get("tenant")
     if not tenant:
         return jsonify({"ok": False, "error": "tenant is required"}), 400
+    if not _tenant_allowed(tenant):
+        return _forbidden()
     try:
         from mvp.integrations import sync
         report = sync.sync_tenant(tenant, providers=data.get("providers"))
@@ -922,6 +959,8 @@ def api_integrations_freshness():
     tenant = request.args.get("tenant")
     if not tenant:
         return jsonify({"ok": False, "error": "tenant is required"}), 400
+    if not _tenant_allowed(tenant):
+        return _forbidden()
     try:
         from mvp.integrations import sync
         return jsonify({"ok": True, "tenant": tenant, "freshness": sync.freshness_report(tenant)})
@@ -938,4 +977,9 @@ def api_controller_reset():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080, debug=True)
+    # debug must never be on for an internet-facing app: the Werkzeug debugger
+    # grants remote code execution to anyone who triggers an exception.
+    _debug = os.environ.get("BAM_DEBUG") == "1"
+    app.run(host=os.environ.get("BAM_HOST", "0.0.0.0"),
+            port=int(os.environ.get("BAM_PORT", "8080")),
+            debug=_debug)

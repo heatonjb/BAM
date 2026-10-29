@@ -23,6 +23,12 @@
                 </select>
             </div>
             <a href="/dashboard?tenant={{ current_tenant }}" style="color:#64748b;font-size:0.8rem;text-decoration:none;padding:0.35rem 0.6rem;border:1px solid #e2e8f0;border-radius:6px;background:#ffffff;">📊 Dashboard</a>
+            {% if auth_user %}
+            <span style="color:#64748b;font-size:0.75rem;">{{ auth_user.display_name }}</span>
+            <form method="post" action="/logout" style="margin:0;">
+                <button type="submit" style="color:#64748b;font-size:0.75rem;padding:0.35rem 0.6rem;border:1px solid #e2e8f0;border-radius:6px;background:#ffffff;cursor:pointer;">Sign out</button>
+            </form>
+            {% endif %}
         </div>
     </div>
     <script>
