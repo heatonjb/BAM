@@ -94,25 +94,25 @@ def build_saas_graph(company_json_path: str) -> BusinessGraph:
     # ══════════════════════════════════════════════
     rev = _mk(AggregateNode, "saas_revenue", "Revenue (MRR)", mrr, "GBP/mo",
               "💰", "#4caf50", "Monthly recurring revenue from all paid tiers",
-              0, children=["tier_pro", "tier_enterprise", "saas_rev_other", "saas_cogs"],
+              0, children=["tier_pro", "tier_enterprise", "saas_rev_other"],
               growth=8.5, seed=1)
     g.add(rev)
 
     cogs_node = _mk(CostNode, "saas_cogs", "Cost of Revenue", cogs, "GBP/mo",
                     "☁️", "#ef5350", "Hosting, infrastructure, and support delivery costs",
-                    0, parents=["saas_revenue"], children=["cogs_hosting", "cogs_support"],
+                    0, parents=["saas_gross_profit"], children=["cogs_hosting", "cogs_support"],
                     growth=6.2, seed=2, cost_type="variable", is_controllable=True)
     g.add(cogs_node)
 
     gp = _mk(AggregateNode, "saas_gross_profit", "Gross Profit", gross_profit, "GBP/mo",
              "📈", "#66bb6a", "Revenue minus cost of revenue",
-             0, parents=["saas_revenue"], children=[],
+             0, parents=["saas_op_profit"], children=["saas_revenue", "saas_cogs"],
              growth=9.1, seed=3)
     g.add(gp)
 
     opex_node = _mk(AggregateNode, "saas_opex", "Operating Expenses", opex, "GBP/mo",
                     "🧾", "#ffa726", "Sales & marketing, R&D, and general administration",
-                    0, parents=["saas_gross_profit"], children=["opex_sm", "opex_rd", "opex_ga"],
+                    0, parents=["saas_op_profit"], children=["opex_sm", "opex_rd", "opex_ga"],
                     growth=7.4, seed=4)
     g.add(opex_node)
 
@@ -308,13 +308,33 @@ def build_saas_graph(company_json_path: str) -> BusinessGraph:
         g.add(node)
 
     # Register parent/child relationships that the factory couldn't express cleanly
-    _link(g, "saas_gross_profit", "saas_opex")
     _link(g, "saas_op_profit", "saas_gross_profit", "saas_opex")
-    _link(g, "pm_acquisition", "saas_revenue")
-    _link(g, "pm_activation", "saas_revenue")
-    _link(g, "pm_churn", "saas_revenue")
-    _link(g, "pm_nrr", "saas_revenue")
-    _link(g, "pm_viral", "saas_revenue")
+    # Growth drivers live under Revenue so drill-down from Revenue surfaces
+    # the Pirate Metrics (AARRR) as navigable nodes rather than homepage chips.
+    _link(g, "saas_revenue", "pm_acquisition", "pm_activation", "pm_churn",
+          "pm_nrr", "pm_viral")
+
+    # Build edges from parent -> child relationships (mirrors the cafe loader).
+    # Without this the graph has nodes but no navigable structure, so
+    # drill-down cannot descend from an aggregate into its components.
+    for nid, node in g.nodes.items():
+        for child_id in getattr(node, "children", []) or []:
+            child = g.nodes.get(child_id)
+            if not child:
+                continue
+            contrib = (
+                round(abs(child.value) / abs(node.value) * 100, 1)
+                if node.value else 0.0
+            )
+            g.edges.append({
+                "source": nid,
+                "target": child_id,
+                "label": child.label,
+                "value": round(child.value, 2),
+                "contribution_pct": contrib,
+                "trend": child.trend.value if hasattr(child.trend, "value") else str(child.trend),
+                "change_pct": round(getattr(child, "change_7d_pct", 0.0), 1),
+            })
 
     return g
 
