@@ -248,6 +248,22 @@
                     body: JSON.stringify({ use_llm: true, max_initiatives: 5, budget_effort: 15.0 })
                 });
                 const startData = await startResp.json();
+                // A plan limit is not an error — it is a decision point. Show the
+                // upgrade path rather than a red failure message.
+                if (startResp.status === 402 || startData.code === 'quota_exceeded') {
+                    const plan = startData.plan || {};
+                    const usage = (plan.usage && plan.usage.arbiter_runs) || {};
+                    contentDiv.innerHTML =
+                        '<div style="border:1px solid #f1f5f9;border-radius:6px;padding:1rem;">'
+                      + '<h4 style="margin:0 0 0.4rem;color:#0f172a;font-size:0.9rem;">You have used this month\'s arbiter runs</h4>'
+                      + '<p style="color:#64748b;font-size:0.8rem;line-height:1.5;margin:0 0 0.75rem;">'
+                      + 'The ' + (plan.plan || 'free') + ' plan allows ' + (usage.limit || 2)
+                      + ' arbiter runs per month and ' + (usage.used || 0) + ' have been used. '
+                      + 'Pro raises this to 40 runs across 5 businesses, with longer history and more specialists.</p>'
+                      + '<a href="/#pricing" style="display:inline-block;background:#0f172a;color:#fff;padding:0.5rem 0.9rem;border-radius:4px;font-size:0.8rem;text-decoration:none;">See plans</a>'
+                      + '</div>';
+                    return;
+                }
                 if (!startData.ok) throw new Error(startData.error || 'Failed to start arbiter');
 
                 const jobId = startData.job_id;

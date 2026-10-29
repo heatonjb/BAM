@@ -175,7 +175,9 @@ def _integration_groups():
             "name": spec.label,
             "mark": mark,
             "color": colour,
-            "live": spec.id in {"xero", "stripe", "ga4"},
+            # No connector is live yet: Nango credentials have not been issued,
+            # so the badge must say "available", not "connected".
+            "live": False,
         })
     ordered = {}
     for cat in _CATEGORY_ORDER + [c for c in grouped if c not in _CATEGORY_ORDER]:

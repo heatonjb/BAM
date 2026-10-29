@@ -242,7 +242,7 @@ truncated opening  →  snapshot broken by known amount  <span class="ok">✓ pr
         <div class="int">
           <span class="int__mark" style="background:{{ p.color }}">{{ p.mark }}</span>
           {{ p.name }}
-          <span class="int__state{% if p.live %} int__state--live{% endif %}">{% if p.live %}LIVE{% else %}READY{% endif %}</span>
+          <span class="int__state{% if p.live %} int__state--live{% endif %}">{% if p.live %}CONNECTED{% else %}AVAILABLE{% endif %}</span>
         </div>
         {% endfor %}
       </div>
