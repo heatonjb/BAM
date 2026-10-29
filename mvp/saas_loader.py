@@ -313,6 +313,19 @@ def build_saas_graph(company_json_path: str) -> BusinessGraph:
     # the Pirate Metrics (AARRR) as navigable nodes rather than homepage chips.
     _link(g, "saas_revenue", "pm_acquisition", "pm_activation", "pm_churn",
           "pm_nrr", "pm_viral")
+    # Remaining metric leaves nest under their pirate-metric pillar so that
+    # only saas_op_profit renders as a root on the homepage.
+    _link(g, "pm_acquisition", "pm_visitors", "pm_cac", "pm_free_to_paid")
+    _link(g, "pm_activation", "pm_time_to_value")
+    _link(g, "pm_churn", "pm_dau_mau")
+    _link(g, "pm_viral", "pm_nps")
+    _link(g, "pm_nrr", "pm_arpu", "pm_ltv", "pm_ltv_cac")
+    # Headline KPI cards attach to their metric counterparts (no new roots).
+    _link(g, "saas_revenue", "kpi_mrr", "kpi_arr")
+    _link(g, "pm_acquisition", "kpi_cac")
+    _link(g, "pm_nrr", "kpi_ltv", "kpi_ltv_cac", "kpi_nrr")
+    _link(g, "pm_churn", "kpi_churn")
+    _link(g, "pm_viral", "kpi_nps")
 
     # Build edges from parent -> child relationships (mirrors the cafe loader).
     # Without this the graph has nodes but no navigable structure, so
