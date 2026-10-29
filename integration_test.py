@@ -47,7 +47,7 @@ def main():
     state = {}
 
     def _load():
-        b = load_all()
+        b = load_all("jonco")  # integration test fixture: café tenant
         state["b"] = b
         pnls = list(b.monthly_pnl.values())
         avg = sum(p.revenue for p in pnls) / len(pnls)

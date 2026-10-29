@@ -112,12 +112,18 @@ def _csrf_ok() -> bool:
 # --- tenant resolution ------------------------------------------------------
 
 def current_tenant(default: str = "jonco") -> str:
-    """The active tenant for this request, always derived from the session."""
+    """The active tenant for this request, always derived from the session.
+
+    ``default`` only ever applies to an anonymous request. For a signed-in user
+    the tenant must come from their memberships; returning a hardcoded tenant id
+    here would be the original bug all over again.
+    """
     if not current_user.is_authenticated:
         return default
     allowed = current_user.tenants
     if not allowed:
-        return default
+        # Signed in but not attached to any business: do not invent one.
+        return ""
     requested = request.args.get("tenant")
     if requested and requested in allowed:
         return requested
@@ -138,7 +144,11 @@ def visible_tenants() -> Dict[str, Any]:
             out[tid] = load_tenant_config(tid)
         except Exception:
             continue
-    if not out:  # keep the app renderable before bootstrap completes
+    if not out and not current_user.is_authenticated:
+        # Bootstrap only: an anonymous visitor may see the tenant registry so
+        # the login page renders. A *signed-in* user with no memberships must
+        # see nothing — falling back to every tenant here was a cross-tenant
+        # data leak.
         for tid in list_tenants():
             try:
                 out[tid] = load_tenant_config(tid)

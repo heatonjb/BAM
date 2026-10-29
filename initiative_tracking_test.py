@@ -23,8 +23,11 @@ from mvp.multiagent import MultiAgentOrchestrator, OrchestratorConfig
 
 def main():
     db = os.path.join(tempfile.mkdtemp(prefix="bam_test_"), "initiatives.db")
-    webapp._orchestrator = MultiAgentOrchestrator(OrchestratorConfig(db_path=db))
-    webapp._orchestrator.constraint_store = webapp.get_constraints()
+    # Orchestrators are now per-tenant via mvp.tenancy.registry; there is no
+    # module-level _orchestrator to monkeypatch.
+    from mvp.tenancy import registry
+    registry._orchestrators["jonco"] = MultiAgentOrchestrator(OrchestratorConfig(db_path=db))
+    registry._orchestrators["jonco"].constraint_store = webapp.get_constraints("jonco")
     client = webapp.app.test_client()
     state = {}
 

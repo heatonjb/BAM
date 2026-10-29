@@ -524,28 +524,42 @@ def _load_cafe_graph() -> BusinessGraph:
 # object with the flat attributes those older modules expect.
 # ---------------------------------------------------------------------------
 
-def load_all():
-    """Load every data source into a flat business object (legacy API)."""
+def load_all(tenant_id):
+    """Load a tenant's flat business object (legacy API).
+
+    ``tenant_id`` is mandatory and has no default on purpose: a silent fallback
+    to the café tenant is exactly how cross-tenant data leaked into the SaaS
+    dashboard. Callers must name the tenant they are reading.
+    """
+    cfg = load_tenant_config(tenant_id)
+    data_dir = os.path.join(DATA_ROOT, cfg["data_dir"])
+    if os.path.exists(os.path.join(data_dir, "company_profile.json")):
+        return _load_business_from_dir(data_dir)
+    return _business_from_graph(load_graph(tenant_id), cfg)
+
+
+def _load_business_from_dir(data_dir):
+    """Read the flat JSON export for one tenant's own data directory."""
     from types import SimpleNamespace
 
-    with open(os.path.join(DATA_DIR, "company_profile.json")) as f:
+    with open(os.path.join(data_dir, "company_profile.json")) as f:
         profile = json.load(f)
-    with open(os.path.join(DATA_DIR, "transactions.json")) as f:
+    with open(os.path.join(data_dir, "transactions.json")) as f:
         raw_txns = json.load(f)
-    with open(os.path.join(DATA_DIR, "payroll.json")) as f:
+    with open(os.path.join(data_dir, "payroll.json")) as f:
         payroll = json.load(f)
-    with open(os.path.join(DATA_DIR, "cogs_purchases.json")) as f:
+    with open(os.path.join(data_dir, "cogs_purchases.json")) as f:
         cogs = json.load(f)
-    with open(os.path.join(DATA_DIR, "overheads.json")) as f:
+    with open(os.path.join(data_dir, "overheads.json")) as f:
         overheads = json.load(f)
-    with open(os.path.join(DATA_DIR, "menu.json")) as f:
+    with open(os.path.join(data_dir, "menu.json")) as f:
         menu = json.load(f)
-    with open(os.path.join(DATA_DIR, "bottom_up_pl.json")) as f:
+    with open(os.path.join(data_dir, "bottom_up_pl.json")) as f:
         pl_data = json.load(f)
-    with open(os.path.join(DATA_DIR, "balance_sheet.json")) as f:
+    with open(os.path.join(data_dir, "balance_sheet.json")) as f:
         balance_sheet = json.load(f)
 
-    with open(os.path.join(DATA_DIR, "staff_roster.json")) as f:
+    with open(os.path.join(data_dir, "staff_roster.json")) as f:
         staff_list = json.load(f)
     staff = {s["id"]: SimpleNamespace(**s) for s in staff_list}
 
@@ -578,15 +592,97 @@ def load_all():
         balance_sheet=balance_sheet,
     )
 
+def _business_from_graph(g, cfg):
+    """Synthesise a flat business object for tenants that ship no JSON export.
+
+    SaaS tenants only have ``company.json``; their financials live in the graph.
+    Everything below is derived from *this tenant's own nodes*, so nothing can
+    cross-contaminate. The shape matches the cafe JSON loader so the dashboard
+    template works unchanged.
+    """
+    from types import SimpleNamespace
+    from datetime import date
+    from dateutil.relativedelta import relativedelta
+
+    def _val(node_id, default=0.0):
+        node = g.get(node_id)
+        return float(node.value) if node is not None else default
+
+    def _series(node_id, n=30):
+        node = g.get(node_id)
+        s = list(getattr(node, "sparkline", []) or []) if node is not None else []
+        return s[-n:] if s else []
+
+    revenue, cogs, opex = _val("saas_revenue"), _val("saas_cogs"), _val("saas_opex")
+    rev_s, cogs_s = _series("saas_revenue"), _series("saas_cogs")
+
+    months = []
+    today = date.today()
+    for i in (2, 1, 0):
+        d = today.replace(day=1) - relativedelta(months=i)
+        months.append((d.strftime("%Y-%m"), d.strftime("%b %Y")))
+
+    monthly_pnl = {}
+    for idx, (key, label) in enumerate(months):
+        # Sparkline points are monthly run-rate observations (each ~£45k), not
+        # daily values — so a month's revenue is the *mean* of its chunk. Summing
+        # would inflate revenue by the chunk size.
+        if len(rev_s) >= 3:
+            chunk = rev_s[idx * len(rev_s) // 3:(idx + 1) * len(rev_s) // 3]
+            rev = sum(chunk) / len(chunk) if chunk else revenue
+        else:
+            rev = revenue
+        if len(cogs_s) >= 3:
+            cchunk = cogs_s[idx * len(cogs_s) // 3:(idx + 1) * len(cogs_s) // 3]
+            cg = sum(cchunk) / len(cchunk) if cchunk else cogs
+        else:
+            cg = cogs
+        gp = rev - cg
+        op = gp - opex
+        monthly_pnl[key] = SimpleNamespace(
+            month=label, revenue=round(rev, 2), cogs=round(cg, 2),
+            gross_profit=round(gp, 2), staff_costs=0.0,
+            overheads=round(opex, 2), operating_profit=round(op, 2),
+            net_profit=round(op, 2), transactions=0,
+        )
+
+    menu, payroll = {}, []
+    for nid, node in g.nodes.items():
+        ntype = node.node_type.value
+        if ntype == "revenue" and nid != "saas_revenue":
+            menu[node.label] = {"price": round(float(node.value), 2), "category": "subscription"}
+        elif ntype == "cost" and nid.startswith("opex_"):
+            payroll.append({"month": months[-1][0], "role": node.label,
+                            "actual_hours_worked": 0,
+                            "total_employer_cost": round(float(node.value), 2)})
+
+    return SimpleNamespace(
+        company_name=cfg.get("name", "Unknown"), company_number=cfg.get("number", ""),
+        transactions=[], staff={}, payroll=payroll, cogs={}, overheads={},
+        menu=menu, monthly_pnl=monthly_pnl, balance_sheet={},
+    )
+
+
 # ---------------------------------------------------------------------------
 # Multi-tenant dispatcher
 # ---------------------------------------------------------------------------
 
-def load_tenant_config(tenant_id: str = "jonco") -> dict:
-    """Return the registry entry for a tenant, falling back to jonco."""
+class UnknownTenantError(KeyError):
+    """Raised when a tenant id is not present in the registry."""
+
+
+def load_tenant_config(tenant_id: str) -> dict:
+    """Return the registry entry for a tenant.
+
+    Raises ``UnknownTenantError`` for an unknown id. It used to fall back to
+    jonco, which meant a typo or a stale id silently rendered the café's books
+    under another tenant's name — a data-leak bug in its own right.
+    """
     with open(TENANTS_PATH) as f:
         tenants = json.load(f)
-    return tenants.get(tenant_id) or tenants["jonco"]
+    if tenant_id not in tenants:
+        raise UnknownTenantError(f"unknown tenant: {tenant_id!r}")
+    return tenants[tenant_id]
 
 
 def list_tenants() -> dict:

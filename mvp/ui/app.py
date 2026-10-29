@@ -21,8 +21,8 @@ if os.path.exists(_env_path):
                 k, v = line.strip().split("=", 1)
                 os.environ.setdefault(k, v)
 
-from flask import Flask, render_template, jsonify, request, session
-from mvp import auth
+from flask import Flask, render_template, jsonify, request, session, abort
+from mvp import auth, tenancy
 from mvp.model.core import NodeType
 from mvp.model.constraints import ConstraintStore, build_default_constraints
 from mvp.loader import load_graph, load_all, list_tenants, load_tenant_config
@@ -42,11 +42,10 @@ app = Flask(__name__,
 auth.init_app(app)
 
 _graph = None
-_graphs = {}
-_constraints = None
-_orchestrators = {}
-_last_plans = {}
-_controller = None
+# Tenant-scoped state lives in mvp.tenancy. Nothing business-data-related may be
+# cached in a module-level singleton: those were the cross-tenant leaks.
+_last_plans = {}          # keyed by tenant id only
+_controller_lock = threading.Lock()
 _controller_lock = threading.Lock()
 
 
@@ -55,13 +54,16 @@ def _current_tenant():
 
     A ?tenant= query parameter is honoured only when it appears in the caller's
     memberships (auth.current_tenant enforces this), so tenancy can never be
-    changed by editing a URL.
+    changed by editing a URL. The resolved id is validated against the tenant
+    registry; anything unknown is rejected rather than defaulted.
     """
     tenant_id = auth.current_tenant()
+    if not tenant_id:
+        abort(403)
     try:
-        return load_tenant_config(tenant_id)["id"]
-    except Exception:
-        return tenant_id
+        return tenancy.require_tenant(tenant_id)
+    except tenancy.UnknownTenantError:
+        abort(404)
 
 
 def _tenant_allowed(tenant_id):
@@ -78,23 +80,22 @@ def _forbidden():
     return jsonify({"ok": False, "error": "not authorised for that business"}), 403
 
 # --- Async insight job infrastructure ---
-_jobs = {}
-_jobs_lock = threading.Lock()
+_jobs_lock = threading.Lock()   # retained for _job_set compatibility
 _insights_pool = ThreadPoolExecutor(max_workers=3, thread_name_prefix="insights")
 
-def _job_set(job_id, **fields):
-    with _jobs_lock:
-        _jobs.setdefault(job_id, {}).update(fields)
+def _job_set(job_id, tenant_id, **fields):
+    """Record progress on an insights job, tagged with its owning tenant."""
+    tenancy.jobs.update(tenant_id, job_id, **fields)
 
 def _run_insights_job(job_id, node_id, model, tenant_id="jonco"):
     """Background worker: generates insights and stores result in _jobs."""
     try:
-        _job_set(job_id, status="running", started_at=datetime.now(timezone.utc).isoformat())
+        _job_set(job_id, tenant_id, status="running", started_at=datetime.now(timezone.utc).isoformat())
         g = get_graph(tenant_id)
-        cs = get_constraints()
+        cs = get_constraints(tenant_id)
         node = g.get(node_id)
         if not node:
-            _job_set(job_id, status="error", error="node not found", finished_at=datetime.now(timezone.utc).isoformat())
+            _job_set(job_id, tenant_id, status="error", error="node not found", finished_at=datetime.now(timezone.utc).isoformat())
             return
         result = generate_insights(
             node_id=node.id,
@@ -109,51 +110,36 @@ def _run_insights_job(job_id, node_id, model, tenant_id="jonco"):
             model=model,
             tenant_id=tenant_id,
         )
-        _job_set(job_id, status="completed", result=result, finished_at=datetime.now(timezone.utc).isoformat())
+        _job_set(job_id, tenant_id, status="completed", result=result, finished_at=datetime.now(timezone.utc).isoformat())
     except Exception as e:
         import traceback
-        _job_set(job_id, status="error", error=str(e), traceback=traceback.format_exc(), finished_at=datetime.now(timezone.utc).isoformat())
+        _job_set(job_id, tenant_id, status="error", error=str(e), traceback=traceback.format_exc(), finished_at=datetime.now(timezone.utc).isoformat())
 
-def get_orchestrator(tenant_id=None):
-    """Return a tenant-scoped orchestrator with its own initiative database."""
-    global _orchestrators
-    if tenant_id is None:
-        tenant_id = _current_tenant()
-    if tenant_id not in _orchestrators:
-        db_path = os.path.join(PROJECT_ROOT, 'data', f'initiatives_{tenant_id}.db')
-        orch = MultiAgentOrchestrator(OrchestratorConfig(
-            control_model=ControlModel.HIERARCHICAL,
-            budget_effort=20.0,
-            max_initiatives=6,
-            db_path=db_path,
-        ))
-        orch.constraint_store = get_constraints()
-        orch.checker = orch.checker or __import__('mvp.multiagent.constraint_checker', fromlist=['ConstraintCheckerAgent']).ConstraintCheckerAgent(orch.constraint_store)
-        _orchestrators[tenant_id] = orch
-    return _orchestrators[tenant_id]
+def get_orchestrator(tenant_id):
+    """Return the orchestrator for one tenant (never a shared singleton)."""
+    return tenancy.registry.orchestrator(tenant_id)
 
-def get_graph(tenant_id=None):
-    global _graphs
-    if tenant_id is None:
-        tenant_id = _current_tenant()
-    if tenant_id not in _graphs:
-        _graphs[tenant_id] = load_graph(tenant_id)
-    return _graphs[tenant_id]
 
-def get_constraints():
-    global _constraints
-    if _constraints is None:
-        _constraints = ConstraintStore()
-        for c in build_default_constraints():
-            _constraints.add(c)
-    return _constraints
+def get_graph(tenant_id):
+    """Return one tenant's graph. Tenant id is mandatory, no default."""
+    return tenancy.registry.graph(tenant_id)
+
+
+def get_constraints(tenant_id):
+    """Return one tenant's constraint store (filtered to its own nodes)."""
+    return tenancy.registry.constraints(tenant_id)
+
+
+def get_business(tenant_id):
+    """Return one tenant's flat financial object."""
+    return tenancy.registry.business(tenant_id)
 
 
 @app.route("/")
 def index():
     tenant_id = _current_tenant()
     g = get_graph(tenant_id)
-    cs = get_constraints()
+    cs = get_constraints(tenant_id)
     level0 = g.get_level(0)
 
     pnl = []
@@ -291,9 +277,9 @@ def build_product_list(business):
 def dashboard():
     """Full dashboard view — financials, KPIs, staff, products, and integration health."""
     tenant_id = _current_tenant()
-    business = load_all()
-    tg = TransformationGraph(business)
-    snap = tg._financial_snapshot()
+    # Tenant-scoped business object. load_all(tenant_id) reads that tenant's own
+    # data directory (café JSON) or synthesises from its own graph (SaaS).
+    business = get_business(tenant_id)
     g = get_graph(tenant_id)
 
     tenant_cfg = load_tenant_config(tenant_id)
@@ -390,7 +376,7 @@ def api_tenants():
 def drill(node_id):
     tenant_id = _current_tenant()
     g = get_graph(tenant_id)
-    cs = get_constraints()
+    cs = get_constraints(tenant_id)
     node = g.get(node_id)
     if not node:
         return "Not found", 404
@@ -417,7 +403,7 @@ def drill(node_id):
                          constraints=constraints_list,
                          all_constraints=all_constraints,
                          current_tenant=tenant_id,
-                         tenants=list_tenants())
+                         tenants=auth.visible_tenants())
 
 
 @app.route("/api/insights/<node_id>", methods=["POST"])
@@ -431,9 +417,11 @@ def api_insights(node_id):
     data = request.get_json(silent=True) or {}
     model = data.get("model", "deepseek/deepseek-v4.1-flash")
 
+    tenant_id = _current_tenant()
     job_id = uuid.uuid4().hex[:12]
-    _job_set(job_id, status="queued", node_id=node_id, node_label=node.label,
-             queued_at=datetime.now(timezone.utc).isoformat())
+    tenancy.jobs.create(tenant_id, job_id, status="queued", node_id=node_id,
+                        node_label=node.label,
+                        queued_at=datetime.now(timezone.utc).isoformat())
     _insights_pool.submit(_run_insights_job, job_id, node_id, model, _current_tenant())
     return jsonify({"ok": True, "job_id": job_id, "status": "queued",
                     "poll": f"/api/insights/jobs/{job_id}"}), 202
@@ -442,11 +430,12 @@ def api_insights(node_id):
 @app.route("/api/insights/jobs/<job_id>", methods=["GET"])
 def api_insights_job(job_id):
     """Poll an insights job."""
-    with _jobs_lock:
-        job = _jobs.get(job_id)
-        if job is None:
-            return jsonify({"ok": False, "error": "job not found"}), 404
-        snapshot = dict(job)
+    try:
+        snapshot = tenancy.jobs.get(_current_tenant(), job_id)
+    except tenancy.TenantAccessError:
+        return jsonify({"ok": False, "error": "job not found"}), 404
+    if snapshot is None:
+        return jsonify({"ok": False, "error": "job not found"}), 404
     status = snapshot.get("status")
     if status in ("queued", "running"):
         return jsonify({"ok": True, "job_id": job_id, "status": status}), 200
@@ -459,14 +448,17 @@ def api_insights_job(job_id):
 
 @app.route("/api/constraints")
 def api_constraints():
-    cs = get_constraints()
+    cs = get_constraints(_current_tenant())
     return jsonify(cs.to_dict())
 
 
 @app.route("/api/constraints/<node_id>")
 def api_node_constraints(node_id):
-    g = get_graph(_current_tenant())
-    cs = get_constraints()
+    tenant_id = _current_tenant()
+    g = get_graph(tenant_id)
+    cs = get_constraints(tenant_id)
+    if not g.get(node_id):
+        return jsonify({"error": "not found"}), 404
     constraints = cs.get_for_node(node_id, g)
     return jsonify([c.to_dict() for c in constraints])
 
@@ -483,6 +475,8 @@ def api_node(node_id):
 @app.route("/api/subgraph/<node_id>")
 def api_subgraph(node_id):
     g = get_graph(_current_tenant())
+    if not g.get(node_id):
+        return jsonify({"error": "not found"}), 404
     depth = request.args.get("depth", 2, type=int)
     subgraph = g.get_subgraph(node_id, depth=depth)
     return jsonify(subgraph)
@@ -535,11 +529,12 @@ def _run_arbiter_job(job_id, use_llm, control_model, budget, max_init, tenant_id
             except Exception:
                 pass
 
-        _last_plans[tenant_id or "jonco"] = plan
-        _jobs[job_id] = {"status": "done", "plan": plan.to_dict(), "tenant": tenant_id}
+        _last_plans[tenant_id] = plan
+        tenancy.jobs.update(tenant_id, job_id, status="done", plan=plan.to_dict())
     except Exception as e:
         import traceback
-        _jobs[job_id] = {"status": "error", "error": str(e), "traceback": traceback.format_exc()}
+        tenancy.jobs.update(tenant_id, job_id, status="error", error=str(e),
+                            traceback=traceback.format_exc())
 
 
 @app.route("/api/multiagent/run", methods=["POST"])
@@ -551,11 +546,12 @@ def api_multiagent_run():
     budget = float(data.get("budget_effort", 20.0))
     max_init = int(data.get("max_initiatives", 6))
 
+    tenant_id = _current_tenant()
     job_id = uuid.uuid4().hex[:12]
-    _jobs[job_id] = {"status": "running"}
+    tenancy.jobs.create(tenant_id, job_id, status="running")
     t = threading.Thread(
         target=_run_arbiter_job,
-        args=(job_id, use_llm, control_model, budget, max_init, _current_tenant()),
+        args=(job_id, use_llm, control_model, budget, max_init, tenant_id),
         daemon=True,
     )
     t.start()
@@ -575,7 +571,7 @@ def api_multiagent_job(job_id):
 def api_multiagent_initiatives():
     """List tracked initiatives. ``?status=active`` returns APPROVED + RUNNING."""
     try:
-        orch = get_orchestrator()
+        orch = get_orchestrator(_current_tenant())
         status = request.args.get("status")
         if status == "active":
             inis = orch.knowledge.active_initiatives(limit=50)
@@ -586,10 +582,12 @@ def api_multiagent_initiatives():
         return jsonify({"ok": False, "error": str(e)}), 500
 
 
-def _find_initiative(initiative_id, tenant_id=None):
-    """Load from the knowledge base; fall back to (and persist) the tenant's last plan."""
-    if tenant_id is None:
-        tenant_id = _current_tenant()
+def _find_initiative(initiative_id, tenant_id):
+    """Load from the knowledge base; fall back to (and persist) the tenant's last plan.
+
+    ``tenant_id`` is mandatory: the knowledge base is per-tenant, so looking an
+    initiative up without one risks reading another business's plans.
+    """
     kb = get_orchestrator(tenant_id).knowledge
     ini = kb.get_initiative(initiative_id)
     last_plan = _last_plans.get(tenant_id)
@@ -623,7 +621,7 @@ def api_initiative_detail(initiative_id):
     """Everything the detail view needs: analysis, impacted nodes + reasoning, projection, progress history."""
     from mvp.multiagent.progress import analyse_impact
     try:
-        ini = _find_initiative(initiative_id)
+        ini = _find_initiative(initiative_id, _current_tenant())
         if not ini:
             return jsonify({"ok": False, "error": "Initiative not found"}), 404
         g = get_graph(_current_tenant())
@@ -670,7 +668,7 @@ def api_activate_initiative(initiative_id):
     if status not in ("running", "approved"):
         return jsonify({"ok": False, "error": "status must be 'running' or 'approved'"}), 400
     try:
-        ini = _find_initiative(initiative_id)
+        ini = _find_initiative(initiative_id, _current_tenant())
         if not ini:
             return jsonify({"ok": False, "error": "Initiative not found"}), 404
         if ini.status == InitiativeStatus.MEASURED:
@@ -678,7 +676,7 @@ def api_activate_initiative(initiative_id):
         updates = {}
         if not ini.metadata.get("activation_snapshot"):
             updates["activation_snapshot"] = baseline_snapshot(ini, get_graph(_current_tenant()))
-        ini = get_orchestrator().knowledge.set_status(initiative_id, InitiativeStatus(status), updates)
+        ini = get_orchestrator(_current_tenant()).knowledge.set_status(initiative_id, InitiativeStatus(status), updates)
         return jsonify({"ok": True, "initiative": ini.to_dict(), "active": True})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
@@ -690,13 +688,13 @@ def api_deactivate_initiative(initiative_id):
     from mvp.multiagent.hypothesis import InitiativeStatus
     data = request.get_json(silent=True) or {}
     try:
-        ini = _find_initiative(initiative_id)
+        ini = _find_initiative(initiative_id, _current_tenant())
         if not ini:
             return jsonify({"ok": False, "error": "Initiative not found"}), 404
         if ini.status not in (InitiativeStatus.APPROVED, InitiativeStatus.RUNNING):
             return jsonify({"ok": False, "error": f"Initiative is not active (status={ini.status.value})"}), 409
         new_status = InitiativeStatus.ABANDONED if data.get("abandon") else InitiativeStatus.PROPOSED
-        ini = get_orchestrator().knowledge.set_status(initiative_id, new_status)
+        ini = get_orchestrator(_current_tenant()).knowledge.set_status(initiative_id, new_status)
         return jsonify({"ok": True, "initiative": ini.to_dict(), "active": False})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
@@ -707,14 +705,14 @@ def api_initiative_progress(initiative_id):
     """Run the Progress Agent: current node values vs the time-phased projection."""
     from mvp.multiagent.progress import ProgressAgent
     try:
-        ini = _find_initiative(initiative_id)
+        ini = _find_initiative(initiative_id, _current_tenant())
         if not ini:
             return jsonify({"ok": False, "error": "Initiative not found"}), 404
         if ini.status.value not in ("approved", "running"):
             return jsonify({"ok": False, "error": "Progress can only be checked for active initiatives"}), 409
-        kb = get_orchestrator().knowledge
+        kb = get_orchestrator(_current_tenant()).knowledge
         report = ProgressAgent().check(ini, get_graph(_current_tenant()),
-                                       constraint_store=get_constraints(),
+                                       constraint_store=get_constraints(_current_tenant()),
                                        other_active=kb.active_initiatives())
         history = (ini.metadata.get("progress_history") or [])[-9:]
         history.append({k: report[k] for k in ("checked_at", "status", "achieved_benefit_gbp",
@@ -734,7 +732,7 @@ def api_measure_initiative(initiative_id):
     if actual is None:
         return jsonify({"ok": False, "error": "actual_impact_gbp required"}), 400
     try:
-        orch = get_orchestrator()
+        orch = get_orchestrator(_current_tenant())
         ini = orch.measure_initiative(
             initiative_id, float(actual),
             actual_metrics=data.get("actual_metrics"),
@@ -751,7 +749,7 @@ def api_measure_initiative(initiative_id):
 def api_multiagent_calibration():
     """Return prediction accuracy / calibration report."""
     try:
-        orch = get_orchestrator()
+        orch = get_orchestrator(_current_tenant())
         return jsonify({"ok": True, "report": orch.calibration_report()})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
@@ -785,20 +783,22 @@ def api_control_models():
 #   POST /api/controller/approve   -> final approval (initiatives)
 # Nothing runs without an explicit call. Thresholds decide what is OFFERED.
 
-def get_controller():
-    global _controller
-    with _controller_lock:
-        if _controller is None:
-            orch = get_orchestrator()
-            _controller = AutonomousGraphController(specialists=orch.specialists)
-        return _controller
+def get_controller(tenant_id=None):
+    """Return the controller for one tenant.
+
+    The controller holds mutable state (state machine, monitor baselines), so a
+    shared singleton would let one business's diagnosis bleed into another's.
+    """
+    if tenant_id is None:
+        tenant_id = _current_tenant()
+    return tenancy.registry.controller(tenant_id)
 
 
 @app.route("/api/controller/diagnose", methods=["POST"])
 def api_controller_diagnose():
     data = request.get_json(silent=True) or {}
     try:
-        ctrl = get_controller()
+        ctrl = get_controller(_current_tenant())
         # Allow per-call threshold overrides from the UI.
         if any(k in data for k in ("change_7d_pct", "change_30d_pct", "min_abs_value_gbp")):
             th = ctrl.thresholds
@@ -821,7 +821,7 @@ def api_controller_dispatch():
         return jsonify({"ok": False, "error": "specialist_ids must be a non-empty list"}), 400
     use_llm = bool(data.get("use_llm", False))
     try:
-        payload = get_controller().dispatch(ids, get_graph(_current_tenant()), use_llm=use_llm)
+        payload = get_controller(_current_tenant()).dispatch(ids, get_graph(_current_tenant()), use_llm=use_llm)
         return jsonify(payload), (200 if payload.get("ok") else 409)
     except Exception as e:
         import traceback
@@ -835,7 +835,7 @@ def api_controller_approve():
     if not isinstance(ids, list) or not ids:
         return jsonify({"ok": False, "error": "hypothesis_ids must be a non-empty list"}), 400
     try:
-        payload = get_controller().approve(ids)
+        payload = get_controller(_current_tenant()).approve(ids)
         return jsonify(payload), (200 if payload.get("ok") else 409)
     except Exception as e:
         import traceback
@@ -845,7 +845,7 @@ def api_controller_approve():
 @app.route("/api/controller/status", methods=["GET"])
 def api_controller_status():
     try:
-        return jsonify({"ok": True, "status": get_controller().status()})
+        return jsonify({"ok": True, "status": get_controller(_current_tenant()).status()})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
@@ -970,9 +970,8 @@ def api_integrations_freshness():
 
 @app.route("/api/controller/reset", methods=["POST"])
 def api_controller_reset():
-    global _controller
-    with _controller_lock:
-        _controller = None
+    """Reset only the caller's controller, never every tenant's."""
+    tenancy.registry.reset_controller(_current_tenant())
     return jsonify({"ok": True, "message": "controller reset"})
 
 

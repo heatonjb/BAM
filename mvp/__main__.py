@@ -22,7 +22,8 @@ from .agent import AgentHarness
 def run_full_pipeline():
     """Load data, build graph, compute KPIs, return harness."""
     print("Loading business data...")
-    business = load_all()
+    import os as _os
+    business = load_all(_os.environ.get("BAM_TENANT", "jonco"))
     
     print(f"Building transformation graph for {business.company_name}...")
     graph = TransformationGraph(business)
