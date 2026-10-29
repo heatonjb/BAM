@@ -21,7 +21,8 @@ if os.path.exists(_env_path):
                 k, v = line.strip().split("=", 1)
                 os.environ.setdefault(k, v)
 
-from flask import Flask, render_template, jsonify, request, session, abort
+from flask import Flask, render_template, jsonify, request, session, abort, redirect
+from flask_login import current_user, login_user
 from mvp import auth, tenancy
 from mvp.model.core import NodeType
 from mvp.model.constraints import ConstraintStore, build_default_constraints
@@ -32,6 +33,11 @@ from mvp.multiagent import MultiAgentOrchestrator, OrchestratorConfig
 from mvp.multiagent.control_models import ControlModel
 from mvp.multiagent.external import build_default_registry
 from mvp.multiagent.controller import AutonomousGraphController, HealthThresholds, ControllerState
+from mvp import plans, provisioning
+from mvp.integrations.providers import all_specs
+
+# The marketing site and sign-up are the only public endpoints.
+auth.PUBLIC_ENDPOINTS |= {"index", "signup"}
 
 app = Flask(__name__,
             template_folder=os.path.join(os.path.dirname(__file__), "templates"),
@@ -135,8 +141,67 @@ def get_business(tenant_id):
     return tenancy.registry.business(tenant_id)
 
 
+
+# ── Marketing site ───────────────────────────────────────────────────────────
+# Badge colours are presentation-only; the provider list itself comes from the
+# integration registry so the marketing page can never advertise a connector
+# the sync engine does not actually implement.
+_BRAND = {
+    "xero": ("#13B5EA", "XE"), "stripe": ("#635BFF", "S"), "ga4": ("#F9AB00", "GA"),
+    "plausible": ("#5850EC", "P"), "hubspot": ("#FF7A59", "H"), "shopify": ("#95BF47", "SH"),
+    "freeagent": ("#23A0DE", "FA"), "quickbooks": ("#2CA01C", "QB"), "posthog": ("#F54E00", "PH"),
+    "sumup": ("#2A9D8F", "SU"), "square": ("#1A1A1A", "SQ"), "klaviyo": ("#221E1F", "K"),
+    "mailchimp": ("#FFE01B", "MC"),
+}
+_CATEGORY_ORDER = ["accounting", "payments", "pos", "analytics", "crm", "marketing"]
+_CATEGORY_LABELS = {
+    "accounting": "Accounting & bookkeeping",
+    "payments": "Payments & billing",
+    "pos": "Point of sale",
+    "analytics": "Product & web analytics",
+    "crm": "CRM & lifecycle",
+    "marketing": "Marketing automation",
+}
+
+
+def _integration_groups():
+    """Provider badges grouped by category, in a stable display order."""
+    grouped = {}
+    for spec in all_specs():
+        colour, mark = _BRAND.get(spec.id, ("#3a4149", spec.id[:2].upper()))
+        grouped.setdefault(spec.category, []).append({
+            "id": spec.id,
+            "name": spec.label,
+            "mark": mark,
+            "color": colour,
+            "live": spec.id in {"xero", "stripe", "ga4"},
+        })
+    ordered = {}
+    for cat in _CATEGORY_ORDER + [c for c in grouped if c not in _CATEGORY_ORDER]:
+        if cat in grouped:
+            ordered[_CATEGORY_LABELS.get(cat, cat.title())] = grouped[cat]
+    return ordered
+
+
+def _marketing_context(**overrides):
+    from datetime import datetime as _dt
+    ctx = {
+        "plans": plans.PLANS,
+        "integration_groups": _integration_groups(),
+        "year": _dt.now().year,
+        "signup_error": None,
+        "signup_ok": None,
+        "form": None,
+    }
+    ctx.update(overrides)
+    return ctx
+
+
 @app.route("/")
 def index():
+    # Logged-out visitors get the marketing site; signed-in users get the graph.
+    if not getattr(auth.current_user, "is_authenticated", False):
+        return render_template("marketing.html", **_marketing_context())
     tenant_id = _current_tenant()
     g = get_graph(tenant_id)
     cs = get_constraints(tenant_id)
@@ -197,6 +262,72 @@ def index():
                          projections=projections,
                          tenants=auth.visible_tenants(),
                          current_tenant=tenant_id)
+
+
+
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    """Self-serve sign-up: create a tenant, a user and a free-tier plan.
+
+    Ordering matters. The tenant is provisioned first and rolled back if the
+    user cannot be created, so a duplicate email never leaves an orphaned
+    business behind. The new owner is signed in and sent to their own graph.
+    """
+    if request.method == "GET":
+        return render_template("marketing.html", **_marketing_context())
+
+    form = {
+        "email": request.form.get("email", "").strip().lower(),
+        "display_name": request.form.get("display_name", "").strip(),
+        "business_name": request.form.get("business_name", "").strip(),
+        "business_type": request.form.get("business_type", "").strip().lower(),
+    }
+    password = request.form.get("password", "")
+
+    entry = None
+    try:
+        if not form["email"] or "@" not in form["email"]:
+            raise ValueError("Enter a valid email address.")
+        if len(password) < 12:
+            raise ValueError("Choose a password of at least 12 characters.")
+        if not form["business_name"]:
+            raise ValueError("Enter your business name.")
+        if auth.store.get_user_by_email(form["email"]):
+            raise ValueError("An account with that email already exists. Try logging in.")
+
+        entry = provisioning.provision_tenant(
+            form["business_name"], form["business_type"], plan="free"
+        )
+        try:
+            user = auth.store.create_user(
+                form["email"], password, form["display_name"] or None,
+                tenant_ids=[entry["id"]],
+            )
+        except ValueError:
+            provisioning.discard_tenant(entry["id"])
+            raise
+    except (ValueError, provisioning.ProvisioningError) as exc:
+        return render_template(
+            "marketing.html", **_marketing_context(signup_error=str(exc), form=form)
+        ), 400
+    except Exception:
+        app.logger.exception("signup failed")
+        if entry:
+            provisioning.discard_tenant(entry["id"])
+        return render_template(
+            "marketing.html",
+            **_marketing_context(
+                signup_error="Something went wrong creating your account. Please try again.",
+                form=form,
+            ),
+        ), 500
+
+    session["tenant_id"] = entry["id"]
+    try:
+        login_user(auth._load_user(str(user["id"])), remember=False)
+    except Exception:
+        app.logger.exception("auto-login after signup failed")
+    return redirect("/dashboard")
 
 
 def build_category_revenue(business):
@@ -364,6 +495,13 @@ def dashboard():
                          status="good",
                          tenants=auth.visible_tenants(),
                          current_tenant=tenant_id)
+
+
+@app.route("/api/plan", methods=["GET"])
+def api_plan():
+    """Current plan, monthly usage and limits for the caller's business."""
+    tenant_id = _current_tenant()
+    return jsonify({"ok": True, **plans.status(tenant_id)})
 
 
 @app.route("/api/tenants")
@@ -547,6 +685,19 @@ def api_multiagent_run():
     max_init = int(data.get("max_initiatives", 6))
 
     tenant_id = _current_tenant()
+    # An arbiter run is the metered unit: specialists assess, constraints are
+    # checked, and a portfolio is selected. Refuse before spawning the thread so
+    # a plan limit cannot be bypassed by retrying.
+    try:
+        plans.consume(tenant_id, "arbiter_runs")
+    except plans.QuotaExceeded as exc:
+        return jsonify({
+            "ok": False,
+            "error": str(exc),
+            "code": "quota_exceeded",
+            "plan": plans.status(tenant_id),
+        }), 402
+
     job_id = uuid.uuid4().hex[:12]
     tenancy.jobs.create(tenant_id, job_id, status="running")
     t = threading.Thread(
@@ -561,7 +712,11 @@ def api_multiagent_run():
 @app.route("/api/multiagent/job/<job_id>", methods=["GET"])
 def api_multiagent_job(job_id):
     """Poll the status/result of an async arbiter job."""
-    job = _jobs.get(job_id)
+    tenant_id = _current_tenant()
+    try:
+        job = tenancy.jobs.get(tenant_id, job_id)
+    except tenancy.TenantAccessError:
+        return _forbidden()
     if job is None:
         return jsonify({"ok": False, "error": "Unknown job_id"}), 404
     return jsonify({"ok": True, **job})

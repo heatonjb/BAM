@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BAM — Business as a Machine. An agentic model of your whole business.</title>
+<meta name="description" content="BAM models your business as a connected graph of assets, transformations and constraints — then sends specialist AI agents to find the changes that actually move profit. Free tier available.">
+<meta property="og:title" content="BAM — Business as a Machine">
+<meta property="og:description" content="Your business is a machine. BAM reads the schematic — a live graph of what you own, what transforms it, and what constrains it. Agentic strategy, not another dashboard.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="{{ url_for('static', filename='marketing.css') }}">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav__inner">
+    <a class="brand" href="/">
+      <span class="brand__mark">◈</span> BAM
+    </a>
+    <div class="nav__links" id="navLinks">
+      <a href="#how">How it works</a>
+      <a href="#agents">Agents</a>
+      <a href="#integrations">Integrations</a>
+      <a href="#compare">Why BAM</a>
+      <a href="#pricing">Pricing</a>
+    </div>
+    <div class="nav__cta">
+      <a class="btn btn--ghost btn--sm" href="/login">Log in</a>
+      <a class="btn btn--primary btn--sm" href="#signup">Start free</a>
+      <button class="nav__toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero__grid">
+    <div>
+      <p class="eyebrow">Agentic business modelling</p>
+      <h1>Your business is a machine. <em>Start reading the schematic.</em></h1>
+      <p class="hero__sub">
+        Every business is a connected graph — assets, liabilities, and the transformations
+        that turn one into the other. BAM builds that graph from your real numbers,
+        puts specialist AI agents on every node, and lets an arbiter pick the moves
+        most likely to move profit.
+      </p>
+      <div class="hero__ctas">
+        <a class="btn btn--primary" href="#signup">Start free — 2 arbiter runs</a>
+        <a class="btn btn--ghost" href="#how">See how it works</a>
+      </div>
+      <p class="hero__fineprint">
+        <span>No card</span><span>1 business</span><span>Connect Xero or Stripe in minutes</span>
+      </p>
+    </div>
+    <div class="graph-frame">
+      <span class="graph-frame__label">Transformation graph · live projection</span>
+      <svg id="bamGraph" viewBox="0 0 520 400" role="img"
+           aria-label="Animated diagram of a business transformation graph: revenue at the root, feeding cost, marketing, operations and staffing nodes."></svg>
+      <span class="graph-frame__foot">value → cost → cash</span>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="stat-strip reveal">
+      <div class="stat"><span class="stat__n">7</span><span class="stat__l">layers, one graph</span></div>
+      <div class="stat"><span class="stat__n">5</span><span class="stat__l">specialist agents</span></div>
+      <div class="stat"><span class="stat__n">13</span><span class="stat__l">live integrations</span></div>
+      <div class="stat"><span class="stat__n">0</span><span class="stat__l">residual on the conservation proof</span></div>
+    </div>
+  </div>
+</header>
+
+<section class="sec" id="problem">
+  <div class="wrap">
+    <p class="eyebrow">The problem</p>
+    <h2>Dashboards tell you what happened. They don't tell you what to change.</h2>
+    <p class="lede" style="margin-top:22px">
+      Every analytics tool shows the same thing: a metric moved. Almost none of them can say
+      which node to touch, what it would cost, what it would break, and whether the result
+      would survive contact with your cashflow. The gap isn't data. It's the model.
+    </p>
+    <div class="grid-3 reveal">
+      <div class="cell">
+        <span class="cell__num">01 / FLAT</span>
+        <h3>Numbers without structure</h3>
+        <p>Revenue is a line in a report. It's actually the endpoint of a chain — units sold,
+           price paid, customers acquired, staff scheduled, stock ordered. Collapse the chain
+           and you lose the only thing you can act on.</p>
+      </div>
+      <div class="cell">
+        <span class="cell__num">02 / BLIND</span>
+        <h3>No reference distribution</h3>
+        <p>"Gross margin fell 2 points" is meaningless without knowing what normal looks like
+           for your business type. Benchmarks have to attach to nodes, not to a dashboard footer.</p>
+      </div>
+      <div class="cell">
+        <span class="cell__num">03 / RECKLESS</span>
+        <h3>Advice with no envelope</h3>
+        <p>An agent that says "cut prices 10%" without knowing your cash runway, legal obligations,
+           brand position or stated values is not a strategy advisor. It's a random number generator.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="how">
+  <div class="wrap two-col">
+    <div>
+      <p class="eyebrow">The model</p>
+      <h2>One graph. Seven layers.</h2>
+      <p class="lede" style="margin-top:20px">
+        BAM projects a single underlying graph through seven layers. Transactions sit at the
+        bottom; strategy sits at the top. Each layer is a view of the same machine, joined by
+        typed cross-layer edges — so a change at the top can be traced down to a ledger entry,
+        and a ledger entry can be traced up to the decision that caused it.
+      </p>
+      <p style="margin-top:18px;color:var(--ink-2)">
+        No off-the-shelf ontology covers all seven. BAM combines REA transaction and duality
+        semantics, ArchiMate structure and goals, BPMN executable flow, and XBRL/FIBO statement
+        and instrument types — then adds the connective layer those standards all leave out.
+      </p>
+      <p class="flow-note">Each layer carries its own metric tree and its own benchmark population.</p>
+    </div>
+    <div class="layers reveal">
+      <div class="layer"><span class="layer__idx">L7</span><span class="layer__name">Strategy</span><span class="layer__what">intent, mission, values</span></div>
+      <div class="layer"><span class="layer__idx">L6</span><span class="layer__name">Financial statements</span><span class="layer__what">the projection at the firm boundary</span></div>
+      <div class="layer"><span class="layer__idx">L5</span><span class="layer__name">Assets &amp; liabilities</span><span class="layer__what">what the machine owns and owes</span></div>
+      <div class="layer"><span class="layer__idx">L4</span><span class="layer__name">Capabilities</span><span class="layer__what">what it can reliably do</span></div>
+      <div class="layer"><span class="layer__idx">L3</span><span class="layer__name">Processes</span><span class="layer__what">repeatable flows of work</span></div>
+      <div class="layer"><span class="layer__idx">L2</span><span class="layer__name">Activities</span><span class="layer__what">the units of effort</span></div>
+      <div class="layer"><span class="layer__idx">L1</span><span class="layer__name">Transactions</span><span class="layer__what">dual economic events</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="algebra">
+  <div class="wrap">
+    <p class="eyebrow">The algebra</p>
+    <h2>The model has to conserve. We checked.</h2>
+    <p class="lede" style="margin-top:20px">
+      A graph that doesn't reconcile is a drawing. BAM's transformation algebra is a constraint
+      system, and we tested it against an object-centric inventory log with a synthetic cost layer.
+      The absorption variance isn't a fudge factor — it's internal to the identity. Omit it and the
+      residual equals the variance you dropped. Truncate the opening balance and the snapshot breaks
+      by exactly the predicted amount. That's a conservation proof, not a demo.
+    </p>
+    <div class="proof reveal">
+      <div class="proof__bar">
+        <span class="dot dot--a"></span><span class="dot"></span><span class="dot"></span>
+        <span style="margin-left:8px">reconciliation · pinned inventory log</span>
+      </div>
+      <pre><span class="c"># conservation identity</span>
+<span class="k">NI_GAAP</span>  =  NP_TA  +  ΔInventory × overhead/unit
+
+<span class="c"># executed against the pinned log</span>
+residual   =  0.0000        <span class="ok">✓ identity closes</span>
+
+<span class="c"># falsification checks</span>
+omit variance      →  residual = absorption variance   <span class="ok">✓ predicted</span>
+flat inventory     →  NI_GAAP = NP_TA                  <span class="ok">✓ predicted</span>
+truncated opening  →  snapshot broken by known amount  <span class="ok">✓ predicted</span></pre>
+    </div>
+    <p style="margin-top:22px;color:var(--ink-3);font-size:13.5px;font-family:var(--mono)">
+      The mechanics of an exact close are cheap. Economic realism is not included in that cheapness.
+    </p>
+  </div>
+</section>
+
+<section class="sec" id="agents">
+  <div class="wrap">
+    <p class="eyebrow">The agents</p>
+    <h2>Five specialists. One arbiter. A hard constraint envelope.</h2>
+    <p class="lede" style="margin-top:20px">
+      Agents work the graph bottom-up. Each specialist reads only its own slice — revenue, cost,
+      marketing, operations, staffing — and returns ranked recommendations with an effort estimate
+      and an expected effect. The arbiter then does the part that matters: it validates every
+      recommendation against the constraint checker and selects a portfolio that maximises
+      risk-adjusted value inside an effort budget. It decides. It does not execute.
+    </p>
+
+    <div style="margin-top:44px" class="reveal">
+      <div class="arbiter-card">
+        <div class="arbiter-card__role">Root agent · strategy arbiter</div>
+        <h3>Portfolio selection under constraints</h3>
+        <p style="color:var(--ink-2);margin-top:12px;font-size:15px;max-width:70ch">
+          Every candidate initiative is checked against cashflow, legal, mission, values and brand
+          constraints before it can enter the portfolio. Rejected ideas come back with the reason,
+          not silence. The arbiter writes a strategic narrative explaining why this portfolio and
+          not another — and the orchestrator executes only what a human approves.
+        </p>
+      </div>
+      <div class="specialists">
+        <div class="spec"><span class="spec__n">Revenue</span><span class="spec__d">Price, mix, volume, discount depth</span></div>
+        <div class="spec"><span class="spec__n">Cost</span><span class="spec__d">COGS, waste, supplier terms, overhead</span></div>
+        <div class="spec"><span class="spec__n">Marketing</span><span class="spec__d">Acquisition cost, channel mix, retention</span></div>
+        <div class="spec"><span class="spec__n">Operations</span><span class="spec__d">Throughput, service time, capacity</span></div>
+        <div class="spec"><span class="spec__n">Staffing</span><span class="spec__d">Labour cost, rota, productivity</span></div>
+      </div>
+      <p class="flow-note">
+        specialist → recommendation → constraint checker → arbiter portfolio → human approval → orchestrator → measure outcome → knowledge base
+      </p>
+    </div>
+
+    <div class="grid-3 reveal" style="margin-top:56px">
+      <div class="cell">
+        <span class="cell__num">CONSTRAINT</span>
+        <h3>Cashflow</h3>
+        <p>An initiative that improves margin but breaks the runway is not an improvement.
+           Every recommendation is stress-tested against the cash position before it is ranked.</p>
+      </div>
+      <div class="cell">
+        <span class="cell__num">CONSTRAINT</span>
+        <h3>Legal &amp; obligations</h3>
+        <p>Contracts, notice periods, regulatory duties and tax treatment are modelled as hard
+           edges. Hard constraints cannot be overridden by an optimistic forecast.</p>
+      </div>
+      <div class="cell">
+        <span class="cell__num">CONSTRAINT</span>
+        <h3>Mission, values, brand</h3>
+        <p>These are modelled explicitly, not left to a prompt. A discount strategy that
+           contradicts a stated brand position is rejected even when the maths works.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="integrations">
+  <div class="wrap">
+    <p class="eyebrow">Integrations</p>
+    <h2>Fed by the tools you already use.</h2>
+    <p class="lede" style="margin-top:20px">
+      BAM reads through OAuth connections — never by asking you to export a CSV. Each provider
+      declares which canonical fields it can supply, so the graph fills in from live data and
+      nodes you can't yet source are marked as gaps rather than guessed at. Write actions are
+      routed through the same connectors and always require approval.
+    </p>
+
+    {% for group, items in integration_groups.items() %}
+    <div class="int-group reveal">
+      <div class="int-group__title">{{ group }}</div>
+      <div class="int-grid">
+        {% for p in items %}
+        <div class="int">
+          <span class="int__mark" style="background:{{ p.color }}">{{ p.mark }}</span>
+          {{ p.name }}
+          <span class="int__state{% if p.live %} int__state--live{% endif %}">{% if p.live %}LIVE{% else %}READY{% endif %}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+
+    <p class="flow-note" style="margin-top:26px">
+      Canonical fields: revenue · cogs · units · gross margin · visits per week · average spend · customer segments · adoption rate · volume lift · reward value
+    </p>
+  </div>
+</section>
+
+<section class="sec" id="compare">
+  <div class="wrap">
+    <p class="eyebrow">Why BAM</p>
+    <h2>The AI CFO reads your books. BAM models your business.</h2>
+    <p class="lede" style="margin-top:20px">
+      A wave of agents already reads live ledger data and drafts recommendations — FCFO.ai,
+      Auditoria, Prowl's Peregrine CFO, Zeni, Nume. They share one architecture: read-only,
+      source-cited, draft-and-approve. That's a good pattern, and BAM adopts it. But their scope
+      stops at finance. Finance is the projection of the machine, not the machine.
+    </p>
+
+    <div class="cmp-wrap reveal">
+      <table class="cmp">
+        <thead>
+          <tr>
+            <th>Capability</th>
+            <th>AI CFO tools</th>
+            <th class="bam">BAM</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Reads live ledger &amp; billing data</td>
+            <td class="yes">Yes</td>
+            <td class="bam yes">Yes — Xero, FreeAgent, QuickBooks, Stripe</td>
+          </tr>
+          <tr>
+            <td>Source-cited, approval-gated actions</td>
+            <td class="yes">Yes</td>
+            <td class="bam yes">Yes — every write goes through a human gate</td>
+          </tr>
+          <tr>
+            <td>Models beyond finance (ops, marketing, staffing, capacity)</td>
+            <td class="no">Rarely</td>
+            <td class="bam yes">Yes — seven-layer graph</td>
+          </tr>
+          <tr>
+            <td>Explicit constraint envelope (cashflow, legal, mission, values, brand)</td>
+            <td class="no">Partial</td>
+            <td class="bam yes">Modelled as typed edges; hard constraints cannot be overridden</td>
+          </tr>
+          <tr>
+            <td>Portfolio selection under an effort budget</td>
+            <td class="no">No</td>
+            <td class="bam yes">Arbiter ranks and selects across specialists</td>
+          </tr>
+          <tr>
+            <td>Measures whether the initiative worked</td>
+            <td class="no">Rarely</td>
+            <td class="bam yes">Outcome measurement feeds the knowledge base</td>
+          </tr>
+          <tr>
+            <td>Accounting identity enforced on the model</td>
+            <td class="no">Not applicable</td>
+            <td class="bam yes">Conservation proof, residual zero</td>
+          </tr>
+          <tr>
+            <td>Benchmarks attached to individual nodes</td>
+            <td class="no">No</td>
+            <td class="bam yes">Per-layer metric trees and peer distributions</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="research">
+  <div class="wrap two-col">
+    <div>
+      <p class="eyebrow">The research</p>
+      <h2>Built from a research programme, not a pitch deck.</h2>
+      <p class="lede" style="margin-top:20px">
+        BAM started as a research question: can you model any business as a transformation
+        machine precisely enough for an agent to optimise it without violating the constraints
+        that keep it alive? The answer took 36 working papers — ontology surveys, a formal
+        transformation algebra, a ledger prototype with five fail-closed invariants in 39 lines,
+        an executed reconciliation, benchmark-source licensing analysis, and a survey of agent
+        harness design and safe action-taking.
+      </p>
+      <p style="margin-top:18px;color:var(--ink-2)">
+        The cost shape is measured, not estimated. A thin semantic layer runs one to three
+        person-months. A multi-entity build runs four to nine. A full ontology runs nine to
+        eighteen with a high chance of abandonment — which is exactly why BAM starts with a
+        minimal viable graph and grows it.
+      </p>
+    </div>
+    <div class="reveal">
+      <div class="proof">
+        <div class="proof__bar">
+          <span class="dot dot--a"></span><span class="dot"></span><span class="dot"></span>
+          <span style="margin-left:8px">research register · selected</span>
+        </div>
+        <pre><span class="k">transformation-graph.md</span>        the core model: nodes, edges, invariants
+<span class="k">transformation-algebra.md</span>      the constraint system and its proofs
+<span class="k">kpi-trees-benchmarking.md</span>      metric hierarchies and peer populations
+<span class="k">agentic-harnesses-strategy-advisors.md</span>
+                                planner–executor design, approval gates
+<span class="k">constraints-modelling.md</span>       cashflow, legal, mission, values, brand
+<span class="k">experiment-initiative-design.md</span> how a hypothesis becomes a measurable test
+<span class="k">graph-survival-cohort-study.md</span> which modelled businesses survive contact
+<span class="k">real-ledger-reconciliation.md</span> the conservation proof, executed</pre>
+      </div>
+      <p class="flow-note" style="margin-top:14px">36 documents · 2026</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="pricing">
+  <div class="wrap">
+    <p class="eyebrow">Pricing</p>
+    <h2>Start free. Upgrade when the arbiter earns it.</h2>
+    <p class="lede" style="margin-top:20px">
+      The free tier is a real tier, not a trial: one business, modelled end to end, with two
+      arbiter runs a month. That's enough to see whether the model tells you something your
+      dashboard didn't. Pro removes the ceiling on businesses and adds the autonomous loop.
+    </p>
+
+    <div class="price-grid">
+      {% for pid, plan in plans.items() %}
+      <div class="plan{% if plan.highlight %} plan--hl{% endif %}">
+        {% if plan.highlight %}<span class="plan__flag">Most useful</span>{% endif %}
+        <div class="plan__name">{{ plan.name }}</div>
+        <div class="plan__price">
+          {% if plan.price_gbp == 0 %}£0{% else %}£{{ plan.price_gbp }}{% endif %}
+          <small>{{ plan.cadence }}</small>
+        </div>
+        <p class="plan__tagline">{{ plan.tagline }}</p>
+        <ul class="plan__features">
+          {% for f in plan.features %}<li>{{ f }}</li>{% endfor %}
+          {% for f in plan.not_included %}<li class="off">{{ f }}</li>{% endfor %}
+        </ul>
+        {% if pid == 'free' %}
+        <a class="btn btn--primary" href="#signup">Start free</a>
+        {% elif pid == 'pro' %}
+        <a class="btn btn--primary" href="#signup">Start free, upgrade later</a>
+        {% else %}
+        <a class="btn btn--ghost" href="mailto:hello@bam.example?subject=BAM%20Scale">Talk to us</a>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="quota-note reveal">
+      <strong>What counts as an arbiter run?</strong> One full arbitration: five specialists read
+      the graph, every recommendation is validated against your constraints, and the arbiter
+      selects a portfolio with a written strategy. You can browse the graph, drill into any node,
+      and generate per-node insights without spending one. The free tier's two runs are two full
+      portfolios a month — enough to act on, not enough to run the whole loop continuously.
+      <br><br>
+      <span style="color:var(--ink-3);font-size:13.5px">
+        Limits are enforced server-side against your tenant. When you hit one, the API returns a
+        clear quota error and the UI offers an upgrade — nothing silently degrades.
+      </span>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="signup">
+  <div class="wrap">
+    <div class="signup reveal">
+      <div class="signup__aside">
+        <p class="eyebrow">Free tier</p>
+        <h2>Model your business this afternoon.</h2>
+        <p style="color:var(--ink-2)">
+          Create an account, pick your business type, and BAM instantiates a graph you can
+          explore immediately. Connect an integration when you're ready to replace the starter
+          numbers with live ones.
+        </p>
+        <ul class="signup__list">
+          <li><span class="tick">✓</span><span><b>No card required.</b> The free tier doesn't expire.</span></li>
+          <li><span class="tick">✓</span><span><b>Two arbiter runs a month.</b> Full portfolios, not teasers.</span></li>
+          <li><span class="tick">✓</span><span><b>Your data stays yours.</b> Every tenant is isolated at the storage layer.</span></li>
+          <li><span class="tick">✓</span><span><b>Approval-gated.</b> Nothing writes to your systems without you.</span></li>
+        </ul>
+      </div>
+
+      <form class="form" method="post" action="/signup" autocomplete="on">
+        {% if signup_error %}<div class="form__err" role="alert">{{ signup_error }}</div>{% endif %}
+        {% if signup_ok %}<div class="form__ok" role="status">{{ signup_ok }}</div>{% endif %}
+        <div class="field">
+          <label for="su-email">Work email</label>
+          <input id="su-email" name="email" type="email" required maxlength="254"
+                 placeholder="you@company.com" value="{{ form.email if form else '' }}">
+        </div>
+        <div class="form__row">
+          <div class="field">
+            <label for="su-name">Your name</label>
+            <input id="su-name" name="display_name" type="text" maxlength="80"
+                   placeholder="Alex Morgan" value="{{ form.display_name if form else '' }}">
+          </div>
+          <div class="field">
+            <label for="su-biz">Business name</label>
+            <input id="su-biz" name="business_name" type="text" required maxlength="120"
+                   placeholder="Northside Coffee" value="{{ form.business_name if form else '' }}">
+          </div>
+        </div>
+        <div class="field">
+          <label for="su-type">Business type</label>
+          <select id="su-type" name="business_type">
+            <option value="cafe" {% if form and form.business_type == 'cafe' %}selected{% endif %}>Café / physical retail</option>
+            <option value="saas" {% if form and form.business_type == 'saas' %}selected{% endif %}>SaaS / recurring software</option>
+            <option value="services" {% if form and form.business_type == 'services' %}selected{% endif %}>Professional services</option>
+            <option value="ecommerce" {% if form and form.business_type == 'ecommerce' %}selected{% endif %}>E-commerce</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="su-pass">Password</label>
+          <input id="su-pass" name="password" type="password" required minlength="12"
+                 placeholder="At least 12 characters" autocomplete="new-password">
+        </div>
+        <button class="btn btn--primary" type="submit">Create free account</button>
+        <p class="form__note">
+          By creating an account you agree to the terms and privacy notice. We don't sell data,
+          and we don't train models on your financials.
+        </p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="faq">
+  <div class="wrap">
+    <p class="eyebrow">Questions</p>
+    <h2>What people ask before signing up.</h2>
+    <div class="faq">
+      <details>
+        <summary>Is this another AI CFO?</summary>
+        <div class="faq__a">No. AI CFO tools read your ledger and draft financial recommendations.
+          BAM models the whole machine — operations, marketing, staffing, capacity, brand — and
+          treats the financial statements as one projection of it. Finance is where the model is
+          checked, not where it stops.</div>
+      </details>
+      <details>
+        <summary>What is an "arbiter run" and why is it the thing you meter?</summary>
+        <div class="faq__a">An arbiter run is one complete strategy cycle: specialists assess their
+          slices, recommendations are validated against your constraints, and the arbiter selects a
+          portfolio with a written rationale. It's the most expensive operation in the system
+          because it's the one that actually thinks. Browsing the graph and drilling into nodes
+          doesn't consume a run.</div>
+      </details>
+      <details>
+        <summary>What happens when I hit the free limit?</summary>
+        <div class="faq__a">The API returns a quota error and the UI offers an upgrade. Nothing
+          silently degrades and no data is lost — your graph, history and initiatives all stay.
+          You keep read access to everything you've built.</div>
+      </details>
+      <details>
+        <summary>Will it change things in my systems without asking?</summary>
+        <div class="faq__a">No. The arbiter decides; the orchestrator executes only after human
+          approval. Write actions are routed through the same connector layer as reads and are
+          logged with who approved what and when.</div>
+      </details>
+      <details>
+        <summary>How accurate is the model if I don't connect anything?</summary>
+        <div class="faq__a">It's structurally right and numerically indicative. A starter graph gives
+          you the shape of your business and lets the arbiter reason about levers. Connect Xero or
+          Stripe and the values become real. Nodes BAM can't source are explicitly marked as gaps
+          rather than filled with plausible fiction.</div>
+      </details>
+      <details>
+        <summary>Do you train models on my financial data?</summary>
+        <div class="faq__a">No. Your tenant's data is isolated at the storage layer, and model calls
+          carry structured summaries rather than raw documents or credentials. Benchmarks are
+          aggregate and de-identified; we never expose one business's figures to another.</div>
+      </details>
+      <details>
+        <summary>Can I export my model?</summary>
+        <div class="faq__a">Yes. The graph is data — nodes, edges, metrics and provenance. Export as
+          JSON or CSV at any time, on any tier. If you leave, you leave with the model.</div>
+      </details>
+      <details>
+        <summary>What's the difference between Pro and Scale?</summary>
+        <div class="faq__a">Pro is for one operator running up to five businesses with the full
+          autonomous loop. Scale is for portfolios and franchise networks: white-label branding,
+          custom business-type templates so every site inherits the parent's structure, SSO, and
+          portfolio-level benchmarking.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot__grid">
+      <div>
+        <a class="brand" href="/" style="margin-bottom:14px"><span class="brand__mark">◈</span> BAM</a>
+        <p style="max-width:34ch;margin-top:14px">
+          Business as a Machine. An agentic model of your whole business — assets,
+          transformations, constraints and the moves that move profit.
+        </p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#how">How it works</a></li>
+          <li><a href="#agents">Agent hierarchy</a></li>
+          <li><a href="#integrations">Integrations</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Research</h4>
+        <ul>
+          <li><a href="#algebra">Transformation algebra</a></li>
+          <li><a href="#research">Research register</a></li>
+          <li><a href="#compare">Comparison</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Account</h4>
+        <ul>
+          <li><a href="/login">Log in</a></li>
+          <li><a href="#signup">Start free</a></li>
+          <li><a href="mailto:hello@bam.example">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot__base">
+      <span>© {{ year }} BAM. All rights reserved.</span>
+      <span>Built on a research programme, not a pitch deck.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  // ── Mobile nav ────────────────────────────────────────────────────────────
+  var toggle = document.getElementById("navToggle");
+  var links = document.getElementById("navLinks");
+  if (toggle && links) {
+    toggle.addEventListener("click", function () {
+      var open = links.classList.toggle("open");
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    links.addEventListener("click", function (e) {
+      if (e.target.tagName === "A") {
+        links.classList.remove("open");
+        toggle.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
+
+  // ── Reveal on scroll ──────────────────────────────────────────────────────
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var revealables = document.querySelectorAll(".reveal");
+  if (reduced || !("IntersectionObserver" in window)) {
+    revealables.forEach(function (el) { el.classList.add("in"); });
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in");
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
+    revealables.forEach(function (el) { io.observe(el); });
+  }
+
+  // ── Graph illustration ────────────────────────────────────────────────────
+  // A small, honest schematic: revenue at the root, cost branches beneath,
+  // cash as the terminal edge. Nodes carry the layer they belong to.
+  var svg = document.getElementById("bamGraph");
+  if (!svg) return;
+  var NS = "http://www.w3.org/2000/svg";
+
+  var nodes = [
+    { id: "cash",   label: "cash",          x: 260, y: 352, layer: "L6", r: 7 },
+    { id: "rev",    label: "revenue",       x: 260, y: 208, layer: "L6", r: 11 },
+    { id: "units",  label: "units",         x: 108, y: 128, layer: "L1", r: 6 },
+    { id: "price",  label: "price",         x: 200, y: 96,  layer: "L5", r: 6 },
+    { id: "cogs",   label: "cogs",          x: 340, y: 104, layer: "L2", r: 7 },
+    { id: "mktg",   label: "marketing",     x: 414, y: 176, layer: "L3", r: 6 },
+    { id: "staff",  label: "staffing",      x: 402, y: 268, layer: "L4", r: 6 },
+    { id: "ops",    label: "operations",    x: 148, y: 272, layer: "L4", r: 6 },
+    { id: "cap",    label: "capacity",      x: 92,  y: 202, layer: "L4", r: 5 },
+    { id: "brand",  label: "brand",         x: 326, y: 44,  layer: "L7", r: 5 }
+  ];
+  var edges = [
+    ["rev", "cash"], ["units", "rev"], ["price", "rev"], ["cogs", "rev"],
+    ["mktg", "rev"], ["staff", "rev"], ["ops", "rev"], ["cap", "units"],
+    ["brand", "price"], ["cogs", "ops"], ["staff", "ops"]
+  ];
+
+  var byId = {};
+  nodes.forEach(function (n) { byId[n.id] = n; });
+
+  // edges first so nodes paint on top
+  edges.forEach(function (e, i) {
+    var a = byId[e[0]], b = byId[e[1]];
+    if (!a || !b) return;
+    var line = document.createElementNS(NS, "line");
+    line.setAttribute("x1", a.x); line.setAttribute("y1", a.y);
+    line.setAttribute("x2", b.x); line.setAttribute("y2", b.y);
+    line.setAttribute("stroke", "#2b313a");
+    line.setAttribute("stroke-width", "1");
+    svg.appendChild(line);
+
+    // travelling pulse to suggest value flow
+    var dot = document.createElementNS(NS, "circle");
+    dot.setAttribute("r", "2");
+    dot.setAttribute("fill", "#d7ff3e");
+    dot.setAttribute("opacity", "0.9");
+    svg.appendChild(dot);
+    var anim = document.createElementNS(NS, "animateMotion");
+    anim.setAttribute("dur", (2.6 + (i % 5) * 0.55).toFixed(2) + "s");
+    anim.setAttribute("repeatCount", "indefinite");
+    anim.setAttribute("path", "M" + a.x + "," + a.y + " L" + b.x + "," + b.y);
+    anim.setAttribute("begin", (i * 0.28).toFixed(2) + "s");
+    dot.appendChild(anim);
+  });
+
+  nodes.forEach(function (n) {
+    var g = document.createElementNS(NS, "g");
+    var c = document.createElementNS(NS, "circle");
+    c.setAttribute("cx", n.x); c.setAttribute("cy", n.y); c.setAttribute("r", n.r);
+    var isRoot = n.id === "rev";
+    c.setAttribute("fill", isRoot ? "#d7ff3e" : "#14171c");
+    c.setAttribute("stroke", isRoot ? "#d7ff3e" : "#3a4149");
+    c.setAttribute("stroke-width", isRoot ? "1" : "1.2");
+    g.appendChild(c);
+
+    var t = document.createElementNS(NS, "text");
+    t.setAttribute("x", n.x + n.r + 7);
+    t.setAttribute("y", n.y + 3.5);
+    t.setAttribute("fill", isRoot ? "#f4f1ea" : "#8f8c86");
+    t.setAttribute("font-family", "ui-monospace, SFMono-Regular, Menlo, monospace");
+    t.setAttribute("font-size", "10.5");
+    t.textContent = n.label;
+    g.appendChild(t);
+
+    var lt = document.createElementNS(NS, "text");
+    lt.setAttribute("x", n.x + n.r + 7);
+    lt.setAttribute("y", n.y + 15);
+    lt.setAttribute("fill", "#4a5058");
+    lt.setAttribute("font-family", "ui-monospace, SFMono-Regular, Menlo, monospace");
+    lt.setAttribute("font-size", "8");
+    lt.textContent = n.layer;
+    g.appendChild(lt);
+
+    svg.appendChild(g);
+  });
+
+  if (reduced) {
+    svg.querySelectorAll("animateMotion").forEach(function (a) { a.remove(); });
+  }
+})();
+</script>
+
+</body>
+</html>

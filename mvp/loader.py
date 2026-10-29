@@ -44,28 +44,41 @@ def _apply_stats(node, stats_dict):
     node.sparkline = stats_dict.get("sparkline", [])
 
 
-def _load_cafe_graph() -> BusinessGraph:
-    """Build the full hierarchical graph from JonCo cafe data files."""
+def _load_cafe_graph(data_dir: str = None, stats_path: str = None) -> BusinessGraph:
+    """Build the full hierarchical graph from one café tenant's data files.
+
+    ``data_dir`` must name the tenant's own directory. It used to be a module
+    constant pointing at ``data/jonco``, so every café-type tenant rendered
+    JonCo's books — the same class of bug as the unscoped ``load_all()``. Callers
+    must pass the tenant's directory; the default is retained only so scripts
+    that read the original café keep working.
+    """
+    data_dir = data_dir or DATA_DIR
+    stats_path = stats_path or STATS_PATH
     g = BusinessGraph()
 
     # ── Load raw data ──
-    with open(os.path.join(DATA_DIR, "transactions.json")) as f:
+    with open(os.path.join(data_dir, "transactions.json")) as f:
         transactions = json.load(f)
-    with open(os.path.join(DATA_DIR, "staff_roster.json")) as f:
+    with open(os.path.join(data_dir, "staff_roster.json")) as f:
         staff_roster = json.load(f)
-    with open(os.path.join(DATA_DIR, "payroll.json")) as f:
+    with open(os.path.join(data_dir, "payroll.json")) as f:
         payroll = json.load(f)
-    with open(os.path.join(DATA_DIR, "cogs_purchases.json")) as f:
+    with open(os.path.join(data_dir, "cogs_purchases.json")) as f:
         cogs_data = json.load(f)
-    with open(os.path.join(DATA_DIR, "overheads.json")) as f:
+    with open(os.path.join(data_dir, "overheads.json")) as f:
         overheads_data = json.load(f)
-    with open(os.path.join(DATA_DIR, "menu.json")) as f:
+    with open(os.path.join(data_dir, "menu.json")) as f:
         menu = json.load(f)
-    with open(os.path.join(DATA_DIR, "bottom_up_pl.json")) as f:
+    with open(os.path.join(data_dir, "bottom_up_pl.json")) as f:
         pl_data = json.load(f)
 
     # ── Load rolling stats ──
-    with open(STATS_PATH, "rb") as f:
+    # A cloned tenant carries its own rolling_stats.pkl when one exists;
+    # otherwise fall back to the shared file rather than failing the load.
+    if not os.path.exists(stats_path):
+        stats_path = STATS_PATH
+    with open(stats_path, "rb") as f:
         S = pickle.load(f)
 
     # ── Compute monthly averages ──
@@ -698,9 +711,13 @@ def load_graph(tenant_id: str = "jonco") -> BusinessGraph:
     cafe loader for ``type == "cafe"``.
     """
     tenant = load_tenant_config(tenant_id)
+    tenant_dir = os.path.join(DATA_ROOT, tenant["data_dir"])
     if tenant.get("type") == "saas":
         from .saas_loader import build_saas_graph
-        company_path = os.path.join(DATA_ROOT, tenant["data_dir"], "company.json")
+        company_path = os.path.join(tenant_dir, "company.json")
         return build_saas_graph(company_path)
-    return _load_cafe_graph()
+    return _load_cafe_graph(
+        data_dir=tenant_dir,
+        stats_path=os.path.join(tenant_dir, "rolling_stats.pkl"),
+    )
 
