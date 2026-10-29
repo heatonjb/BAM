@@ -5,88 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Business as a Machine — {{ company.name }}</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0a; color: #e0e0e0; }
-
-        .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 1.5rem 2rem; border-bottom: 1px solid #333; }
-        .header h1 { font-size: 1.8rem; color: #fff; margin-bottom: 0.3rem; }
-        .header .subtitle { color: #888; font-size: 0.9rem; }
-        .header .company-number { color: #555; font-size: 0.8rem; }
-
-        .nav { background: #111; padding: 0.8rem 2rem; display: flex; gap: 1rem; border-bottom: 1px solid #222; overflow-x: auto; }
-        .nav a { color: #888; text-decoration: none; padding: 0.5rem 1rem; border-radius: 4px; transition: all 0.2s; font-size: 0.9rem; white-space: nowrap; }
-        .nav a:hover, .nav a.active { color: #fff; background: #222; }
-
-        .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem 2rem; }
-
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-        .stat-card { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 1.2rem; }
-        .stat-card .label { color: #888; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.5rem; }
-        .stat-card .value { font-size: 1.6rem; font-weight: 600; }
-
-        .positive { color: #4caf50; }
-        .negative { color: #f44336; }
-        .neutral { color: #ff9800; }
-
-        .section { margin-bottom: 2rem; scroll-margin-top: 80px; }
-        .section-title { font-size: 1.2rem; color: #fff; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #333; }
-
-        .card { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; }
-        .card h3 { color: #fff; font-size: 1rem; margin-bottom: 0.8rem; }
-
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
-
-        table { width: 100%; border-collapse: collapse; }
-        th, td { text-align: left; padding: 0.7rem 1rem; border-bottom: 1px solid #222; font-size: 0.9rem; }
-        th { color: #888; font-weight: 500; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
-        td { color: #ccc; }
-
-        .kpi-status { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
-        .kpi-critical { background: #f44336; }
-        .kpi-poor { background: #ff5722; }
-        .kpi-ok { background: #ff9800; }
-        .kpi-good { background: #4caf50; }
-
-        .kpi-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid #222; }
-        .kpi-row:last-child { border-bottom: none; }
-        .kpi-name { color: #ccc; font-size: 0.9rem; }
-        .kpi-value { font-weight: 600; color: #fff; }
-        .kpi-benchmark { color: #666; font-size: 0.8rem; margin-left: 0.5rem; }
-        .kpi-gap { font-size: 0.8rem; margin-left: 0.5rem; }
-
-        .chart-container { position: relative; height: 300px; }
-
-        .query-box { background: #111; border: 1px solid #333; border-radius: 8px; padding: 1rem; }
-        .query-input { width: 100%; background: #0a0a0a; border: 1px solid #333; color: #fff; padding: 0.8rem; border-radius: 4px; font-size: 0.95rem; margin-bottom: 0.5rem; }
-        .query-input:focus { outline: none; border-color: #4caf50; }
-        .query-btn { background: #4caf50; color: #fff; border: none; padding: 0.8rem 1.5rem; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
-        .query-btn:hover { background: #45a049; }
-        .query-response { margin-top: 1rem; white-space: pre-wrap; color: #ccc; font-family: monospace; font-size: 0.9rem; line-height: 1.5; }
-
-        .exp-form { background: #111; border: 1px solid #333; border-radius: 8px; padding: 1rem; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
-        .exp-form select, .exp-form input { background: #0a0a0a; border: 1px solid #333; color: #fff; padding: 0.6rem; border-radius: 4px; font-size: 0.9rem; }
-        .exp-form select { width: 200px; }
-        .exp-form input { width: 100px; }
-
-        .exp-result { margin-top: 1rem; background: #0a0a0a; border: 1px solid #333; border-radius: 4px; padding: 1rem; }
-        .exp-result h4 { color: #4caf50; margin-bottom: 0.5rem; }
-        .exp-result .impact { color: #fff; font-size: 1rem; margin: 0.3rem 0; }
-        .exp-result .assumption { color: #888; font-size: 0.85rem; margin: 0.2rem 0; padding-left: 1rem; }
-
-        .opp-card { background: #1a1a1a; border: 1px solid #333; border-radius: 6px; padding: 1rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
-        .opp-card h4 { color: #fff; font-size: 0.95rem; margin: 0; }
-        .opp-card .gap { color: #f44336; font-size: 0.85rem; }
-
-        .footer { text-align: center; padding: 2rem; color: #555; font-size: 0.8rem; border-top: 1px solid #222; }
-
-        @media (max-width: 768px) {
-            .grid-2, .grid-3 { grid-template-columns: 1fr; }
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-            .container { padding: 1rem; }
-        }
-    </style>
+        <link rel="stylesheet" href="/static/base.css">
+    <link rel="stylesheet" href="/static/dashboard.css">
 </head>
 <body>
     <div class="header">
@@ -126,6 +46,43 @@
             <div class="stat-card">
                 <div class="label">Total Transactions</div>
                 <div class="value">{{ "{:,}".format(monthly[0].transactions + monthly[1].transactions + monthly[2].transactions) }}</div>
+            </div>
+        </div>
+
+        <!-- Integration Health Panel -->
+        <div class="section" id="integrations">
+            <h2 class="section-title">Integration Health</h2>
+            <div class="card" style="padding:1.25rem;">
+                <div class="spread" style="margin-bottom:0.75rem;">
+                    <div class="row gap-sm">
+                        <span class="badge {% if integration_health.status == 'healthy' %}change-up-bg{% elif integration_health.status == 'not_configured' %}change-flat-bg{% else %}change-down-bg{% endif %}"
+                              style="font-size:0.75rem;padding:0.3rem 0.7rem;">
+                            {% if integration_health.status == 'healthy' %}● Connected{% elif integration_health.status == 'not_configured' %}○ Not Configured{% else %}● Unavailable{% endif %}
+                        </span>
+                        <span class="text-sm muted">Nango integration layer</span>
+                    </div>
+                    <a href="/dashboard" class="btn" style="font-size:0.72rem;padding:0.25rem 0.6rem;">Refresh</a>
+                </div>
+
+                {% if integration_health.status == 'healthy' %}
+                    <p class="text-sm muted" style="margin-bottom:0.75rem;">
+                        {{ integration_health.connection_count }} provider{% if integration_health.connection_count != 1 %}s{% endif %} connected
+                        for this tenant.
+                    </p>
+                    <div class="row wrap gap-sm">
+                        {% for p in integration_health.connected_providers %}
+                        <span class="badge" style="background:var(--accent-soft);color:var(--accent);font-size:0.72rem;padding:0.25rem 0.6rem;">{{ p }}</span>
+                        {% endfor %}
+                    </div>
+                {% elif integration_health.status == 'not_configured' %}
+                    <p class="text-sm muted">
+                        Nango is not configured. Add <code class="mono" style="font-size:0.75rem;">NANGO_SECRET_KEY</code>
+                        to your environment to enable live integrations.
+                        <a href="/api/integrations/coverage">View available providers →</a>
+                    </p>
+                {% else %}
+                    <p class="text-sm muted">Integration health check unavailable.</p>
+                {% endif %}
             </div>
         </div>
 
@@ -178,10 +135,10 @@
             <h2 class="section-title">KPI Dashboard vs Benchmarks</h2>
             <div class="card">
                 {% for status in ["critical", "poor", "ok", "good"] %}
-                {% if status == "critical" %}<h3 style="color:#f44336;margin-bottom:0.5rem;">Critical</h3>{% endif %}
-                {% if status == "poor" %}<h3 style="color:#ff5722;margin-bottom:0.5rem;">Poor</h3>{% endif %}
-                {% if status == "ok" %}<h3 style="color:#ff9800;margin-bottom:0.5rem;">OK</h3>{% endif %}
-                {% if status == "good" %}<h3 style="color:#4caf50;margin-bottom:0.5rem;">Good</h3>{% endif %}
+                {% if status == "critical" %}<h3 style="color:#dc2626;margin-bottom:0.5rem;">Critical</h3>{% endif %}
+                {% if status == "poor" %}<h3 style="color:#ea580c;margin-bottom:0.5rem;">Poor</h3>{% endif %}
+                {% if status == "ok" %}<h3 style="color:#d97706;margin-bottom:0.5rem;">OK</h3>{% endif %}
+                {% if status == "good" %}<h3 style="color:#16a34a;margin-bottom:0.5rem;">Good</h3>{% endif %}
                 {% for kpi_name, kpi in kpis.items() %}
                 {% if kpi.status == status and kpi.benchmark and kpi.value is not none %}
                 <div class="kpi-row">
@@ -210,7 +167,7 @@
             <div class="opp-card">
                 <div>
                     <h4>{{ opp.kpi.replace("_", " ").title() }}</h4>
-                    <div style="color:#888;font-size:0.85rem;">Current: <strong>{{ "%.1f"|format(opp.current) }}</strong> → Target: <strong>{{ "%.1f"|format(opp.target) }}</strong></div>
+                    <div style="color:#64748b;font-size:0.85rem;">Current: <strong>{{ "%.1f"|format(opp.current) }}</strong> → Target: <strong>{{ "%.1f"|format(opp.target) }}</strong></div>
                 </div>
                 <div class="gap">Gap: {{ "%+.1f"|format(opp.gap) }}</div>
             </div>
@@ -346,8 +303,8 @@
     </div>
 
     <script>
-        Chart.defaults.color = '#888';
-        Chart.defaults.borderColor = '#333';
+        Chart.defaults.color = '#64748b';
+        Chart.defaults.borderColor = '#e2e8f0';
         Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, sans-serif';
 
         const months = {{ monthly | map(attribute='month') | list | tojson }};
@@ -363,9 +320,9 @@
             data: {
                 labels: months,
                 datasets: [
-                    { label: 'Revenue', data: revenues, backgroundColor: 'rgba(76, 175, 80, 0.6)', borderColor: '#4caf50', borderWidth: 1 },
-                    { label: 'COGS', data: cogs, backgroundColor: 'rgba(255, 87, 34, 0.6)', borderColor: '#ff5722', borderWidth: 1 },
-                    { label: 'Staff', data: staffCosts, backgroundColor: 'rgba(255, 152, 0, 0.6)', borderColor: '#ff9800', borderWidth: 1 },
+                    { label: 'Revenue', data: revenues, backgroundColor: 'rgba(76, 175, 80, 0.6)', borderColor: '#16a34a', borderWidth: 1 },
+                    { label: 'COGS', data: cogs, backgroundColor: 'rgba(255, 87, 34, 0.6)', borderColor: '#ea580c', borderWidth: 1 },
+                    { label: 'Staff', data: staffCosts, backgroundColor: 'rgba(255, 152, 0, 0.6)', borderColor: '#d97706', borderWidth: 1 },
                     { label: 'Overheads', data: overheads, backgroundColor: 'rgba(156, 39, 176, 0.6)', borderColor: '#9c27b0', borderWidth: 1 }
                 ]
             },
@@ -384,12 +341,12 @@
                 datasets: [{
                     label: 'Operating Profit',
                     data: opProfits,
-                    borderColor: '#4caf50',
+                    borderColor: '#16a34a',
                     backgroundColor: 'rgba(76, 175, 80, 0.1)',
                     fill: true,
                     tension: 0.3,
                     pointRadius: 6,
-                    pointBackgroundColor: '#4caf50'
+                    pointBackgroundColor: '#16a34a'
                 }]
             },
             options: {
@@ -410,7 +367,7 @@
                 labels: ['COGS', 'Staff', 'Overheads'],
                 datasets: [{
                     data: [avgCogs, avgStaff, avgOh],
-                    backgroundColor: ['#ff5722', '#ff9800', '#9c27b0'],
+                    backgroundColor: ['#ea580c', '#d97706', '#9c27b0'],
                     borderWidth: 0
                 }]
             },
@@ -427,7 +384,7 @@
         const catRevenue = {{ cat_revenue | tojson }};
         const catLabels = Object.keys(catRevenue).map(l => l.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
         const catValues = Object.values(catRevenue);
-        const catColors = ['#4caf50', '#2196f3', '#ff9800', '#9c27b0'];
+        const catColors = ['#16a34a', '#2196f3', '#d97706', '#9c27b0'];
 
         new Chart(document.getElementById('categoryChart'), {
             type: 'pie',
@@ -511,7 +468,7 @@
                 case 'rent': params.rent_reduction = value; name = 'Rent Reduction £' + value; break;
             }
 
-            results.innerHTML = '<p style="color:#888;">Running experiment...</p>';
+            results.innerHTML = '<p style="color:#64748b;">Running experiment...</p>';
 
             try {
                 const res = await fetch('/api/experiment', {
@@ -526,12 +483,12 @@
                 for (const [key, val] of Object.entries(data.impact)) {
                     const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
                     if (typeof val === 'number') {
-                        const color = val > 0 ? '#4caf50' : val < 0 ? '#f44336' : '#888';
+                        const color = val > 0 ? '#16a34a' : val < 0 ? '#dc2626' : '#64748b';
                         html += '<div class="impact">' + label + ': <span style="color:' + color + '">£' + val.toLocaleString('en-GB', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</span></div>';
                     }
                 }
                 if (data.assumptions) {
-                    html += '<div style="margin-top:0.5rem;color:#888;font-size:0.85rem;">';
+                    html += '<div style="margin-top:0.5rem;color:#64748b;font-size:0.85rem;">';
                     html += '<strong>Assumptions:</strong><br>';
                     data.assumptions.forEach(a => { html += '<span class="assumption">• ' + a + '</span><br>'; });
                     html += '</div>';
@@ -539,7 +496,7 @@
                 html += '</div>';
                 results.innerHTML = html;
             } catch (err) {
-                results.innerHTML = '<p style="color:#f44336;">Error: ' + err.message + '</p>';
+                results.innerHTML = '<p style="color:#dc2626;">Error: ' + err.message + '</p>';
             }
         }
     </script>

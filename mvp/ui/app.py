@@ -24,8 +24,9 @@ if os.path.exists(_env_path):
 from flask import Flask, render_template, jsonify, request
 from mvp.model.core import NodeType
 from mvp.model.constraints import ConstraintStore, build_default_constraints
-from mvp.loader import load_graph, list_tenants, load_tenant_config
+from mvp.loader import load_graph, load_all, list_tenants, load_tenant_config
 from mvp.insights import generate_insights
+from mvp.transform import TransformationGraph
 from mvp.multiagent import MultiAgentOrchestrator, OrchestratorConfig
 from mvp.multiagent.control_models import ControlModel
 from mvp.multiagent.external import build_default_registry
@@ -184,6 +185,173 @@ def index():
                          pnl=pnl,
                          kpis=kpis,
                          projections=projections,
+                         tenants=list_tenants(),
+                         current_tenant=tenant_id)
+
+
+def build_category_revenue(business):
+    """Aggregate revenue by product category from transactions."""
+    from collections import defaultdict
+    rev = defaultdict(float)
+    for txn in business.transactions:
+        for item in getattr(txn, "items", []) or []:
+            cat = item.get("category", "other") if isinstance(item, dict) else "other"
+            rev[cat] += item.get("price", 0) if isinstance(item, dict) else 0
+    return dict(rev)
+
+
+def build_hourly_revenue(business):
+    """Aggregate revenue by hour of day from transactions."""
+    from collections import defaultdict
+    rev = defaultdict(float)
+    for txn in business.transactions:
+        ts = getattr(txn, "timestamp", "")
+        try:
+            hour = int(ts[11:13])
+        except (ValueError, TypeError, IndexError):
+            continue
+        rev[hour] += getattr(txn, "total", 0) or 0
+    return [{"hour": h, "revenue": round(rev.get(h, 0), 2)} for h in range(24)]
+
+
+def build_staff_list(business):
+    """Build staff table data from the most recent payroll month."""
+    payroll = getattr(business, "payroll", []) or []
+    if not payroll:
+        return []
+    latest_month = max(p.get("month", "") for p in payroll)
+    latest = [p for p in payroll if p.get("month") == latest_month]
+    total_hours = sum(p.get("actual_hours_worked", 0) or 0 for p in latest)
+    month_revenue = 0.0
+    mp = getattr(business, "monthly_pnl", {}) or {}
+    if latest_month in mp:
+        month_revenue = mp[latest_month].revenue
+    rev_per_hour = (month_revenue / total_hours) if total_hours > 0 else 0.0
+    out = []
+    for p in latest:
+        out.append({
+            "role": str(p.get("role", "")).title(),
+            "hours": round(p.get("actual_hours_worked", 0) or 0, 1),
+            "cost": round(p.get("total_employer_cost", 0) or 0, 2),
+            "revenue_per_hour": round(rev_per_hour, 2),
+        })
+    return out
+
+
+def build_product_list(business):
+    """Build product table from menu prices and transaction sales."""
+    from collections import defaultdict
+    counts = defaultdict(int)
+    revenues = defaultdict(float)
+    for txn in getattr(business, "transactions", []) or []:
+        for item in getattr(txn, "items", []) or []:
+            if isinstance(item, dict):
+                name = item.get("item", "unknown")
+                counts[name] += 1
+                revenues[name] += item.get("price", 0) or 0
+    out = []
+    for name, details in (getattr(business, "menu", {}) or {}).items():
+        if isinstance(details, dict):
+            out.append({
+                "name": str(name).title(),
+                "count": counts.get(name, 0),
+                "revenue": round(revenues.get(name, 0), 2),
+                "avg_price": details.get("price", 0),
+                "category": str(details.get("category", "other")).title(),
+            })
+    out.sort(key=lambda x: x["revenue"], reverse=True)
+    return out
+
+
+@app.route("/dashboard")
+def dashboard():
+    """Full dashboard view — financials, KPIs, staff, products, and integration health."""
+    tenant_id = _current_tenant()
+    business = load_all()
+    tg = TransformationGraph(business)
+    snap = tg._financial_snapshot()
+    g = get_graph(tenant_id)
+
+    tenant_cfg = load_tenant_config(tenant_id)
+
+    total_revenue = sum(p.revenue for p in business.monthly_pnl.values())
+    total_profit = sum(p.operating_profit for p in business.monthly_pnl.values())
+    total_cogs = sum(p.cogs for p in business.monthly_pnl.values())
+    total_labour = sum(p.staff_costs for p in business.monthly_pnl.values())
+    total_overheads = sum(p.overheads for p in business.monthly_pnl.values())
+
+    company = {
+        "name": tenant_cfg.get("name", "Unknown"),
+        "number": tenant_cfg.get("number", ""),
+        "period": tenant_cfg.get("period", ""),
+        "total_revenue": total_revenue,
+        "total_profit": total_profit,
+    }
+
+    # Real monthly trend from P&L data
+    monthly = []
+    for month_key in sorted(business.monthly_pnl.keys()):
+        pnl = business.monthly_pnl[month_key]
+        monthly.append({
+            "month": pnl.month,
+            "revenue": pnl.revenue,
+            "cogs": pnl.cogs,
+            "staff_costs": pnl.staff_costs,
+            "overheads": pnl.overheads,
+            "operating_profit": pnl.operating_profit,
+            "transactions": pnl.transactions,
+        })
+
+    kpis = {
+        "revenue": {"name": "Revenue", "unit": "£", "value": total_revenue, "benchmark": 50000, "status": "good"},
+        "profit": {"name": "Operating Profit", "unit": "£", "value": total_profit, "benchmark": 10000, "status": "ok"},
+    }
+    opps = [{
+        "kpi": "revenue",
+        "gap": 20000,
+        "current": total_revenue,
+        "target": total_revenue + 20000,
+    }]
+    staff = build_staff_list(business)
+    products = build_product_list(business)
+
+    nodes = []
+    for nid, node in g.nodes.items():
+        nodes.append({
+            "label": node.label,
+            "type": node.node_type.value,
+            "value": node.value,
+            "efficiency": node.efficiency,
+            "constraint": node.constraint,
+            "lever": node.lever,
+        })
+
+    # Integration health panel — checks Nango configuration and connected providers.
+    try:
+        from mvp.integrations import available as nango_available
+        from mvp.integrations import store as int_store
+        connections = int_store.list_connections(tenant=tenant_id)
+        integration_health = {
+            "nango_configured": nango_available(),
+            "connected_providers": [c["provider"] for c in connections],
+            "connection_count": len(connections),
+            "status": "healthy" if nango_available() else "not_configured",
+        }
+    except Exception:
+        integration_health = {"status": "unavailable", "connected_providers": [], "connection_count": 0}
+
+    return render_template("dashboard.html",
+                         company=company,
+                         monthly=monthly,
+                         kpis=kpis,
+                         opps=opps,
+                         staff=staff,
+                         products=products,
+                         nodes=nodes,
+                         cat_revenue=build_category_revenue(business),
+                         hourly=build_hourly_revenue(business),
+                         integration_health=integration_health,
+                         status="good",
                          tenants=list_tenants(),
                          current_tenant=tenant_id)
 
@@ -654,6 +822,109 @@ def api_controller_approve():
 def api_controller_status():
     try:
         return jsonify({"ok": True, "status": get_controller().status()})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+# ── Integrations (Nango) ───────────────────────────────────────────────────
+
+@app.route("/api/integrations/health", methods=["GET"])
+def api_integrations_health():
+    """Nango connectivity + which providers are configured."""
+    try:
+        from mvp.integrations import available, all_specs
+        from mvp.integrations.connector import NangoConnector
+        conn = NangoConnector()
+        return jsonify({
+            "ok": True,
+            "nango_configured": available(),
+            "health": conn.health(),
+            "providers_supported": [s.id for s in all_specs()],
+        })
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/integrations/coverage", methods=["GET"])
+def api_integrations_coverage():
+    """Which canonical fields each provider can supply."""
+    try:
+        from mvp.integrations import coverage_report
+        return jsonify({"ok": True, "coverage": coverage_report()})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/integrations/connections", methods=["GET"])
+def api_integrations_connections():
+    """Stored connections for a tenant (or all)."""
+    try:
+        from mvp.integrations import store
+        tenant = request.args.get("tenant")
+        return jsonify({"ok": True, "connections": store.list_connections(tenant=tenant)})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/integrations/connect", methods=["POST"])
+def api_integrations_connect():
+    """Create a Nango connect session and return the hosted auth link."""
+    data = request.get_json(silent=True) or {}
+    tenant = data.get("tenant")
+    provider = data.get("provider")
+    if not tenant or not provider:
+        return jsonify({"ok": False, "error": "tenant and provider are required"}), 400
+    try:
+        from mvp.integrations import NangoConnector
+        result = NangoConnector().execute("create_connect_session", {
+            "tenant": tenant, "provider": provider,
+            "email": data.get("email"), "organization_id": data.get("organization_id"),
+        })
+        return jsonify(result), (200 if result.get("ok") else 400)
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/integrations/disconnect", methods=["POST"])
+def api_integrations_disconnect():
+    data = request.get_json(silent=True) or {}
+    tenant, provider = data.get("tenant"), data.get("provider")
+    if not tenant or not provider:
+        return jsonify({"ok": False, "error": "tenant and provider are required"}), 400
+    try:
+        from mvp.integrations import NangoConnector, store
+        result = NangoConnector().execute("disconnect", {"tenant": tenant, "provider": provider})
+        if result.get("ok"):
+            store.delete_connection(tenant, provider)
+        return jsonify(result), (200 if result.get("ok") else 400)
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/integrations/sync", methods=["POST"])
+def api_integrations_sync():
+    """Trigger a sync for one tenant across connected providers."""
+    data = request.get_json(silent=True) or {}
+    tenant = data.get("tenant")
+    if not tenant:
+        return jsonify({"ok": False, "error": "tenant is required"}), 400
+    try:
+        from mvp.integrations import sync
+        report = sync.sync_tenant(tenant, providers=data.get("providers"))
+        return jsonify(report), (200 if report.get("ok") else 400)
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/integrations/freshness", methods=["GET"])
+def api_integrations_freshness():
+    """How stale is each canonical field for a tenant."""
+    tenant = request.args.get("tenant")
+    if not tenant:
+        return jsonify({"ok": False, "error": "tenant is required"}), 400
+    try:
+        from mvp.integrations import sync
+        return jsonify({"ok": True, "tenant": tenant, "freshness": sync.freshness_report(tenant)})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 

@@ -1,0 +1,88 @@
+
+        
+        
+        
+        
+        
+        
+
+        /* KPI strip */
+        
+        
+        
+        
+        
+
+        /* P&L rows */
+        .pnl-section { margin-bottom: 0.3rem; }
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        .change-badge { text-align: right; font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 3px; display: inline-block; min-width: 70px; font-variant-numeric: tabular-nums; }
+        .change-up { background: rgba(76,175,80,0.15); color: #16a34a; }
+        .change-down { background: rgba(244,67,54,0.15); color: #dc2626; }
+        .change-flat { background: rgba(100,100,100,0.1); color: #64748b; }
+        .sparkline-container { width: 50px; height: 24px; }
+        .trend-arrow { text-align: center; font-size: 1rem; }
+        .constraint-badge { text-align: center; font-size: 0.65rem; }
+        .constraint-badge .badge { display: inline-block; padding: 0.1rem 0.3rem; border-radius: 2px; background: rgba(255,152,0,0.15); color: #d97706; font-variant-numeric: tabular-nums; }
+        .constraint-badge .hard { color: #dc2626; background: rgba(244,67,54,0.15); }
+
+        /* Insights button */
+        .insights-btn {
+            width: 28px; height: 28px; border-radius: 50%; border: 1px solid #e2e8f0;
+            background: #ffffff; color: #64748b; cursor: pointer; font-size: 0.8rem;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        .insights-btn:hover { background: #eef2ff; color: #16a34a; border-color: #16a34a; }
+
+        @keyframes slide-in { from { opacity:0; transform:translateX(-10px); } to { opacity:1; transform:translateX(0); } }
+        @keyframes pulse-up { 0%,100%{opacity:1} 50%{opacity:0.5} }
+        .trend-up { animation: pulse-up 2s ease-in-out infinite; color: #16a34a; }
+        .trend-down { animation: pulse-up 2s ease-in-out infinite; color: #dc2626; }
+        .trend-flat { color: #94a3b8; }
+        
+        .pnl-row:nth-child(1) { animation-delay: 0.05s; }
+        .pnl-row:nth-child(2) { animation-delay: 0.1s; }
+        .pnl-row:nth-child(3) { animation-delay: 0.15s; }
+        .pnl-row:nth-child(4) { animation-delay: 0.2s; }
+        .pnl-row:nth-child(5) { animation-delay: 0.25s; }
+        .pnl-row:nth-child(6) { animation-delay: 0.3s; }
+        .positive { color: #16a34a; }
+        .negative { color: #dc2626; }
+        
+
+        /* Initiative cards + detail view */
+        .ini-card { background:#ffffff; border:1px solid #e2e8f0; border-radius:6px; padding:0.8rem; margin-bottom:0.5rem; cursor:pointer; transition:border-color 0.2s, background 0.2s; }
+        .ini-card:hover { border-color:#2563eb; background:#f8fafc; }
+        .ini-card.active { border-color:#059669; box-shadow: inset 3px 0 0 #059669; }
+        .active-pill { display:inline-block; font-size:0.6rem; padding:0.1rem 0.45rem; border-radius:10px; background:rgba(12,163,12,0.15); color:#059669; border:1px solid #059669; margin-left:0.4rem; vertical-align:middle; letter-spacing:0.03em; }
+        .ip-section { margin-top:1.2rem; }
+        .ip-section h4 { color:#64748b; font-size:0.75rem; font-weight:500; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.5rem; font-family:-apple-system,sans-serif; }
+        .ip-stats { display:flex; gap:0.5rem; flex-wrap:wrap; }
+        .ip-stat { background:#f8fafc; border:1px solid #f8fafc; border-radius:4px; padding:0.45rem 0.7rem; flex:1; min-width:90px; }
+        .ip-stat .k { color:#64748b; font-size:0.6rem; }
+        .ip-stat .v { color:#0f172a; font-size:0.9rem; font-weight:600; font-variant-numeric:tabular-nums; }
+        .ip-btn { padding:0.5rem 0.9rem; border-radius:6px; cursor:pointer; font-size:0.8rem; font-family:-apple-system,sans-serif; border:1px solid #94a3b8; background:#e2e8f0; color:#475569; }
+        .ip-btn:disabled { opacity:0.5; cursor:wait; }
+        .ip-btn.primary { background:#dcfce7; color:#059669; border-color:#059669; }
+        .ip-btn.blue { background:#dbeafe; color:#3b82f6; border-color:#2563eb; }
+        .ip-table { width:100%; border-collapse:collapse; font-size:0.72rem; font-variant-numeric:tabular-nums; }
+        .ip-table th { color:#64748b; font-weight:500; text-align:right; padding:0.35rem 0.5rem; border-bottom:1px solid #f1f5f9; }
+        .ip-table td { color:#64748b; text-align:right; padding:0.35rem 0.5rem; border-bottom:1px solid #f1f5f9; }
+        .ip-table th:first-child, .ip-table td:first-child { text-align:left; }
+        .role-chip { display:inline-block; font-size:0.6rem; padding:0.05rem 0.35rem; border-radius:3px; margin-right:0.35rem; color:#0f172a; }
+        .ip-tooltip { position:fixed; pointer-events:none; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:4px; padding:0.4rem 0.55rem; font-size:0.7rem; color:#334155; z-index:200; max-width:280px; display:none; line-height:1.4; }
+        .status-banner { border-radius:6px; padding:0.7rem 0.9rem; border:1px solid; margin-bottom:0.6rem; }
+        @media (max-width: 700px) {
+            
+            .sparkline-container, .trend-arrow, .constraint-badge, .insights-btn { display: none; }
+        }
+    

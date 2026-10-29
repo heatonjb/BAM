@@ -339,4 +339,9 @@ def build_default_registry() -> ConnectorRegistry:
     reg.register(XeroConnector())
     reg.register(CRMConnector())
     reg.register(WebhookConnector())
+    try:
+        from ..integrations.connector import NangoConnector
+        reg.register(NangoConnector())
+    except Exception:
+        pass  # Nango is optional; absence must not break the registry
     return reg

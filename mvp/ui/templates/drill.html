@@ -4,129 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Drill: {{ node.label }} — Business as a Machine</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'SF Mono', 'Fira Code', monospace; background: #0a0a0a; color: #e0e0e0; }
-        .header { background: #111; padding: 0.8rem 1.5rem; border-bottom: 1px solid #222; display: flex; align-items: center; gap: 1rem; }
-        .header .back { color: #4caf50; text-decoration: none; font-size: 0.8rem; }
-        .header h1 { font-size: 1.2rem; color: #fff; font-family: -apple-system, sans-serif; }
-        .breadcrumb { padding: 0.5rem 1.5rem; background: #0d0d0d; border-bottom: 1px solid #1a1a1a; display: flex; gap: 0.3rem; align-items: center; font-size: 0.75rem; flex-wrap: wrap; }
-        .breadcrumb a { color: #4caf50; text-decoration: none; }
-        .breadcrumb a:hover { text-decoration: underline; }
-        .breadcrumb .sep { color: #333; }
-        .breadcrumb .current { color: #fff; font-weight: 600; }
-        .container { max-width: 1100px; margin: 0 auto; padding: 1rem; }
-
-        /* Ticker card */
-        .ticker-card { background: #111; border: 1px solid #222; border-radius: 8px; padding: 1.2rem; margin-bottom: 1rem; }
-        .ticker-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.8rem; }
-        .ticker-icon { font-size: 1.8rem; }
-        .ticker-title { font-size: 1.1rem; color: #fff; font-family: -apple-system, sans-serif; }
-        .ticker-type { color: #555; font-size: 0.7rem; text-transform: uppercase; }
-        .ticker-value { font-size: 2.2rem; font-weight: 700; font-variant-numeric: tabular-nums; margin-bottom: 0.5rem; }
-        .ticker-value.positive { color: #4caf50; }
-        .ticker-value.negative { color: #f44336; }
-        .ticker-changes { display: flex; gap: 1.5rem; margin-bottom: 0.8rem; }
-        .ticker-change { display: flex; align-items: center; gap: 0.4rem; }
-        .ticker-change .period { color: #555; font-size: 0.7rem; }
-        .ticker-change .val { font-size: 0.9rem; font-weight: 600; font-variant-numeric: tabular-nums; }
-        .ticker-change .val.up { color: #4caf50; }
-        .ticker-change .val.down { color: #f44336; }
-        .ticker-change .val.flat { color: #666; }
-        .ticker-sparkline { height: 40px; margin-bottom: 0.8rem; }
-        .ticker-sparkline svg { width: 100%; height: 100%; }
-        .ticker-meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.4rem; }
-        .ticker-meta-row { display: flex; justify-content: space-between; padding: 0.3rem 0; border-bottom: 1px solid #151515; }
-        .ticker-meta-row .label { color: #555; font-size: 0.75rem; }
-        .ticker-meta-row .val { color: #ccc; font-size: 0.8rem; }
-        .ticker-meta-row .val.green { color: #4caf50; }
-
-        /* Constraints panel */
-        .constraints-panel { background: #111; border: 1px solid #222; border-radius: 8px; margin-bottom: 1rem; }
-        .constraints-header { padding: 0.6rem 1rem; background: #0d0d0d; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .constraints-header h3 { color: #ff9800; font-size: 0.85rem; font-family: -apple-system, sans-serif; margin: 0; }
-        .constraints-header .count { color: #888; font-size: 0.75rem; }
-        .constraints-body { padding: 0.8rem 1rem; display: none; }
-        .constraints-body.open { display: block; }
-        .constraint-item { padding: 0.6rem; border: 1px solid #1a1a1a; border-radius: 4px; margin-bottom: 0.5rem; }
-        .constraint-item .ci-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem; }
-        .constraint-item .ci-severity { font-size: 0.6rem; padding: 0.1rem 0.4rem; border-radius: 2px; font-variant-numeric: tabular-nums; }
-        .ci-hard { background: rgba(244,67,54,0.15); color: #f44336; }
-        .ci-soft { background: rgba(255,152,0,0.15); color: #ff9800; }
-        .constraint-item .ci-name { color: #fff; font-size: 0.85rem; }
-        .constraint-item .ci-type { color: #555; font-size: 0.7rem; text-transform: uppercase; }
-        .constraint-item .ci-desc { color: #888; font-size: 0.75rem; margin-top: 0.2rem; }
-        .constraint-item .ci-params { color: #555; font-size: 0.7rem; margin-top: 0.2rem; font-family: 'SF Mono', monospace; }
-        .constraint-item .ci-penalty { color: #f44336; font-size: 0.7rem; margin-top: 0.2rem; }
-        .constraint-item .ci-source { color: #444; font-size: 0.65rem; margin-top: 0.2rem; }
-
-        /* Graph */
-        .graph-section { background: #111; border: 1px solid #222; border-radius: 8px; margin-bottom: 1rem; overflow: hidden; }
-        .graph-toolbar { padding: 0.5rem 1rem; background: #0d0d0d; border-bottom: 1px solid #1a1a1a; display: flex; gap: 0.5rem; align-items: center; }
-        .graph-toolbar span { color: #555; font-size: 0.75rem; }
-        .graph-toolbar button { background: #1a1a1a; color: #888; border: 1px solid #333; padding: 0.25rem 0.6rem; border-radius: 3px; cursor: pointer; font-size: 0.7rem; }
-        .graph-toolbar button:hover { background: #222; color: #ccc; }
-        #graphCanvas { width: 100%; height: 450px; display: block; }
-
-        /* Child table */
-        .child-section { margin-bottom: 1rem; }
-        .child-section h3 { color: #888; font-size: 0.85rem; margin-bottom: 0.5rem; font-family: -apple-system, sans-serif; }
-        .child-table { width: 100%; border-collapse: collapse; }
-        .child-table th { text-align: left; color: #555; font-size: 0.65rem; text-transform: uppercase; padding: 0.4rem 0.6rem; border-bottom: 1px solid #1a1a1a; letter-spacing: 0.5px; }
-        .child-table td { padding: 0.5rem 0.6rem; border-bottom: 1px solid #111; font-size: 0.8rem; }
-        .child-table tr { cursor: pointer; transition: background 0.15s; }
-        .child-table tr:hover { background: #151515; }
-        .child-table .icon { width: 28px; text-align: center; font-size: 1rem; }
-        .child-table .val { font-family: 'SF Mono', 'Fira Code', monospace; text-align: right; font-variant-numeric: tabular-nums; }
-        .contrib-badge { display: inline-block; padding: 0.1rem 0.35rem; border-radius: 2px; font-size: 0.65rem; font-variant-numeric: tabular-nums; }
-        .contrib-high { background: rgba(76,175,80,0.15); color: #4caf50; }
-        .contrib-mid { background: rgba(255,152,0,0.15); color: #ff9800; }
-        .contrib-low { background: rgba(100,100,100,0.1); color: #888; }
-        .change-mini { display: inline-block; padding: 0.1rem 0.3rem; border-radius: 2px; font-size: 0.65rem; font-variant-numeric: tabular-nums; }
-        .change-mini.up { background: rgba(76,175,80,0.15); color: #4caf50; }
-        .change-mini.down { background: rgba(244,67,54,0.15); color: #f44336; }
-        .change-mini.flat { background: rgba(80,80,80,0.1); color: #666; }
-
-        /* Insights panel (drill page) */
-        .insights-section { background: #111; border: 1px solid #222; border-radius: 8px; margin-bottom: 1rem; }
-        .insights-header { padding: 0.6rem 1rem; background: #0d0d0d; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; }
-        .insights-header h3 { color: #4caf50; font-size: 0.85rem; font-family: -apple-system, sans-serif; margin: 0; }
-        .insights-body { padding: 1rem; }
-        .hypothesis-card { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 6px; padding: 1rem; margin-bottom: 0.8rem; }
-        .hypothesis-card h4 { color: #fff; font-size: 0.9rem; margin: 0 0 0.3rem; }
-        .hypothesis-card .desc { color: #aaa; font-size: 0.8rem; }
-        .hypothesis-card .meta { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.5rem; }
-        .hypothesis-card .meta span { font-size: 0.75rem; }
-        .hypothesis-card .risk { color: #f44336; font-size: 0.75rem; margin-top: 0.5rem; }
-        .hypothesis-card .counterfactual { color: #666; font-size: 0.7rem; margin-top: 0.3rem; }
-        .hypothesis-card .metrics { color: #555; font-size: 0.7rem; margin-top: 0.3rem; }
-
-        .footer { text-align: center; padding: 1.5rem; color: #333; font-size: 0.7rem; border-top: 1px solid #1a1a1a; }
-
-        .positive { color: #4caf50; }
-        .negative { color: #f44336; }
-
-        @keyframes slide-in { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
-        .ticker-card { animation: slide-in 0.4s ease-out; }
-
-        @media (max-width: 700px) {
-            .ticker-changes { flex-direction: column; gap: 0.3rem; }
-            .ticker-meta { grid-template-columns: 1fr; }
-        }
-    </style>
+        <link rel="stylesheet" href="/static/base.css">
+    <link rel="stylesheet" href="/static/drill.css">
 </head>
 <body>
     <div class="header">
         <a href="/?tenant={{ current_tenant }}" class="back">← P&L</a>
         <h1>{{ node.icon }} {{ node.label }}</h1>
         <div style="display:flex;align-items:center;gap:0.4rem;margin-left:auto;">
-            <label for="tenantSelect" style="color:#888;font-size:0.75rem;">Company:</label>
-            <select id="tenantSelect" onchange="switchTenant(this.value)" style="background:#111;color:#ddd;border:1px solid #333;border-radius:4px;padding:0.35rem 0.6rem;font-size:0.8rem;cursor:pointer;">
+            <label for="tenantSelect" style="color:#64748b;font-size:0.75rem;">Company:</label>
+            <select id="tenantSelect" onchange="switchTenant(this.value)" style="background:#ffffff;color:#334155;border:1px solid #e2e8f0;border-radius:4px;padding:0.35rem 0.6rem;font-size:0.8rem;cursor:pointer;">
                 {% for tid, t in tenants.items() %}
                 <option value="{{ tid }}" {% if tid == current_tenant %}selected{% endif %}>{{ t.icon or '' }} {{ t.name }}</option>
                 {% endfor %}
             </select>
         </div>
+        <a href="/dashboard?tenant={{ current_tenant }}" class="back" style="margin-left:10px;">📊 Dashboard</a>
     </div>
     <div class="breadcrumb">
         <a href="/?tenant={{ current_tenant }}">P&L</a>
@@ -153,7 +46,7 @@
             <div class="ticker-changes">
                 <div class="ticker-change">
                     <span class="period">7D</span>
-                    <span style="color:{% if node.trend == 'up' %}#4caf50{% elif node.trend == 'down' %}#f44336{% else %}#666{% endif %};font-size:0.9rem;">{% if node.trend == 'up' %}▲{% elif node.trend == 'down' %}▼{% else %}─{% endif %}</span>
+                    <span style="color:{% if node.trend == 'up' %}#16a34a{% elif node.trend == 'down' %}#dc2626{% else %}#64748b{% endif %};font-size:0.9rem;">{% if node.trend == 'up' %}▲{% elif node.trend == 'down' %}▼{% else %}─{% endif %}</span>
                     <span class="val {% if node.trend == 'up' %}up{% elif node.trend == 'down' %}down{% else %}flat{% endif %}">£{{ "{:,.2f}".format(node.change_7d|abs) }} ({{ "%+.1f"|format(node.change_7d_pct) }}%)</span>
                 </div>
                 <div class="ticker-change">
@@ -168,7 +61,7 @@
             <div class="ticker-sparkline">
                 <svg viewBox="0 0 300 40" preserveAspectRatio="none">
                     {% set vals = node.sparkline[-30:] %}{% set min_v = vals|min %}{% set max_v = vals|max %}{% set range_v = max_v - min_v if max_v != min_v else 1 %}
-                    {% set tc = '#4caf50' if node.trend == 'up' else '#f44336' if node.trend == 'down' else '#555' %}
+                    {% set tc = '#16a34a' if node.trend == 'up' else '#dc2626' if node.trend == 'down' else '#94a3b8' %}
                     <polygon fill="{{ tc }}" opacity="0.08" points="0,40 {% for v in vals %}{{ (loop.index0 / (vals|length - 1)) * 300 }},{{ 38 - ((v - min_v) / range_v) * 34 }}{% endfor %} 300,40" />
                     <polyline fill="none" stroke="{{ tc }}" stroke-width="1.5" points="{% for v in vals %}{{ (loop.index0 / (vals|length - 1)) * 300 }},{{ 38 - ((v - min_v) / range_v) * 34 }}{% endfor %}" />
                     <circle cx="300" cy="{{ 38 - ((vals[-1] - min_v) / range_v) * 34 }}" r="3" fill="{{ tc }}" />
@@ -227,10 +120,10 @@
         <div class="insights-section">
             <div class="insights-header">
                 <h3>💡 AI Insights & Hypotheses</h3>
-                <button onclick="generateInsights()" id="insightsBtn" style="background:#1a1a3e;color:#4caf50;border:1px solid #4caf50;padding:0.3rem 0.8rem;border-radius:4px;cursor:pointer;font-size:0.8rem;">Generate</button>
+                <button onclick="generateInsights()" id="insightsBtn" style="background:#eef2ff;color:#16a34a;border:1px solid #16a34a;padding:0.3rem 0.8rem;border-radius:4px;cursor:pointer;font-size:0.8rem;">Generate</button>
             </div>
             <div class="insights-body" id="insightsBody">
-                <p style="color:#555;font-size:0.8rem;">Click Generate to get constraint-aware hypotheses from the AI model. The model will consider all {{ constraints|length if constraints else 0 }} active constraints, research context, and current performance data for <strong>{{ node.label }}</strong> (£{{ "{:,.2f}".format(node.value) }}/mo, 7d trend: {{ node.trend }} {{ "%+.1f"|format(node.change_7d_pct) }}%).</p>
+                <p style="color:#94a3b8;font-size:0.8rem;">Click Generate to get constraint-aware hypotheses from the AI model. The model will consider all {{ constraints|length if constraints else 0 }} active constraints, research context, and current performance data for <strong>{{ node.label }}</strong> (£{{ "{:,.2f}".format(node.value) }}/mo, 7d trend: {{ node.trend }} {{ "%+.1f"|format(node.change_7d_pct) }}%).</p>
             </div>
         </div>
 
@@ -280,7 +173,7 @@
         const focusNode = '{{ node.id }}';
         let showLabels = true;
         let showAnnotations = true;
-        const typeColors = { revenue:'#4caf50', cost:'#f44336', process:'#2196f3', input:'#ff9800', asset:'#00bcd4', liability:'#e91e63', metric:'#9c27b0', aggregate:'#607d8b' };
+        const typeColors = { revenue:'#16a34a', cost:'#dc2626', process:'#2196f3', input:'#d97706', asset:'#00bcd4', liability:'#e91e63', metric:'#9c27b0', aggregate:'#607d8b' };
         const positions = {};
         const velocities = {};
 
@@ -352,11 +245,11 @@
                     const contribText = Math.round(e.contribution_pct) + '%';
                     const tw = ctx.measureText(contribText).width + 8;
                     ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.beginPath(); ctx.roundRect(mx+perpX-tw/2, my+perpY-7, tw, 14, 3); ctx.fill();
-                    ctx.fillStyle = e.trend === 'up' ? '#4caf50' : e.trend === 'down' ? '#f44336' : '#888'; ctx.fillText(contribText, mx+perpX, my+perpY);
+                    ctx.fillStyle = e.trend === 'up' ? '#16a34a' : e.trend === 'down' ? '#dc2626' : '#64748b'; ctx.fillText(contribText, mx+perpX, my+perpY);
                     const changeText = (e.change_pct>=0?'+':'') + e.change_pct.toFixed(1) + '%';
                     const tw2 = ctx.measureText(changeText).width + 8;
                     ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.beginPath(); ctx.roundRect(mx-perpX-tw2/2, my-perpY-7, tw2, 14, 3); ctx.fill();
-                    ctx.fillStyle = e.change_pct>0?'#4caf50':e.change_pct<0?'#f44336':'#666'; ctx.fillText(changeText, mx-perpX, my-perpY);
+                    ctx.fillStyle = e.change_pct>0?'#16a34a':e.change_pct<0?'#dc2626':'#64748b'; ctx.fillText(changeText, mx-perpX, my-perpY);
                 }
             });
             graphNodes.forEach(n => {
@@ -371,8 +264,8 @@
                 if (showLabels) {
                     ctx.font = '10px -apple-system, sans-serif'; ctx.fillStyle = '#aaa'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
                     ctx.fillText(n.label.length>18?n.label.slice(0,17)+'…':n.label, pos.x, pos.y+radius+5);
-                    ctx.font = '9px monospace'; ctx.fillStyle = '#555'; ctx.fillText('£'+n.value.toLocaleString(), pos.x, pos.y+radius+17);
-                    ctx.font = '11px sans-serif'; ctx.fillStyle = n.trend==='up'?'#4caf50':n.trend==='down'?'#f44336':'#444';
+                    ctx.font = '9px monospace'; ctx.fillStyle = '#94a3b8'; ctx.fillText('£'+n.value.toLocaleString(), pos.x, pos.y+radius+17);
+                    ctx.font = '11px sans-serif'; ctx.fillStyle = n.trend==='up'?'#16a34a':n.trend==='down'?'#dc2626':'#94a3b8';
                     ctx.fillText(n.trend==='up'?'↗':n.trend==='down'?'↘':'→', pos.x, pos.y+radius+28);
                 }
             });
@@ -400,12 +293,12 @@
             const btn = document.getElementById('insightsBtn');
             const body = document.getElementById('insightsBody');
             btn.textContent = 'Generating...'; btn.disabled = true;
-            body.innerHTML = '<p style="color:#4caf50;">⏳ Thinking...</p>';
+            body.innerHTML = '<p style="color:#16a34a;">⏳ Thinking...</p>';
             try {
                 const startRes = await fetch(tenantQS('/api/insights/{{ node.id }}'), { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({model:'deepseek/deepseek-v4.1-flash'}) });
                 const startData = await startRes.json();
                 if (!startData.ok) {
-                    body.innerHTML = '<p style="color:#f44336;">Error: ' + (startData.error||'failed to start') + '</p>';
+                    body.innerHTML = '<p style="color:#dc2626;">Error: ' + (startData.error||'failed to start') + '</p>';
                     btn.textContent = 'Regenerate'; btn.disabled = false;
                     return;
                 }
@@ -417,30 +310,30 @@
                     const pollData = await pollRes.json();
                     if (pollData.status === 'completed') { data = pollData.result; break; }
                     if (pollData.status === 'error') {
-                        body.innerHTML = '<p style="color:#f44336;">Error: ' + pollData.error + '</p>';
+                        body.innerHTML = '<p style="color:#dc2626;">Error: ' + pollData.error + '</p>';
                         btn.textContent = 'Regenerate'; btn.disabled = false;
                         return;
                     }
-                    body.innerHTML = '<p style="color:#4caf50;">⏳ Thinking... (' + (attempt*2) + 's)</p>';
+                    body.innerHTML = '<p style="color:#16a34a;">⏳ Thinking... (' + (attempt*2) + 's)</p>';
                 }
                 if (!data) {
-                    body.innerHTML = '<p style="color:#f44336;">Timed out waiting for insights.</p>';
+                    body.innerHTML = '<p style="color:#dc2626;">Timed out waiting for insights.</p>';
                     btn.textContent = 'Regenerate'; btn.disabled = false;
                     return;
                 }
                 if (data.error) {
-                    body.innerHTML = '<p style="color:#f44336;">Error: ' + data.error + '</p>';
+                    body.innerHTML = '<p style="color:#dc2626;">Error: ' + data.error + '</p>';
                 } else {
-                    let html = '<p style="color:#4caf50;margin-bottom:0.8rem;">' + (data.hypotheses||[]).length + ' hypotheses for ' + data.node_label + ' (£' + data.current_value.toLocaleString() + '/mo)</p>';
+                    let html = '<p style="color:#16a34a;margin-bottom:0.8rem;">' + (data.hypotheses||[]).length + ' hypotheses for ' + data.node_label + ' (£' + data.current_value.toLocaleString() + '/mo)</p>';
                     (data.hypotheses||[]).forEach((h, i) => {
-                        const confColor = h.confidence==='high'?'#4caf50':h.confidence==='medium'?'#ff9800':'#888';
+                        const confColor = h.confidence==='high'?'#16a34a':h.confidence==='medium'?'#d97706':'#64748b';
                         html += '<div class="hypothesis-card">';
                         html += '<h4>' + (i+1) + '. ' + h.title + '</h4>';
                         html += '<p class="desc">' + h.description + '</p>';
                         html += '<div class="meta">';
-                        html += '<span style="color:#4caf50;">💷 £' + (h.expected_impact_gbp||0).toLocaleString() + '/mo</span>';
+                        html += '<span style="color:#16a34a;">💷 £' + (h.expected_impact_gbp||0).toLocaleString() + '/mo</span>';
                         html += '<span style="color:'+confColor+';">🎯 '+h.confidence+'</span>';
-                        html += '<span style="color:#888;">⏱ '+h.timeline+'</span>';
+                        html += '<span style="color:#64748b;">⏱ '+h.timeline+'</span>';
                         html += '</div>';
                         if (h.constraints_affected && h.constraints_affected.length) html += '<p class="metrics">⚡ Constraints: '+h.constraints_affected.join(', ')+'</p>';
                         if (h.risk) html += '<p class="risk">⚠️ '+h.risk+'</p>';
@@ -451,7 +344,7 @@
                     body.innerHTML = html;
                 }
             } catch(e) {
-                body.innerHTML = '<p style="color:#f44336;">Error: '+e.message+'</p>';
+                body.innerHTML = '<p style="color:#dc2626;">Error: '+e.message+'</p>';
             }
             btn.textContent = 'Regenerate'; btn.disabled = false;
         }
