@@ -270,7 +270,7 @@ def _load_cafe_graph() -> BusinessGraph:
     # COGS children
     g.get("cog_beans").children = ["bean_wholesale"]
     g.get("cog_milk").children = ["milk_whole_buy", "milk_oat_buy", "milk_almond_buy"]
-    g.get("cog_pastries").children = ["pastry_croissant_buy", "pastry_pain_buy", "pastry_muffin_buy", "pastry_scone_buy", "pastry_cookie_buy"]
+    g.get("cog_pastries").children = ["pastry_croissant_buy", "pastry_pain_au_chocolat_buy", "pastry_muffin_buy", "pastry_scone_buy", "pastry_cookie_buy"]
     g.get("cog_packaging").children = ["pkg_cups", "pkg_lids", "pkg_napkins"]
     g.get("cog_consumables").children = ["cons_chocolate", "cons_chai", "cons_tea", "cons_sugar", "cons_smoothie"]
 
