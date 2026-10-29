@@ -33,7 +33,8 @@ from mvp.multiagent import MultiAgentOrchestrator, OrchestratorConfig
 from mvp.multiagent.control_models import ControlModel
 from mvp.multiagent.external import build_default_registry
 from mvp.multiagent.controller import AutonomousGraphController, HealthThresholds, ControllerState
-from mvp import plans, provisioning
+from mvp import plans, provisioning, benchmarking
+from mvp import types as type_registry
 from mvp.integrations.providers import all_specs
 
 # The marketing site and sign-up are the only public endpoints.
@@ -495,6 +496,51 @@ def dashboard():
                          status="good",
                          tenants=auth.visible_tenants(),
                          current_tenant=tenant_id)
+
+
+@app.route("/api/benchmark", methods=["GET"])
+def api_benchmark():
+    """Peer comparison and ranked hypotheses for the caller's business.
+
+    Every call records the tenant's current ratios into the peer table, so the
+    benchmark population grows as businesses use the product. That is the whole
+    network effect: the tenth coffee shop gets a cohort the first one never had.
+    """
+    tenant_id = _current_tenant()
+    cfg = load_tenant_config(tenant_id)
+    template_id = cfg.get("type_template") or cfg.get("type") or "business"
+    try:
+        resolved = type_registry.resolve(template_id)
+    except type_registry.TypeRegistryError:
+        return jsonify({"ok": False, "error": f"unknown business type {template_id!r}"}), 400
+
+    metrics = benchmarking.extract_metrics(tenancy.registry.graph(tenant_id))
+    benchmarking.record_observation(tenant_id, resolved.id, metrics)
+    bench = benchmarking.benchmark_tenant(
+        tenant_id, resolved.id, resolved.cohort_chain(), metrics
+    )
+    hyps = benchmarking.hypotheses_for(
+        tenant_id, resolved.id, resolved.cohort_chain(), metrics
+    )
+    return jsonify({
+        "ok": True,
+        "type": resolved.id,
+        "label": resolved.label,
+        "cohort_chain": resolved.cohort_chain(),
+        "benchmark": bench["metrics"],
+        "hypotheses": hyps,
+        "min_cohort": benchmarking.MIN_COHORT,
+    })
+
+
+@app.route("/api/benchmark/evidence", methods=["GET"])
+def api_benchmark_evidence():
+    """Measured historical outcomes for a lever on this business type."""
+    tenant_id = _current_tenant()
+    cfg = load_tenant_config(tenant_id)
+    template_id = cfg.get("type_template") or cfg.get("type") or "business"
+    lever = request.args.get("lever")
+    return jsonify({"ok": True, **benchmarking.evidence_for(template_id, lever)})
 
 
 @app.route("/api/plan", methods=["GET"])

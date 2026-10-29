@@ -43,7 +43,7 @@ _write_lock = threading.Lock()
 
 # Legacy aliases: the registry is the source of truth for templates, but old
 # callers and stored tenant ids still say "cafe".
-ALIASES = {"cafe": "coffee_shop", "crm": "saas", "software": "saas"}
+ALIASES = types.ALIASES  # one alias table, owned by the registry
 
 # A loader needs a starter corpus to clone. The loader name decides which.
 STARTER_FOR_LOADER = {"cafe": "jonco", "saas": "joncrm"}

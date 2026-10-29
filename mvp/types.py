@@ -200,6 +200,17 @@ BUILTIN: Dict[str, TypeSpec] = {
     ),
 }
 
+# Historical names still appear in stored tenant records and older callers.
+# They resolve to their canonical template rather than being treated as errors.
+ALIASES: Dict[str, str] = {
+    "cafe": "coffee_shop",
+    "café": "coffee_shop",
+    "crm": "saas",
+    "software": "saas",
+    "agency": "services",
+    "shop": "retail",
+}
+
 _TYPES: Dict[str, TypeSpec] = dict(BUILTIN)
 _loaded_custom = False
 
@@ -254,8 +265,9 @@ def register(spec: TypeSpec, overwrite: bool = False) -> None:
 def get(type_id: str) -> TypeSpec:
     """Return the raw spec, loading custom types on first use."""
     load_custom_types()
+    key = ALIASES.get((type_id or "").strip().lower(), (type_id or "").strip().lower())
     try:
-        return _TYPES[type_id]
+        return _TYPES[key]
     except KeyError as exc:
         raise TypeRegistryError(f"unknown business type: {type_id!r}") from exc
 
