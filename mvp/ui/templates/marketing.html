@@ -455,10 +455,11 @@ truncated opening  →  snapshot broken by known amount  <span class="ok">✓ pr
         <div class="field">
           <label for="su-type">Business type</label>
           <select id="su-type" name="business_type">
-            <option value="cafe" {% if form and form.business_type == 'cafe' %}selected{% endif %}>Café / physical retail</option>
+            <option value="coffee_shop" {% if form and form.business_type in ('coffee_shop','cafe') %}selected{% endif %}>Café / coffee shop</option>
             <option value="saas" {% if form and form.business_type == 'saas' %}selected{% endif %}>SaaS / recurring software</option>
-            <option value="services" {% if form and form.business_type == 'services' %}selected{% endif %}>Professional services</option>
+            <option value="developer_tools" {% if form and form.business_type == 'developer_tools' %}selected{% endif %}>Developer tools</option>
             <option value="ecommerce" {% if form and form.business_type == 'ecommerce' %}selected{% endif %}>E-commerce</option>
+            <option value="services" {% if form and form.business_type == 'services' %}selected{% endif %}>Professional services</option>
           </select>
         </div>
         <div class="field">

@@ -712,7 +712,18 @@ def load_graph(tenant_id: str = "jonco") -> BusinessGraph:
     """
     tenant = load_tenant_config(tenant_id)
     tenant_dir = os.path.join(DATA_ROOT, tenant["data_dir"])
-    if tenant.get("type") == "saas":
+    # A tenant stores the concrete template it was created from ("coffee_shop"),
+    # which may be a child type. The template decides the loader; the legacy
+    # "type" field is only a fallback for tenants created before the registry.
+    loader = tenant.get("type")
+    template_id = tenant.get("type_template")
+    if template_id:
+        try:
+            from . import types
+            loader = types.loader_for(template_id)
+        except Exception:
+            loader = tenant.get("type")
+    if loader == "saas":
         from .saas_loader import build_saas_graph
         company_path = os.path.join(tenant_dir, "company.json")
         return build_saas_graph(company_path)

@@ -1,0 +1,107 @@
+{
+  "company": {
+    "id": "joncrm",
+    "name": "Acme Devtools",
+    "description": "SaaS CRM platform with Free, Pro, and Enterprise tiers. Monthly recurring revenue model.",
+    "industry": "SaaS / CRM",
+    "currency": "GBP",
+    "period": "Last 30 days (monthly averages)",
+    "founded": "2023-01",
+    "number": "STARTER"
+  },
+  "tiers": [
+    {
+      "name": "Free",
+      "price_monthly": 0,
+      "customers": 8420,
+      "limits": {
+        "users": 2,
+        "contacts": 100,
+        "pipelines": 1
+      },
+      "features": [
+        "Basic contact management",
+        "1 sales pipeline",
+        "Email integration"
+      ]
+    },
+    {
+      "name": "Pro",
+      "price_monthly": 49,
+      "customers": 612,
+      "limits": {
+        "users": 15,
+        "contacts": 50000,
+        "pipelines": 10
+      },
+      "features": [
+        "Unlimited pipelines",
+        "Workflow automation",
+        "Advanced reporting",
+        "API access"
+      ]
+    },
+    {
+      "name": "Enterprise",
+      "price_monthly": 499,
+      "customers": 34,
+      "limits": {
+        "users": "unlimited",
+        "contacts": "unlimited",
+        "pipelines": "unlimited"
+      },
+      "features": [
+        "SSO/SAML",
+        "Custom SLAs",
+        "Dedicated success manager",
+        "White-label",
+        "Audit logs"
+      ]
+    }
+  ],
+  "financials": {
+    "mrr": 47990,
+    "arr": 575880,
+    "monthly_new_mrr": 8200,
+    "monthly_churned_mrr": 1450,
+    "net_new_mrr": 6750,
+    "gross_margin_pct": 82,
+    "cac": 185,
+    "ltv": 2100,
+    "payback_months": 8.4,
+    "burn_rate": 38000,
+    "runway_months": 14
+  },
+  "pirate_metrics": {
+    "acquisition": {
+      "visitors_monthly": 48000,
+      "signups_monthly": 3120,
+      "trial_starts": 2800,
+      "cac": 185,
+      "traffic_to_signup_pct": 6.5
+    },
+    "activation": {
+      "activated_users_pct": 42,
+      "time_to_value_days": 2.1,
+      "onboarding_completion_pct": 38,
+      "first_record_created_pct": 45
+    },
+    "retention": {
+      "monthly_churn_pct": 2.1,
+      "net_revenue_retention_pct": 108,
+      "logo_churn_pct": 1.8,
+      "dau_mau_pct": 24
+    },
+    "referral": {
+      "viral_coefficient": 0.28,
+      "nps": 42,
+      "referral_rate_pct": 4.2
+    },
+    "revenue": {
+      "arpu": 52.8,
+      "free_to_paid_pct": 3.1,
+      "expansion_revenue_pct": 12.4,
+      "ltv_cac_ratio": 11.4
+    }
+  }
+}

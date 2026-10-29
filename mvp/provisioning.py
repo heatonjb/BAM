@@ -32,7 +32,7 @@ import threading
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
-from mvp import plans
+from mvp import plans, types
 
 DATA_ROOT = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data"
@@ -41,41 +41,33 @@ TENANTS_PATH = os.path.join(DATA_ROOT, "tenants.json")
 
 _write_lock = threading.Lock()
 
-# Display label → (loader type, template tenant to clone)
-TYPE_MAP: Dict[str, Dict[str, str]] = {
-    "cafe": {
-        "loader_type": "cafe",
-        "template": "jonco",
-        "label": "Café / physical retail",
-        "icon": "☕",
-        "color": "#8d6e63",
-        "period": "Starter model (monthly averages)",
-    },
-    "saas": {
-        "loader_type": "saas",
-        "template": "joncrm",
-        "label": "SaaS / recurring software",
-        "icon": "🧩",
-        "color": "#5c6bc0",
-        "period": "Starter model (monthly averages)",
-    },
-    "services": {
-        "loader_type": "saas",
-        "template": "joncrm",
-        "label": "Professional services",
-        "icon": "🛠",
-        "color": "#4db6ac",
-        "period": "Starter model (monthly averages)",
-    },
-    "ecommerce": {
-        "loader_type": "saas",
-        "template": "joncrm",
-        "label": "E-commerce",
-        "icon": "🛒",
-        "color": "#ff8a65",
-        "period": "Starter model (monthly averages)",
-    },
-}
+# Legacy aliases: the registry is the source of truth for templates, but old
+# callers and stored tenant ids still say "cafe".
+ALIASES = {"cafe": "coffee_shop", "crm": "saas", "software": "saas"}
+
+# A loader needs a starter corpus to clone. The loader name decides which.
+STARTER_FOR_LOADER = {"cafe": "jonco", "saas": "joncrm"}
+
+
+def resolve_business_type(business_type: str):
+    """Map a caller's type string onto a resolved template.
+
+    Raises ``ProvisioningError`` with the list of supported types rather than
+    silently falling back to a default, because a silent default is how a
+    tenant ends up modelled as a business it is not.
+    """
+    key = (business_type or "").strip().lower()
+    key = ALIASES.get(key, key)
+    try:
+        resolved = types.resolve(key)
+    except types.TypeRegistryError as exc:
+        supported = ", ".join(t.id for t in types.all_types())
+        raise ProvisioningError(f"{exc}. Supported types: {supported}") from exc
+    if resolved.loader not in STARTER_FOR_LOADER:
+        raise ProvisioningError(
+            f"type {resolved.id!r} has no starter model for loader {resolved.loader!r}"
+        )
+    return resolved
 
 
 class ProvisioningError(Exception):
@@ -154,11 +146,8 @@ def provision_tenant(
     if len(business_name) > 120:
         raise ProvisioningError("business name is too long")
 
-    spec = TYPE_MAP.get((business_type or "").strip().lower())
-    if spec is None:
-        raise ProvisioningError(
-            "choose a supported business type: " + ", ".join(sorted(TYPE_MAP))
-        )
+    resolved = resolve_business_type(business_type)
+    template = STARTER_FOR_LOADER[resolved.loader]
 
     with _write_lock:
         tenants = _read_tenants()
@@ -167,18 +156,20 @@ def provision_tenant(
         if os.path.exists(dest):
             raise ProvisioningError("that business name is already taken")
 
-        _clone_template(spec["template"], dest, business_name)
+        _clone_template(template, dest, business_name)
 
         entry = {
             "id": tenant_id,
             "name": business_name,
             "number": "STARTER",
-            "type": spec["loader_type"],
+            "type": resolved.loader,
+            "type_template": resolved.id,
             "data_dir": tenant_id,
-            "period": spec["period"],
-            "icon": spec["icon"],
-            "color": spec["color"],
-            "display_type": spec["label"],
+            "period": resolved.period,
+            "icon": resolved.icon,
+            "color": resolved.color,
+            "display_type": resolved.label,
+            "benchmark_cohort": resolved.benchmark_cohort,
             "created_at": datetime.now(timezone.utc).isoformat(),
             "plan": plan,
         }
