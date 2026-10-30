@@ -1,0 +1,90 @@
+{
+  "date": "2024-12-31",
+  "currency": "GBP",
+  "assets": {
+    "current": {
+      "cash_in_bank": 8420.5,
+      "cash_till_float": 300.0,
+      "accounts_receivable": 0,
+      "inventory_coffee_beans": 280.0,
+      "inventory_milk": 95.0,
+      "inventory_pastries": 45.0,
+      "inventory_supplies": 180.0,
+      "prepaid_insurance": 525.0,
+      "total_current_assets": 9845.5
+    },
+    "non_current": {
+      "espresso_machine": {
+        "original_cost": 8500,
+        "purchase_date": "2023-03-20",
+        "useful_life_years": 7,
+        "accumulated_depreciation": 2125.0,
+        "net_book_value": 6375.0
+      },
+      "commercial_grinder": {
+        "original_cost": 2200,
+        "purchase_date": "2023-03-20",
+        "useful_life_years": 7,
+        "accumulated_depreciation": 550.0,
+        "net_book_value": 1650.0
+      },
+      "refrigeration": {
+        "original_cost": 3500,
+        "purchase_date": "2023-03-20",
+        "useful_life_years": 10,
+        "accumulated_depreciation": 612.5,
+        "net_book_value": 2887.5
+      },
+      "pos_system": {
+        "original_cost": 1200,
+        "purchase_date": "2023-03-20",
+        "useful_life_years": 5,
+        "accumulated_depreciation": 420.0,
+        "net_book_value": 780.0
+      },
+      "shop_furniture": {
+        "original_cost": 4500,
+        "purchase_date": "2023-03-20",
+        "useful_life_years": 10,
+        "accumulated_depreciation": 787.5,
+        "net_book_value": 3712.5
+      },
+      "kitchen_equipment": {
+        "original_cost": 2800,
+        "purchase_date": "2023-04-10",
+        "useful_life_years": 7,
+        "accumulated_depreciation": 700.0,
+        "net_book_value": 2100.0
+      },
+      "leasehold_improvements": {
+        "original_cost": 12000,
+        "purchase_date": "2023-03-15",
+        "useful_life_years": 5,
+        "accumulated_depreciation": 4200.0,
+        "net_book_value": 7800.0
+      },
+      "total_non_current_assets": 25305.0
+    },
+    "total_assets": 35150.5
+  },
+  "liabilities": {
+    "current": {
+      "accounts_payable": 1850.0,
+      "accrued_wages": 2400.0,
+      "vat_payable": 1200.0,
+      "corporation_tax_payable": 220.0,
+      "total_current_liabilities": 5670.0
+    },
+    "non_current": {
+      "director_loan": 5000.0,
+      "total_non_current_liabilities": 5000.0
+    },
+    "total_liabilities": 10670.0
+  },
+  "equity": {
+    "share_capital": 100.0,
+    "retained_earnings": 24160.5,
+    "current_year_profit": 220.0,
+    "total_equity": 24480.5
+  }
+}
