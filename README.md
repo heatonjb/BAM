@@ -156,7 +156,7 @@ plus a `conftest.py` bridge that turns every recorded assertion into its own
 pytest test. Both invocation styles work, and both fail loudly:
 
 ```bash
-python -m pytest -q            # 285 tests, one per assertion, named individually
+python -m pytest -q            # 352 tests, one per assertion, named individually
 python test_montecarlo.py      # standalone: prints a report, exits non-zero on failure
 ```
 
@@ -170,6 +170,7 @@ python test_montecarlo.py      # standalone: prints a report, exits non-zero on 
 | `test_types.py` | 17 | template inheritance, overrides, sibling isolation |
 | `test_capabilities.py` | 41 | tenant-scoped mechanisms, break-even inversion, cross-tenant refusal |
 | `test_specialists.py` | 39 | lens retrieval, honest caveats, advisory-only guarantee |
+| `test_mutations.py` | 67 | propose/authorise/stage/release/commit, orphaning guards, double-commit refusal |
 
 Failure output names the individual check, e.g.
 `FAILED test_types.py::test_checks[00 café inherits retail lineage]`.

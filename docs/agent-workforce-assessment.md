@@ -191,6 +191,12 @@ every margin downstream, and nothing in the current model would flag it.
 - **Capability maps rot.** A confidence column that is never re-measured becomes a lie.
   If we adopt it, it must be regenerated from test runs, not hand-written.
 
-## 5. Next steps
+## 5. Status
 
-Tracked in the task list: assess complete; graph mutation path not yet built.
+Assessed. The graph-mutation path described in section 4 is now built
+(`mvp/multiagent/mutations.py`, `test_mutations.py`): propose -> authorise ->
+stage -> release -> commit, with an append-only ledger and a bounded
+auto-apply band for numeric changes. Structural changes always require an owner
+release. Still open: adopting the pre-context authorisation guard into the
+existing dispatch path (the guard exists, callers are not yet migrated), and
+regenerating the comparison table from test runs rather than hand-writing it.
