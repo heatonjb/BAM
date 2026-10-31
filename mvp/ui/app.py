@@ -35,6 +35,7 @@ from mvp.multiagent.control_models import ControlModel
 from mvp.multiagent.external import build_default_registry
 from mvp.multiagent.controller import AutonomousGraphController, HealthThresholds, ControllerState
 from mvp import plans, provisioning, benchmarking
+from mvp import specialists
 from mvp import types as type_registry
 from mvp.integrations.providers import all_specs
 from mvp.integrations import nango as nango_client
@@ -54,7 +55,6 @@ _graph = None
 # Tenant-scoped state lives in mvp.tenancy. Nothing business-data-related may be
 # cached in a module-level singleton: those were the cross-tenant leaks.
 _last_plans = {}          # keyed by tenant id only
-_controller_lock = threading.Lock()
 _controller_lock = threading.Lock()
 
 
@@ -554,6 +554,55 @@ def api_agents():
         "agents": [a.to_dict() for a in interop_mod.default_directory()],
         "protocol": interop_mod.protocol_document(),
     })
+
+
+@app.route("/api/specialists", methods=["GET"])
+def api_specialists():
+    """Specialist lenses available to every tenant.
+
+    Lenses are a generic capability: the same essays for every business. The
+    tenant supplies the situation at call time. Advisory only — a viewpoint
+    cannot mutate the graph.
+    """
+    return jsonify({"ok": True, "specialists": specialists.available_specialists()})
+
+
+@app.route("/api/specialists/<specialist_id>/advise", methods=["POST"])
+def api_specialist_advise(specialist_id):
+    """Ask a lens about a situation, optionally scoped to the active tenant."""
+    try:
+        lens = specialists.get_specialist(specialist_id)
+    except KeyError as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 404
+
+    payload = request.get_json(silent=True) or {}
+    situation = (payload.get("situation") or "").strip()
+    if not situation:
+        return jsonify({"ok": False, "error": "situation is required"}), 400
+    try:
+        k = int(payload.get("k", 4))
+    except (TypeError, ValueError):
+        k = 4
+    k = max(1, min(k, 8))
+
+    ctx = payload.get("tenant_context") or {}
+    if not ctx and "tenant_id" in session:
+        # Only fill what is cheap and certain. The tenant registry read is one
+        # small JSON file; operating margin would need the full P&L load, which
+        # is too heavy per request. So margin is supplied by the caller or not
+        # at all — a guessed margin would produce a confident, wrong caveat.
+        try:
+            # Read the session tenant directly: _current_tenant() aborts for
+            # unauthenticated or tenant-less sessions, and an abort caught here
+            # would silently drop the context this route exists to add.
+            tid = auth.current_tenant()
+            if tid:
+                ctx = {"business_type": load_tenant_config(tid).get("type")}
+        except Exception:
+            ctx = {}
+
+    view = lens.advise(situation, k=k, tenant_context=ctx)
+    return jsonify({"ok": True, "viewpoint": view.to_dict(), "brief": view.as_brief()})
 
 
 @app.route("/api/multiagent/initiatives/<initiative_id>/dispatch", methods=["POST"])

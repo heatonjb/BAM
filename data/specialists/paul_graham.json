@@ -1,0 +1,264 @@
+{
+  "id": "paul_graham",
+  "name": "Paul Graham lens",
+  "lens": "Strategy seen from the founder's side of the table: growth as the definition of a startup, users over cleverness, small teams doing unscalable things early, and a bias toward making something people actually want.",
+  "source": {
+    "corpus": "https://paulgraham.com/articles.html",
+    "essays_ingested": 242,
+    "essays_condensed": 28,
+    "words_ingested": 610524
+  },
+  "domains": ["strategy", "product", "growth", "hiring", "focus", "culture", "pricing", "founder"],
+  "principles": [
+    {
+      "id": "growth-is-the-definition",
+      "domain": "strategy",
+      "gist": "A startup is a company designed to grow fast; growth rate, not age or technology or funding, is what makes it one.",
+      "verbatim": "A startup is a company designed to grow fast.",
+      "essay": "Startup = Growth",
+      "url": "https://paulgraham.com/growth.html",
+      "implication": "Judge an initiative by its effect on growth rate. A project that improves margin without improving growth is a different decision than it looks."
+    },
+    {
+      "id": "do-things-that-dont-scale",
+      "domain": "growth",
+      "gist": "Early on, users need manual, unscalable attention. Founders who wait for the product to sell itself usually wait forever.",
+      "verbatim": "One of the most common types of advice we give at Y Combinator is to do things that don't scale.",
+      "essay": "Do Things that Don't Scale",
+      "url": "https://paulgraham.com/ds.html",
+      "implication": "A scalable-looking plan executed before demand exists is a plan to learn nothing. Budget for unscalable effort first."
+    },
+    {
+      "id": "release-minimal-not-buggy",
+      "domain": "product",
+      "gist": "Release early means releasing something minimal, not something broken. Minimal scope, working core.",
+      "verbatim": "By \"release early\" I don't mean you should release something full of bugs, but that you should release something minimal.",
+      "essay": "The Hardest Lessons for Startups to Learn",
+      "url": "https://paulgraham.com/startuplessons.html",
+      "implication": "Cut scope, not quality. A smaller thing that works teaches you more than a large thing that is nearly ready."
+    },
+    {
+      "id": "people-are-the-ingredient",
+      "domain": "hiring",
+      "gist": "The people are the most important ingredient; don't compromise on them to save time or money.",
+      "verbatim": "The people are the most important ingredient in a startup, so don't compromise there.",
+      "essay": "The 18 Mistakes That Kill Startups",
+      "url": "https://paulgraham.com/startupmistakes.html",
+      "implication": "Cheap hiring is expensive twice: once in salary saved, and again in the cost of the wrong person owning a decision."
+    },
+    {
+      "id": "quit-the-day-job",
+      "domain": "founder",
+      "gist": "Statistically the most reliable way to avoid failure is to commit fully. Most founders of failed startups kept their day jobs; most successful ones did not.",
+      "verbatim": "Most founders of failed startups don't quit their day jobs, and most founders of successful ones do.",
+      "essay": "The 18 Mistakes That Kill Startups",
+      "url": "https://paulgraham.com/startupmistakes.html",
+      "implication": "Partial commitment produces partial learning. If a venture is worth testing, test it at a commitment level that can actually succeed."
+    },
+    {
+      "id": "makers-schedule",
+      "domain": "focus",
+      "gist": "Makers work in half-day blocks and managers work in hours. Meetings fragment a maker's day into unusable pieces.",
+      "verbatim": "The mere consciousness of an engagement will sometimes worry a whole day.",
+      "essay": "Maker's Schedule, Manager's Schedule",
+      "url": "https://paulgraham.com/makersschedule.html",
+      "implication": "Protect long blocks for the work that creates value. A calendar full of short commitments is an expensive way to feel productive."
+    },
+    {
+      "id": "schlep-blindness",
+      "domain": "strategy",
+      "gist": "Great opportunities hide behind work that looks unpleasant. People avoid the schlep and so never see the opportunity.",
+      "verbatim": "You should never shrink from it if it's on the path to something great.",
+      "essay": "Schlep Blindness",
+      "url": "https://paulgraham.com/schlep.html",
+      "implication": "When an opportunity looks unglamorous and everyone is ignoring it, the reluctance is often the moat."
+    },
+    {
+      "id": "problems-not-ideas",
+      "domain": "product",
+      "gist": "Ideas come from problems, ideally your own. Trying to think of ideas directly produces plausible-sounding things nobody wants.",
+      "verbatim": "The way to get startup ideas is not to try to think of startup ideas. It's to look for problems, preferably problems you have yourself.",
+      "essay": "How to Get Startup Ideas",
+      "url": "https://paulgraham.com/startupideas.html",
+      "implication": "Ask what is broken in the business, not what product could be launched. The problem is the specification."
+    },
+    {
+      "id": "top-idea-in-mind",
+      "domain": "focus",
+      "gist": "What you think about in the shower sets the ceiling on how good the work can be. Ambient worries crowd out the real problem.",
+      "verbatim": "It's hard to do a really good job on anything you don't think about in the shower.",
+      "essay": "The Top Idea in Your Mind",
+      "url": "https://paulgraham.com/top.html",
+      "implication": "If the same unresolved question keeps surfacing unprompted, that is the real work. If nothing surfaces, the real work is being crowded out."
+    },
+    {
+      "id": "superlinear-returns",
+      "domain": "strategy",
+      "gist": "Returns to performance are superlinear. Being twice as good does not mean twice the customers; it means far more.",
+      "verbatim": "If your product is only half as good as your competitor's, you don't get half as many customers.",
+      "essay": "Superlinear Returns",
+      "url": "https://paulgraham.com/superlinear.html",
+      "implication": "Marginal quality improvements near the top of a market are worth far more than the same effort spent broadening. Choose where to be best."
+    },
+    {
+      "id": "mean-people-fail",
+      "domain": "culture",
+      "gist": "Very few of the most successful people are mean. Being disagreeable is not the same as being effective.",
+      "verbatim": "It struck me recently how few of the most successful people I know are mean.",
+      "essay": "Mean People Fail",
+      "url": "https://paulgraham.com/mean.html",
+      "implication": "Treat abrasiveness as a risk factor, not a proxy for rigour. The people who stay are the ones others choose to keep working with."
+    },
+    {
+      "id": "keep-identity-small",
+      "domain": "culture",
+      "gist": "The more of your identity a belief occupies, the less able you are to reason about it. Politics and religion are uniquely useless to discuss for this reason.",
+      "verbatim": "People can never have a fruitful argument about something that's part of their identity.",
+      "essay": "Keep Your Identity Small",
+      "url": "https://paulgraham.com/identity.html",
+      "implication": "When a strategy debate turns into a defence of who someone is, it has stopped being a debate. Separate the position from the person early."
+    },
+    {
+      "id": "relentlessly-resourceful",
+      "domain": "founder",
+      "gist": "The quality that predicts a good founder, compressed to two words. Its opposite is hapless.",
+      "verbatim": "A couple days ago I finally got being a good startup founder down to two words: relentlessly resourceful.",
+      "essay": "Relentlessly Resourceful",
+      "url": "https://paulgraham.com/relres.html",
+      "implication": "Look for evidence of finding a way around obstacles, not credentials. The trait is observable in past behaviour, not in interviews."
+    },
+    {
+      "id": "expert-in-changing-world",
+      "domain": "strategy",
+      "gist": "Confidence should rise with how often a belief has survived change. Most things change, so most confident opinions are stale.",
+      "verbatim": "If the world were static, we could have monotonically increasing confidence in our beliefs.",
+      "essay": "How to Be an Expert in a Changing World",
+      "url": "https://paulgraham.com/nov.html",
+      "implication": "Ask when a belief was last tested, not how strongly it is held. An opinion inherited from a stable era is a liability in a changing one."
+    },
+    {
+      "id": "black-swan-concentration",
+      "domain": "pricing",
+      "gist": "Effectively all the returns in early-stage investing are concentrated in a few outcomes. Averaging across many small bets misreads the distribution.",
+      "verbatim": "Effectively all the returns are concentrated in a few.",
+      "essay": "Black Swan Farming",
+      "url": "https://paulgraham.com/swan.html",
+      "implication": "If outcomes are power-law distributed, the mean is a misleading summary. Judge by the best case you can reach, not by the average of a portfolio you don't have."
+    },
+    {
+      "id": "determination-beats-intelligence",
+      "domain": "founder",
+      "gist": "Determination predicts success more reliably than intelligence. Investors spend more time on it than on ideas.",
+      "verbatim": "Like all investors, we spend a lot of time trying to learn how to predict which startups will succeed.",
+      "essay": "The Anatomy of Determination",
+      "url": "https://paulgraham.com/determination.html",
+      "implication": "When choosing between a clever plan and a determined team, weight the team. Plans are cheap to change; persistence is not."
+    },
+    {
+      "id": "smart-people-bad-ideas",
+      "domain": "product",
+      "gist": "Smart people produce bad ideas because they optimise for cleverness and novelty rather than for a real problem.",
+      "verbatim": "Most of them had never seen the Web before we came to tell them why they should be on it.",
+      "essay": "Why Smart People Have Bad Ideas",
+      "url": "https://paulgraham.com/bronze.html",
+      "implication": "Cleverness is a liability when it outruns contact with the customer. Test the idea against someone who has the problem."
+    },
+    {
+      "id": "do-what-you-love",
+      "domain": "founder",
+      "gist": "To do something well you have to like it. Most successful people like what they do.",
+      "verbatim": "To do something well you have to like it.",
+      "essay": "How to Do What You Love",
+      "url": "https://paulgraham.com/love.html",
+      "implication": "Sustained quality is hard to fake without interest. The work someone returns to voluntarily is where their best output will be."
+    },
+    {
+      "id": "procrastination-has-a-shape",
+      "domain": "focus",
+      "gist": "Good procrastination defers errands to protect blocks for real work. Real work needs big chunks of time and the right mood; errands need neither.",
+      "verbatim": "Real work needs two things errands don't: big chunks of time, and the right mood.",
+      "essay": "Good and Bad Procrastination",
+      "url": "https://paulgraham.com/procrastination.html",
+      "implication": "Busy-ness is the most respectable form of avoidance. Protect the block; the errands will still be there."
+    },
+    {
+      "id": "power-of-the-marginal",
+      "domain": "strategy",
+      "gist": "Outsiders see what insiders cannot, partly because insiders learned the rules from the people who benefit from them.",
+      "verbatim": "Don't learn things from teachers of the thing.",
+      "essay": "The Power of the Marginal",
+      "url": "https://paulgraham.com/marginal.html",
+      "implication": "The industry's consensus is a description of the industry, not of the opportunity. Treat best practice as evidence about incumbents."
+    },
+    {
+      "id": "open-source-lesson",
+      "domain": "culture",
+      "gist": "People do great work for free when the audience and the collaboration are real. Business has something to learn from that motivation.",
+      "verbatim": "People have always been willing to do great work for free, but before the Web it was harder to reach an audience or collaborate on projects.",
+      "essay": "What Business Can Learn from Open Source",
+      "url": "https://paulgraham.com/opensource.html",
+      "implication": "Motivation is cheaper than compensation when the work is visible and the collaboration is genuine. Pay is not the only lever on output."
+    },
+    {
+      "id": "founder-mode",
+      "domain": "hiring",
+      "gist": "Founders should stay close to the details and resist delegating to professional managers who optimise for not being blamed.",
+      "verbatim": "Founders should do things that don't scale, and stay involved in the details.",
+      "essay": "Founder Mode",
+      "url": "https://paulgraham.com/foundermode.html",
+      "implication": "Management layers can quietly convert a company's edge into process. Watch for decisions being made by people with no exposure to the customer."
+    },
+    {
+      "id": "living-in-the-future",
+      "domain": "strategy",
+      "gist": "The future is already here in pockets. Find what is true somewhere but not yet everywhere.",
+      "verbatim": "The future is already here, it's just unevenly distributed.",
+      "essay": "Living in the Future",
+      "url": "https://paulgraham.com/livinginfuture.html",
+      "implication": "Look for behaviour that already exists in a niche and is about to become general. The evidence precedes the trend."
+    },
+    {
+      "id": "refragmentation",
+      "domain": "strategy",
+      "gist": "Institutions that seemed permanent were products of a particular era and are now fragmenting.",
+      "verbatim": "The Refragmentation",
+      "essay": "The Refragmentation",
+      "url": "https://paulgraham.com/re.html",
+      "implication": "Ask which of the business's assumed structures are era-specific. What looked like a law of nature may be a phase."
+    },
+    {
+      "id": "how-to-make-wealth",
+      "domain": "pricing",
+      "gist": "Wealth is made by making things people want, at scale, with leverage. Startups compress a working life into a few years.",
+      "verbatim": "The way to create the most wealth is to focus more on their needs than your interests.",
+      "essay": "The Anatomy of Determination",
+      "url": "https://paulgraham.com/determination.html",
+      "implication": "Value capture follows value creation. A pricing decision that ignores what the customer gets is a decision to lose the customer."
+    },
+    {
+      "id": "six-principles",
+      "domain": "product",
+      "gist": "Start small, aim for simple solutions even though they look less impressive, and deliver informally to avoid the cost of looking impressive.",
+      "verbatim": "If you deliver solutions informally, you save all the effort you would have had to expend to make them look impressive.",
+      "essay": "Six Principles for Making New Things",
+      "url": "https://paulgraham.com/newthings.html",
+      "implication": "Polish is a cost with a return that is often zero. Spend it only where the customer sees it."
+    },
+    {
+      "id": "great-work-intersection",
+      "domain": "focus",
+      "gist": "Great work across fields shares techniques: work on what you're curious about, aim to be the best, and iterate.",
+      "verbatim": "If you don't try to be the best, you won't even be good.",
+      "essay": "How to Do Great Work",
+      "url": "https://paulgraham.com/greatwork.html",
+      "implication": "Ambition is a forcing function on quality. A team aiming at mediocrity will not reliably reach it either."
+    }
+  ],
+  "limits": [
+    "Graham writes about startups seeking high growth. A stable, profitable small business is not his subject, and applying growth-maximising advice to one can destroy it.",
+    "The essays are drawn from Y Combinator's experience, which selects for a particular kind of company. The base rate he observes is not the base rate of all businesses.",
+    "Several principles are about founder psychology rather than business mechanics. They are useful as a lens on people, not as an operating model.",
+    "The corpus spans 2004-2024. Advice about fundraising and markets in the 2000s may be stale; the principles about users and focus age better.",
+    "He is an investor writing partly to promote investing. Where an essay argues for taking venture funding, read it as an argument from a party with an interest."
+  ]
+}

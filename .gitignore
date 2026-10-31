@@ -32,3 +32,6 @@ data/initial_admin_password.txt
 
 # Repomix artifacts
 repomix-mvp*.xml
+
+# Downloaded essay corpus — copyrighted third-party text, kept local only
+data/corpus/
