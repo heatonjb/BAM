@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ st.steps|selectattr('id','equalto',step)|map(attribute='title')|first }} — BAM</title>
+    <link rel="stylesheet" href="/static/base.css">
+    <style>
+        .ob-wrap { max-width: 940px; margin: 0 auto; padding: 2.2rem 1.2rem 4rem; }
+        .ob-brand { display:flex; align-items:center; gap:0.6rem; margin-bottom:2rem; }
+        .ob-brand__mark { color: var(--accent); font-size:1.3rem; }
+        .ob-brand__name { font-weight:650; letter-spacing:0.02em; }
+        .ob-brand__biz { color: var(--text-muted); font-size:0.8rem; margin-left:auto; }
+
+        .ob-steps { display:flex; gap:0.4rem; margin-bottom:2.4rem; flex-wrap:wrap; }
+        .ob-step { flex:1; min-width:120px; padding-top:0.6rem; border-top:2px solid var(--border); }
+        .ob-step.done { border-top-color: var(--positive); }
+        .ob-step.current { border-top-color: var(--accent); }
+        .ob-step__n { font-family: var(--mono); font-size:0.65rem; color:var(--text-faint); }
+        .ob-step__l { font-size:0.8rem; color:var(--text-muted); }
+        .ob-step.current .ob-step__l { color:var(--text); font-weight:600; }
+        .ob-step.done .ob-step__l { color:var(--positive); }
+        .ob-step.done .ob-step__n::after { content:" ✓"; }
+
+        h1.ob-h1 { font-size:1.6rem; letter-spacing:-0.02em; margin-bottom:0.5rem; }
+        p.ob-lede { color:var(--text-muted); max-width:62ch; margin-bottom:1.8rem; line-height:1.6; }
+
+        .ob-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:0.7rem; }
+        .ob-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+                   padding:0.9rem 1rem; box-shadow:var(--shadow-sm); display:flex; flex-direction:column; gap:0.35rem; }
+        .ob-card__top { display:flex; align-items:center; gap:0.5rem; }
+        .ob-card__label { font-weight:600; font-size:0.9rem; }
+        .ob-card__cat { font-family:var(--mono); font-size:0.62rem; color:var(--text-faint);
+                        text-transform:uppercase; letter-spacing:0.08em; }
+        .ob-card__why { color:var(--text-muted); font-size:0.78rem; line-height:1.45; }
+        .ob-card__fields { font-family:var(--mono); font-size:0.62rem; color:var(--text-faint); }
+        .ob-card--primary { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+
+        .ob-btn { display:inline-block; padding:0.62rem 1.1rem; border-radius:var(--radius-sm);
+                  font-size:0.85rem; font-weight:600; border:1px solid var(--border-strong);
+                  background:var(--surface); color:var(--text); cursor:pointer; text-decoration:none; }
+        .ob-btn--primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+        .ob-btn--ghost { background:transparent; border-color:transparent; color:var(--text-muted); }
+        .ob-btn:disabled { opacity:0.55; cursor:wait; }
+        .ob-actions { display:flex; gap:0.6rem; align-items:center; margin-top:1.8rem; flex-wrap:wrap; }
+
+        .ob-finding { background:var(--surface); border:1px solid var(--border); border-left:3px solid var(--accent);
+                      border-radius:var(--radius-sm); padding:1rem 1.1rem; margin-bottom:0.7rem; }
+        .ob-finding__row { display:flex; align-items:baseline; gap:0.8rem; }
+        .ob-finding__t { font-weight:600; font-size:0.9rem; }
+        .ob-finding__v { margin-left:auto; font-family:var(--mono); font-size:1.15rem; font-weight:650;
+                         color:var(--accent-strong); font-variant-numeric:tabular-nums; }
+        .ob-finding__r { color:var(--text); font-size:0.86rem; margin-top:0.4rem; line-height:1.5; }
+        .ob-finding__q { color:var(--text-muted); font-size:0.8rem; margin-top:0.45rem; font-style:italic; }
+        .ob-finding__g { color:var(--text-faint); font-size:0.72rem; margin-top:0.35rem; }
+
+        .ob-note { background:var(--warning-soft); border:1px solid #fcd34d; color:#92400e;
+                   border-radius:var(--radius-sm); padding:0.7rem 0.9rem; font-size:0.8rem; margin-bottom:1.2rem; }
+        .ob-skip { color:var(--text-faint); font-size:0.78rem; margin-top:1rem; }
+    </style>
+</head>
+<body>
+<div class="ob-wrap">
+    <div class="ob-brand">
+        <span class="ob-brand__mark">◈</span>
+        <span class="ob-brand__name">BAM</span>
+        <span class="ob-brand__biz">{{ st.business_name or 'Your business' }} · {{ st.percent }}% set up</span>
+    </div>
+
+    <div class="ob-steps">
+        {% for s in st.steps %}
+        <div class="ob-step {{ s.status }}">
+            <div class="ob-step__n">{{ loop.index }}</div>
+            <div class="ob-step__l">{{ s.label }}</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if error %}
+    <div class="ob-note">{{ error }}</div>
+    {% endif %}
+
+    {% if step == 'business' %}
+    <h1 class="ob-h1">What kind of business is this?</h1>
+    <p class="ob-lede">
+        BAM picks a starting structure from your type — the right node families, the right metrics,
+        and the right peer group to benchmark against. You can change it later; nothing here is permanent.
+    </p>
+    <form method="post" action="/onboarding/business">
+        <div class="ob-grid">
+            {% for t in types %}
+            <label class="ob-card {{ 'ob-card--primary' if loop.first }}">
+                <div class="ob-card__top">
+                    <input type="radio" name="business_type" value="{{ t.id }}"
+                           {% if t.id == st.business_type %}checked{% endif %} required>
+                    <span class="ob-card__label">{{ t.icon }} {{ t.label }}</span>
+                </div>
+                <div class="ob-card__cat">{{ t.id }}</div>
+                <div class="ob-card__why">{{ t.structure }}</div>
+            </label>
+            {% endfor %}
+        </div>
+        <div class="ob-actions">
+            <button class="ob-btn ob-btn--primary" type="submit">Use this template</button>
+        </div>
+    </form>
+
+    {% elif step == 'connect' %}
+    <h1 class="ob-h1">Connect the numbers you already have</h1>
+    <p class="ob-lede">
+        Your graph is already built and readable. Connecting a source replaces the starting estimates
+        with your actual revenue, cost and volume — which is the difference between a plausible model
+        and a decision you can defend.
+    </p>
+    {% if not nango_ready %}
+    <div class="ob-note">
+        Connections are not switched on for this deployment yet (no Nango credentials configured).
+        You can skip this step — everything else works, using template estimates.
+    </div>
+    {% endif %}
+    <div class="ob-grid">
+        {% for p in providers %}
+        <div class="ob-card {{ 'ob-card--primary' if p.primary }}">
+            <div class="ob-card__top">
+                <span class="ob-card__label">{{ p.label }}</span>
+            </div>
+            <div class="ob-card__cat">{{ p.category }}</div>
+            <div class="ob-card__why">{{ p.why }}</div>
+            <div class="ob-card__fields">{{ p.fields|join(' · ') }}</div>
+            <div style="margin-top:0.5rem;">
+                <button class="ob-btn" data-provider="{{ p.id }}"
+                        onclick="connectProvider(this)"
+                        {% if not nango_ready %}disabled title="Nango not configured"{% endif %}>
+                    Connect
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="ob-actions">
+        <a class="ob-btn ob-btn--primary" href="/onboarding/value">Next — your first reading</a>
+        <a class="ob-btn ob-btn--ghost" href="/dashboard">Skip for now</a>
+    </div>
+    <p class="ob-skip">You can connect sources at any time from the dashboard.</p>
+    <div id="obConnectMsg" style="margin-top:0.8rem;font-size:0.8rem;color:var(--text-muted);"></div>
+    <script>
+        async function connectProvider(btn) {
+            const msg = document.getElementById('obConnectMsg');
+            const provider = btn.dataset.provider;
+            btn.disabled = true; btn.textContent = 'Opening…';
+            try {
+                const r = await fetch('/api/onboarding/connect', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ provider: provider })
+                });
+                const d = await r.json();
+                if (d.connect_link) {
+                    window.location.href = d.connect_link;
+                } else {
+                    msg.textContent = d.reason || 'Could not start the connection.';
+                    btn.disabled = false; btn.textContent = 'Connect';
+                }
+            } catch (e) {
+                msg.textContent = 'Error: ' + e.message;
+                btn.disabled = false; btn.textContent = 'Connect';
+            }
+        }
+    </script>
+
+    {% else %}
+    <h1 class="ob-h1">Your first reading</h1>
+    <p class="ob-lede">{{ fv.disclaimer }}</p>
+
+    {% for f in fv.findings %}
+    <div class="ob-finding">
+        <div class="ob-finding__row">
+            <span class="ob-finding__t">{{ f.title }}</span>
+            <span class="ob-finding__v">{{ f.value }}</span>
+        </div>
+        <div class="ob-finding__r">{{ f.reading }}</div>
+        <div class="ob-finding__q">{{ f.question }}</div>
+        <div class="ob-finding__g">{{ f.template_gap }}</div>
+    </div>
+    {% endfor %}
+
+    <div class="ob-actions">
+        <a class="ob-btn ob-btn--primary" href="/dashboard">Open your dashboard →</a>
+        {% if not st.connections %}
+        <a class="ob-btn" href="/onboarding/connect">Connect a source</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+</body>
+</html>

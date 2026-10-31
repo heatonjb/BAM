@@ -77,6 +77,18 @@ class TenantRegistry:
         self._orchestrators: Dict[str, Any] = {}
         self._controllers: Dict[str, Any] = {}
 
+    def invalidate(self, tenant_id: str) -> None:
+        """Drop every cached object for one tenant.
+
+        Called after a re-template so the process stops serving the previous
+        type's graph to a tenant that has just changed type.
+        """
+        tid = str(tenant_id).strip()
+        with self._lock:
+            for cache in (self._graphs, self._business, self._constraints,
+                          self._orchestrators, self._controllers):
+                cache.pop(tid, None)
+
     # --- graph ------------------------------------------------------------
     def graph(self, tenant_id: str):
         tid = require_tenant(tenant_id)

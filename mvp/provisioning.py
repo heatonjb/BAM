@@ -190,6 +190,55 @@ def provision_tenant(
     return entry
 
 
+def retemplate(tenant_id: str, business_type: str) -> Dict[str, Any]:
+    """Rebuild a tenant's starter graph against a different type template.
+
+    Used by onboarding when the user corrects the business type after signup.
+    The tenant id, plan and memberships are preserved; only the data directory's
+    template files are replaced. Any real connected data lives in the
+    integrations store, not here, so nothing the user has connected is lost.
+    """
+    resolved = resolve_business_type(business_type)
+    template = STARTER_FOR_LOADER[resolved.loader]
+
+    with _write_lock:
+        tenants = _read_tenants()
+        entry = tenants.get(tenant_id)
+        if not entry:
+            raise ProvisioningError(f"unknown tenant {tenant_id!r}")
+        dest = os.path.join(DATA_ROOT, entry.get("data_dir") or tenant_id)
+        if not os.path.isdir(dest):
+            raise ProvisioningError(f"tenant data directory missing for {tenant_id!r}")
+
+        # Replace the directory atomically-ish: build beside it, then swap.
+        tmp = dest + ".retemplate"
+        if os.path.exists(tmp):
+            shutil.rmtree(tmp, ignore_errors=True)
+        _clone_template(template, tmp, entry.get("name") or tenant_id)
+        shutil.rmtree(dest)
+        os.rename(tmp, dest)
+
+        entry.update({
+            "type": resolved.loader,
+            "type_template": resolved.id,
+            "period": resolved.period,
+            "icon": resolved.icon,
+            "color": resolved.color,
+            "display_type": resolved.label,
+            "benchmark_cohort": resolved.benchmark_cohort,
+        })
+        tenants[tenant_id] = entry
+        _write_tenants(tenants)
+
+    # Force the tenant registry to reload rather than serving the old graph.
+    try:
+        from . import tenancy
+        tenancy.registry.invalidate(tenant_id)
+    except Exception:
+        pass
+    return entry
+
+
 def tenant_count() -> int:
     return len(_read_tenants())
 

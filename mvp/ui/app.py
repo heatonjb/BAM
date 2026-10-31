@@ -36,6 +36,7 @@ from mvp.multiagent.controller import AutonomousGraphController, HealthThreshold
 from mvp import plans, provisioning, benchmarking
 from mvp import types as type_registry
 from mvp.integrations.providers import all_specs
+from mvp.integrations import nango as nango_client
 
 # The marketing site and sign-up are the only public endpoints.
 auth.PUBLIC_ENDPOINTS |= {"index", "signup"}
@@ -330,7 +331,9 @@ def signup():
         login_user(auth._load_user(str(user["id"])), remember=False)
     except Exception:
         app.logger.exception("auto-login after signup failed")
-    return redirect("/dashboard")
+    # Not the dashboard: the first two steps exist precisely so the user sees a
+    # populated graph before being dropped into a dense screen.
+    return redirect("/onboarding/connect")
 
 
 def build_category_revenue(business):
@@ -405,6 +408,131 @@ def build_product_list(business):
             })
     out.sort(key=lambda x: x["revenue"], reverse=True)
     return out
+
+
+# ── Onboarding ──────────────────────────────────────────────────────────────
+# The sequence is: account -> business -> connect -> first reading. Each step
+# renders from onboarding.state(), which derives progress from the tenant's real
+# state, so a user who closes the tab and returns days later lands where they
+# actually are rather than at the beginning.
+
+from mvp import onboarding as onboarding_mod  # noqa: E402
+
+
+def _onboarding_guard(step: str):
+    """Signed-in tenant for an onboarding page, or a redirect to login."""
+    if not getattr(current_user, "is_authenticated", False):
+        return None, redirect("/login?next=/onboarding/" + step)
+    return _current_tenant(), None
+
+
+@app.route("/onboarding")
+def onboarding_entry():
+    if not getattr(current_user, "is_authenticated", False):
+        return redirect("/login?next=/onboarding")
+    return redirect(onboarding_mod.next_step_url(_current_tenant()))
+
+
+@app.route("/onboarding/business", methods=["GET", "POST"])
+def onboarding_business():
+    tenant, redir = _onboarding_guard("business")
+    if redir is not None:
+        return redir
+
+    if request.method == "POST":
+        chosen = (request.form.get("business_type") or "").strip()
+        try:
+            entry = _tenant_meta_or_empty(tenant)
+            if chosen and chosen != onboarding_mod._type_of(entry):
+                provisioning.retemplate(tenant, chosen)
+            return redirect("/onboarding/connect")
+        except (provisioning.ProvisioningError, type_registry.TypeRegistryError) as exc:
+            st = onboarding_mod.state(tenant)
+            return render_template(
+                "onboarding.html", step="business", st=st,
+                types=_onboarding_types(), error=str(exc),
+            ), 400
+
+    st = onboarding_mod.state(tenant)
+    return render_template("onboarding.html", step="business", st=st,
+                           types=_onboarding_types())
+
+
+def _tenant_meta_or_empty(tenant_id):
+    try:
+        return provisioning._read_tenants().get(tenant_id, {}) or {}
+    except Exception:
+        return {}
+
+
+def _onboarding_types():
+    """Leaf business types the user can pick, with a one-line structure note."""
+    out = []
+    for spec in type_registry.all_types(include_roots=False):
+        families = sorted(getattr(spec, "node_families", set()) or set())
+        note = ", ".join(families[:5]) if families else "standard P&L structure"
+        out.append({"id": spec.id, "label": spec.label, "icon": spec.icon,
+                    "structure": note})
+    out.sort(key=lambda t: (t["id"].count("."), t["label"]))
+    return out
+
+
+@app.route("/onboarding/connect", methods=["GET"])
+def onboarding_connect():
+    tenant, redir = _onboarding_guard("connect")
+    if redir is not None:
+        return redir
+    st = onboarding_mod.state(tenant)
+    meta = _tenant_meta_or_empty(tenant)
+    btype = onboarding_mod._type_of(meta) or "business"
+    try:
+        ready = nango_client.available()
+    except Exception:
+        ready = False
+    return render_template(
+        "onboarding.html", step="connect", st=st,
+        providers=onboarding_mod.recommended_providers(btype, limit=8),
+        nango_ready=ready,
+    )
+
+
+@app.route("/onboarding/value", methods=["GET"])
+def onboarding_value():
+    tenant, redir = _onboarding_guard("value")
+    if redir is not None:
+        return redir
+    st = onboarding_mod.state(tenant)
+    try:
+        fv = onboarding_mod.first_value(tenant)
+    except Exception as exc:
+        app.logger.exception("first_value failed")
+        fv = {"findings": [], "disclaimer": f"Could not build a reading: {exc}",
+              "recommended": []}
+    return render_template("onboarding.html", step="value", st=st, fv=fv)
+
+
+@app.route("/api/onboarding/state", methods=["GET"])
+def api_onboarding_state():
+    try:
+        return jsonify({"ok": True, **onboarding_mod.state(_current_tenant())})
+    except Exception as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 500
+
+
+@app.route("/api/onboarding/connect", methods=["POST"])
+def api_onboarding_connect():
+    """Start a hosted Nango auth session for one provider."""
+    data = request.get_json(silent=True) or {}
+    provider = (data.get("provider") or "").strip()
+    if not provider:
+        return jsonify({"ok": False, "error": "provider is required"}), 400
+    try:
+        tenant = _current_tenant()
+        email = getattr(current_user, "email", "") or ""
+        result = onboarding_mod.connect_link(tenant, provider, email)
+        return jsonify({"ok": bool(result.get("connect_link")), **result})
+    except Exception as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 500
 
 
 @app.route("/dashboard")
