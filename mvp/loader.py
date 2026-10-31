@@ -723,6 +723,9 @@ def load_graph(tenant_id: str = "jonco") -> BusinessGraph:
             loader = types.loader_for(template_id)
         except Exception:
             loader = tenant.get("type")
+    if loader == "bam":
+        from .bam_loader import build_bam_graph
+        return build_bam_graph(tenant_dir)
     if loader == "saas":
         from .saas_loader import build_saas_graph
         company_path = os.path.join(tenant_dir, "company.json")

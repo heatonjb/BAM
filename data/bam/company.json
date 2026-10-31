@@ -1,0 +1,50 @@
+{
+  "company": {
+    "name": "BAM",
+    "number": "BAM-LTD-0001",
+    "type": "saas",
+    "founded": "2026"
+  },
+  "tiers": [
+    {
+      "id": "free",
+      "label": "Free",
+      "price_monthly": 0,
+      "customers": 380,
+      "arbiter_runs": 2
+    },
+    {
+      "id": "pro",
+      "label": "Pro",
+      "price_monthly": 99,
+      "customers": 40,
+      "arbiter_runs": 40
+    },
+    {
+      "id": "scale",
+      "label": "Scale",
+      "price_monthly": 499,
+      "customers": 4,
+      "arbiter_runs": 400
+    }
+  ],
+  "financials": {
+    "arbiter_runs_per_month": 900,
+    "mrr": 5956
+  },
+  "costs": {
+    "inference_per_run_gbp": 1.2,
+    "infra_monthly_gbp": 120.0,
+    "payment_fee_pct": 1.5,
+    "staff_monthly_gbp": 3500.0,
+    "overheads_monthly_gbp": 450.0
+  },
+  "funnel": {
+    "signups_per_month": 180,
+    "activation_rate_pct": 55,
+    "free_to_paid_pct": 6,
+    "monthly_churn_pct": 3.5,
+    "cac_gbp": 210
+  },
+  "notes": "BAM's own operating model. Editable: the loader reads this file."
+}
