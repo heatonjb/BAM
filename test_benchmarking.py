@@ -17,12 +17,17 @@ from mvp import benchmarking as B
 FAILS: list[str] = []
 
 
-def check(label: str, cond: bool, detail: str = "") -> None:
-    if cond:
+RECORDS: list = []
+
+
+def check(label, cond, detail=""):
+    ok = bool(cond)
+    RECORDS.append((str(label), ok, str(detail)))
+    if ok:
         print(f"  PASS  {label}")
     else:
         print(f"  FAIL  {label}{' — ' + detail if detail else ''}")
-        FAILS.append(label)
+        FAILS.append(str(label))
 
 
 tmpdir = tempfile.mkdtemp(prefix="bam_bench_")
@@ -120,7 +125,16 @@ count = B.cohort_values("retail", "gross_margin_pct", PERIOD)
 check("observations persist", len(count) == 6, str(len(count)))
 
 print()
-if FAILS:
-    print(f"{len(FAILS)} check(s) failed: {FAILS}")
-    sys.exit(1)
-print("All benchmarking checks passed.")
+if __name__ == "__main__":
+    if FAILS:
+        print(f"{len(FAILS)} check(s) failed: {FAILS}")
+        sys.exit(1)
+    else:
+        print("All benchmarking checks passed.")
+    sys.exit(1 if FAILS else 0)
+
+def test_checks(case):
+    """Each recorded check is reported as its own pytest test."""
+    assert case is not None, "harness recorded no checks — did it run?"
+    label, ok, detail = case
+    assert ok, f"{label}{' — ' + detail if detail else ''}"

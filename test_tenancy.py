@@ -4,7 +4,7 @@ Every route that reads or writes business data is exercised twice: once as a
 café-only user and once as a SaaS-only user. The assertions check that no
 tenant's data appears in another tenant's responses.
 
-Run:  python3 tests_tenancy.py
+Run:  python3 test_tenancy.py
 """
 
 import os
@@ -30,14 +30,19 @@ failures = []
 checks = 0
 
 
-def check(label, condition, detail=""):
+RECORDS: list = []
+
+
+def check(label, cond, detail=""):
     global checks
     checks += 1
-    if condition:
+    ok = bool(cond)
+    RECORDS.append((str(label), ok, str(detail)))
+    if ok:
         print(f"  PASS  {label}")
     else:
-        print(f"  FAIL  {label} {detail}")
-        failures.append(label)
+        print(f"  FAIL  {label}{' — ' + detail if detail else ''}")
+        failures.append(str(label))
 
 
 def _ensure_user(email, password, tenant_ids):
@@ -162,3 +167,14 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
+
+def test_checks(case):
+    """Each recorded check is reported as its own pytest test."""
+    assert case is not None, "harness recorded no checks — did it run?"
+    label, ok, detail = case
+    assert ok, f"{label}{' — ' + detail if detail else ''}"
+
+
+_HARNESS_MAIN = main

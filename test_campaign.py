@@ -4,9 +4,17 @@ sys.path.insert(0, "/root/code/personal/research/business-as-machine")
 from mvp.campaign import publicdata as P
 
 FAILS = []
-def check(l, c, d=""):
-    print(("  PASS  " if c else "  FAIL  ") + l + ("" if c else f" — {d}"))
-    if not c: FAILS.append(l)
+RECORDS: list = []
+
+
+def check(label, cond, detail=""):
+    ok = bool(cond)
+    RECORDS.append((str(label), ok, str(detail)))
+    if ok:
+        print(f"  PASS  {label}")
+    else:
+        print(f"  FAIL  {label}{' — ' + detail if detail else ''}")
+        FAILS.append(str(label))
 
 recs, source = P.load_records(P.CompaniesHouseClient(api_key=""), "")
 print("source:", source, "records:", len(recs))
@@ -54,6 +62,15 @@ check("candidates carry a model and a message",
 check("nothing claims to have been sent", "sent" not in str(res["candidates"][0]["message"]).lower())
 
 print()
-if FAILS:
-    print(f"{len(FAILS)} FAILURES"); [print(" -", f) for f in FAILS]; sys.exit(1)
-print("All campaign checks passed.")
+if __name__ == "__main__":
+    if FAILS:
+        print(f"{len(FAILS)} FAILURES"); [print(" -", f) for f in FAILS]; sys.exit(1)
+    print("All campaign checks passed.")
+
+
+
+def test_checks(case):
+    """Each recorded check is reported as its own pytest test."""
+    assert case is not None, "harness recorded no checks — did it run?"
+    label, ok, detail = case
+    assert ok, f"{label}{' — ' + detail if detail else ''}"

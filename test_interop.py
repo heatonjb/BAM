@@ -12,12 +12,17 @@ import sys
 FAILS: list[str] = []
 
 
+RECORDS: list = []
+
+
 def check(label, cond, detail=""):
-    if cond:
+    ok = bool(cond)
+    RECORDS.append((str(label), ok, str(detail)))
+    if ok:
         print(f"  PASS  {label}")
     else:
         print(f"  FAIL  {label}{' — ' + detail if detail else ''}")
-        FAILS.append(label)
+        FAILS.append(str(label))
 
 
 from mvp.multiagent import interop as IO
@@ -158,9 +163,18 @@ check("document lists states", "completed" in doc["states"])
 check("document lists domains", "marketing" in doc["domains"])
 
 print()
-if FAILS:
-    print(f"{len(FAILS)} FAILURES:")
-    for f in FAILS:
-        print("  -", f)
-    sys.exit(1)
-print("All interop checks passed.")
+if __name__ == "__main__":
+    if FAILS:
+        print(f"{len(FAILS)} FAILURES:")
+        for f in FAILS:
+            print("  -", f)
+        sys.exit(1)
+    else:
+        print("All interop checks passed.")
+    sys.exit(1 if FAILS else 0)
+
+def test_checks(case):
+    """Each recorded check is reported as its own pytest test."""
+    assert case is not None, "harness recorded no checks — did it run?"
+    label, ok, detail = case
+    assert ok, f"{label}{' — ' + detail if detail else ''}"

@@ -149,6 +149,29 @@ This MVP implements the research from 37 files in `research/`:
 
 See `brief.md` for the full research brief.
 
+## Tests
+
+The suites are written as runnable scripts that record each assertion as it runs,
+plus a `conftest.py` bridge that turns every recorded assertion into its own
+pytest test. Both invocation styles work, and both fail loudly:
+
+```bash
+python -m pytest -q            # 205 tests, one per assertion, named individually
+python test_montecarlo.py      # standalone: prints a report, exits non-zero on failure
+```
+
+| File | Checks | Covers |
+| --- | --- | --- |
+| `test_montecarlo.py` | 65 | sampler integrity, bands, copula marginals, risk ranking |
+| `test_interop.py` | 45 | agent dispatch, envelope caps, protocol, reconciliation |
+| `test_tenancy.py` | 30 | cross-tenant isolation, leak checks on every route |
+| `test_benchmarking.py` | 26 | metric extraction, cohort widening, intervention ledger |
+| `test_campaign.py` | 22 | public-data pipeline, provenance, no-send guarantee |
+| `test_types.py` | 17 | template inheritance, overrides, sibling isolation |
+
+Failure output names the individual check, e.g.
+`FAILED test_types.py::test_checks[00 café inherits retail lineage]`.
+
 ## Tech Stack
 
 - **Python 3.11** — data pipeline, analysis engine
