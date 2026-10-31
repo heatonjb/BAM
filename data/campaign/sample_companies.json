@@ -1,0 +1,59 @@
+[
+  {
+    "number": "11223344",
+    "name": "Harbour Lane Coffee Ltd",
+    "sic_codes": [
+      "56102"
+    ],
+    "status": "active",
+    "incorporated": "2024-11-04",
+    "accounts_category": "micro-entity",
+    "last_accounts": "2026-08-01",
+    "address": "12 Harbour Lane, Brighton, BN1 2AA",
+    "region": "East Sussex",
+    "website": "harbourlanecoffee.co.uk",
+    "contact_email": "hello@harbourlanecoffee.co.uk"
+  },
+  {
+    "number": "09988776",
+    "name": "Northwind Software Ltd",
+    "sic_codes": [
+      "62012"
+    ],
+    "status": "active",
+    "incorporated": "2019-03-12",
+    "accounts_category": "small",
+    "last_accounts": "2026-09-20",
+    "address": "40 Deansgate, Manchester, M3 2AY",
+    "region": "Greater Manchester",
+    "contact_email": "ops@northwindsoftware.com"
+  },
+  {
+    "number": "07765432",
+    "name": "Ridgeway Retail Group Ltd",
+    "sic_codes": [
+      "47110"
+    ],
+    "status": "active",
+    "incorporated": "2021-06-01",
+    "accounts_category": "small",
+    "last_accounts": "2024-02-11",
+    "address": "8 High Street, Reading, RG1 1AB",
+    "region": "Berkshire",
+    "contact_email": "contact@ridgewayretail.co.uk"
+  },
+  {
+    "number": "05544332",
+    "name": "Quiet Books Ltd",
+    "sic_codes": [
+      "70229"
+    ],
+    "status": "dissolved",
+    "incorporated": "2015-01-09",
+    "accounts_category": "micro-entity",
+    "last_accounts": "2023-01-09",
+    "address": "1 Old Road, Leeds, LS1 4AA",
+    "region": "West Yorkshire",
+    "contact_email": "info@quietbooks.co.uk"
+  }
+]

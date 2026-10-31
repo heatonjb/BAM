@@ -1,0 +1,264 @@
+{
+  "source": "fixture",
+  "count": 3,
+  "candidates": [
+    {
+      "company": "Harbour Lane Coffee Ltd",
+      "number": "11223344",
+      "model": {
+        "record": {
+          "number": "11223344",
+          "name": "Harbour Lane Coffee Ltd",
+          "sic_codes": [
+            "56102"
+          ],
+          "status": "active",
+          "incorporated": "2024-11-04",
+          "accounts_category": "micro-entity",
+          "last_accounts": "2026-08-01",
+          "address": "12 Harbour Lane, Brighton, BN1 2AA",
+          "region": "East Sussex",
+          "website": "harbourlanecoffee.co.uk",
+          "business_type": "coffee_shop",
+          "age_years": 2.0
+        },
+        "business_type": "coffee_shop",
+        "confidence": "low",
+        "filed_facts": {
+          "sic_codes": [
+            "56102"
+          ],
+          "incorporated": "2024-11-04",
+          "age_years": 2.0,
+          "accounts_category": "micro-entity",
+          "accounts_overdue": false
+        },
+        "metrics": [
+          {
+            "name": "annual_revenue",
+            "value": 300000.0,
+            "unit": "GBP",
+            "provenance": "assumed",
+            "note": "midpoint of the micro-entity band; not filed"
+          },
+          {
+            "name": "gross_margin",
+            "value": 70.0,
+            "unit": "%",
+            "provenance": "derived",
+            "note": "sector median for coffee_shop"
+          },
+          {
+            "name": "staff_cost",
+            "value": 96000.0,
+            "unit": "GBP",
+            "provenance": "derived",
+            "note": "32% of assumed revenue"
+          },
+          {
+            "name": "operating_profit",
+            "value": 18000.0,
+            "unit": "GBP",
+            "provenance": "derived",
+            "note": "6% operating margin"
+          }
+        ]
+      },
+      "top_insight": {
+        "headline": "Gross margin around 70% for a coffee shop",
+        "detail": "That is the sector figure, not yours. At that margin every \u00a31 of revenue leaves about 70p before staff and overheads.",
+        "question": "Is 70% close to your actual gross margin?",
+        "strength": 0.72,
+        "basis": "derived \u2014 sector ratio"
+      },
+      "message": {
+        "to": "hello@harbourlanecoffee.co.uk",
+        "subject": "Gross margin around 70% for a coffee shop \u2014 quick question",
+        "body": "Hi Harbour,\n\nI was looking at Harbour Lane Coffee Ltd on Companies House (company 11223344).\n\nThat is the sector figure, not yours. At that margin every \u00a31 of revenue leaves about 70p before staff and overheads.\n\nIs 70% close to your actual gross margin?\n\nI built a tool that models a business as a connected graph \u2014 costs, volume and cash \u2014 and then simulates which change is actually worth making. For a coffee shop your shape usually has one or two lines that dominate everything else.\n\nI can send you a one-page reading of what that would look like for you. No charge, and you will be able to tell in about ten seconds whether my assumptions are wrong.\n\nWorth a look?\n\nJon Heaton\nBAM, United Kingdom\n\n--\nYou are receiving this once, as a business contact, on the basis of legitimate interest. Reply 'no' and I will not contact you again.",
+        "company": "Harbour Lane Coffee Ltd",
+        "insight_basis": "derived \u2014 sector ratio",
+        "compliance": {
+          "basis": "legitimate_interest_b2b",
+          "sender_identified": "yes",
+          "opt_out": "reply_no",
+          "one_contact_only": "yes",
+          "data_source": "Companies House public register"
+        }
+      }
+    },
+    {
+      "company": "Northwind Software Ltd",
+      "number": "09988776",
+      "model": {
+        "record": {
+          "number": "09988776",
+          "name": "Northwind Software Ltd",
+          "sic_codes": [
+            "62012"
+          ],
+          "status": "active",
+          "incorporated": "2019-03-12",
+          "accounts_category": "small",
+          "last_accounts": "2026-09-20",
+          "address": "40 Deansgate, Manchester, M3 2AY",
+          "region": "Greater Manchester",
+          "website": null,
+          "business_type": "developer_tools",
+          "age_years": 7.6
+        },
+        "business_type": "developer_tools",
+        "confidence": "medium",
+        "filed_facts": {
+          "sic_codes": [
+            "62012"
+          ],
+          "incorporated": "2019-03-12",
+          "age_years": 7.6,
+          "accounts_category": "small",
+          "accounts_overdue": false
+        },
+        "metrics": [
+          {
+            "name": "annual_revenue",
+            "value": 1500000.0,
+            "unit": "GBP",
+            "provenance": "assumed",
+            "note": "midpoint of the small band; not filed"
+          },
+          {
+            "name": "gross_margin",
+            "value": 78.0,
+            "unit": "%",
+            "provenance": "derived",
+            "note": "sector median for developer_tools"
+          },
+          {
+            "name": "staff_cost",
+            "value": 675000.0,
+            "unit": "GBP",
+            "provenance": "derived",
+            "note": "45% of assumed revenue"
+          },
+          {
+            "name": "operating_profit",
+            "value": 180000.0,
+            "unit": "GBP",
+            "provenance": "derived",
+            "note": "12% operating margin"
+          }
+        ]
+      },
+      "top_insight": {
+        "headline": "Gross margin around 78% for a developer tools",
+        "detail": "That is the sector figure, not yours. At that margin every \u00a31 of revenue leaves about 78p before staff and overheads.",
+        "question": "Is 78% close to your actual gross margin?",
+        "strength": 0.72,
+        "basis": "derived \u2014 sector ratio"
+      },
+      "message": {
+        "to": "ops@northwindsoftware.com",
+        "subject": "Gross margin around 78% for a developer tools \u2014 quick question",
+        "body": "Hi Northwind,\n\nI was looking at Northwind Software Ltd on Companies House (company 09988776).\n\nThat is the sector figure, not yours. At that margin every \u00a31 of revenue leaves about 78p before staff and overheads.\n\nIs 78% close to your actual gross margin?\n\nI built a tool that models a business as a connected graph \u2014 costs, volume and cash \u2014 and then simulates which change is actually worth making. For a developer tools your shape usually has one or two lines that dominate everything else.\n\nI can send you a one-page reading of what that would look like for you. No charge, and you will be able to tell in about ten seconds whether my assumptions are wrong.\n\nWorth a look?\n\nJon Heaton\nBAM, United Kingdom\n\n--\nYou are receiving this once, as a business contact, on the basis of legitimate interest. Reply 'no' and I will not contact you again.",
+        "company": "Northwind Software Ltd",
+        "insight_basis": "derived \u2014 sector ratio",
+        "compliance": {
+          "basis": "legitimate_interest_b2b",
+          "sender_identified": "yes",
+          "opt_out": "reply_no",
+          "one_contact_only": "yes",
+          "data_source": "Companies House public register"
+        }
+      }
+    },
+    {
+      "company": "Ridgeway Retail Group Ltd",
+      "number": "07765432",
+      "model": {
+        "record": {
+          "number": "07765432",
+          "name": "Ridgeway Retail Group Ltd",
+          "sic_codes": [
+            "47110"
+          ],
+          "status": "active",
+          "incorporated": "2021-06-01",
+          "accounts_category": "small",
+          "last_accounts": "2024-02-11",
+          "address": "8 High Street, Reading, RG1 1AB",
+          "region": "Berkshire",
+          "website": null,
+          "business_type": "retail",
+          "age_years": 5.4
+        },
+        "business_type": "retail",
+        "confidence": "medium",
+        "filed_facts": {
+          "sic_codes": [
+            "47110"
+          ],
+          "incorporated": "2021-06-01",
+          "age_years": 5.4,
+          "accounts_category": "small",
+          "accounts_overdue": true
+        },
+        "metrics": [
+          {
+            "name": "annual_revenue",
+            "value": 1500000.0,
+            "unit": "GBP",
+            "provenance": "assumed",
+            "note": "midpoint of the small band; not filed"
+          },
+          {
+            "name": "gross_margin",
+            "value": 38.0,
+            "unit": "%",
+            "provenance": "derived",
+            "note": "sector median for retail"
+          },
+          {
+            "name": "staff_cost",
+            "value": 270000.0,
+            "unit": "GBP",
+            "provenance": "derived",
+            "note": "18% of assumed revenue"
+          },
+          {
+            "name": "operating_profit",
+            "value": 75000.0,
+            "unit": "GBP",
+            "provenance": "derived",
+            "note": "5% operating margin"
+          }
+        ]
+      },
+      "top_insight": {
+        "headline": "Your accounts filing looks overdue",
+        "detail": "The last accounts on file are more than twelve months old. Late filing carries an automatic penalty that rises with delay.",
+        "question": "Is that a filing-timing issue, or are the numbers not ready?",
+        "strength": 0.95,
+        "basis": "filed \u2014 last_accounts date"
+      },
+      "message": {
+        "to": "contact@ridgewayretail.co.uk",
+        "subject": "Your accounts filing looks overdue \u2014 quick question",
+        "body": "Hi Ridgeway,\n\nI was looking at Ridgeway Retail Group Ltd on Companies House (company 07765432).\n\nThe last accounts on file are more than twelve months old. Late filing carries an automatic penalty that rises with delay.\n\nIs that a filing-timing issue, or are the numbers not ready?\n\nI built a tool that models a business as a connected graph \u2014 costs, volume and cash \u2014 and then simulates which change is actually worth making. For a retail your shape usually has one or two lines that dominate everything else.\n\nI can send you a one-page reading of what that would look like for you. No charge, and you will be able to tell in about ten seconds whether my assumptions are wrong.\n\nWorth a look?\n\nJon Heaton\nBAM, United Kingdom\n\n--\nYou are receiving this once, as a business contact, on the basis of legitimate interest. Reply 'no' and I will not contact you again.",
+        "company": "Ridgeway Retail Group Ltd",
+        "insight_basis": "filed \u2014 last_accounts date",
+        "compliance": {
+          "basis": "legitimate_interest_b2b",
+          "sender_identified": "yes",
+          "opt_out": "reply_no",
+          "one_contact_only": "yes",
+          "data_source": "Companies House public register"
+        }
+      }
+    }
+  ],
+  "skipped": [
+    {
+      "company": "Quiet Books Ltd",
+      "reason": "ineligible or suppressed"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+company,number,email,subject,insight_basis,confidence
+Harbour Lane Coffee Ltd,11223344,hello@harbourlanecoffee.co.uk,Gross margin around 70% for a coffee shop — quick question,derived — sector ratio,low
+Northwind Software Ltd,09988776,ops@northwindsoftware.com,Gross margin around 78% for a developer tools — quick question,derived — sector ratio,medium
+Ridgeway Retail Group Ltd,07765432,contact@ridgewayretail.co.uk,Your accounts filing looks overdue — quick question,filed — last_accounts date,medium
