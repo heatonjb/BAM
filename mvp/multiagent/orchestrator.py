@@ -30,6 +30,7 @@ from .control_models import ControlModel, get_runner
 from .external import ConnectorRegistry, build_default_registry
 from .hypothesis import Hypothesis, Initiative, InitiativeStatus, OptimisationPlan
 from .knowledge import HistoricalKnowledgeBase
+from .capabilities import get_tenant_mechanism
 from .mechanisms import get_mechanism
 from .montecarlo import (
     DriverSet, MonteCarloEngine, MonteCarloResult, drivers_from_graph, simulate,
@@ -179,6 +180,7 @@ class MultiAgentOrchestrator:
                            volume_lift: float = 0.0,
                            curve: Optional[AdoptionCurve] = None,
                            liability_treatment: Optional[str] = None,
+                           tenant_id: Optional[str] = None,
                            **mechanism_params: Any) -> ProjectionResult:
         """Project an initiative's mechanism over ``months`` and attach the result.
 
@@ -194,7 +196,15 @@ class MultiAgentOrchestrator:
                 "MultiAgentOrchestrator.business)"
             )
         baseline = baseline_from_business(business)
-        mechanism = get_mechanism(mechanism_name, **mechanism_params)
+        # Tenant agents own which mechanisms exist; core only knows families.
+        # With tenant_id set, resolution goes through the tenant's declarations
+        # so one tenant can never instantiate another's commercial terms.
+        if tenant_id:
+            mechanism = get_tenant_mechanism(
+                tenant_id, mechanism_name, overrides=mechanism_params or None
+            )
+        else:
+            mechanism = get_mechanism(mechanism_name, **mechanism_params)
         engine = ProjectionEngine(baseline, volume_lift=volume_lift, months=months)
         result = engine.project(mechanism, curve=curve,
                                 liability_treatment=liability_treatment)

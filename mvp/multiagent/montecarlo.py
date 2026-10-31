@@ -44,6 +44,8 @@ import statistics
 from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple
 
+from .breakeven import break_even_lift
+from .capabilities import get_tenant_mechanism
 from .mechanisms import Mechanism, MechanismEffect, get_mechanism
 from .projection import (
     AdoptionCurve,
@@ -912,6 +914,8 @@ def simulate(
     curve_params: Optional[Dict[str, float]] = None,
     baseline: Optional[Dict[str, float]] = None,
     constraint_probe: Optional[Callable[[ProjectionResult], bool]] = None,
+    tenant_id: Optional[str] = None,
+    liability_treatment: Optional[str] = None,
 ) -> MonteCarloResult:
     """Simulate an outcome range without needing an Initiative record.
 
@@ -920,7 +924,13 @@ def simulate(
     ``graph`` is only used to derive drivers from the target node's history.
     """
     base = dict(baseline) if baseline else baseline_from_business(business)
-    mech = get_mechanism(mechanism_name, **(mechanism_params or {}))
+    if tenant_id:
+        # Tenant agents declare their own mechanisms; core supplies families.
+        mech = get_tenant_mechanism(
+            tenant_id, mechanism_name, overrides=mechanism_params or None
+        )
+    else:
+        mech = get_mechanism(mechanism_name, **(mechanism_params or {}))
     drivers = drivers_from_graph(
         graph,
         node_id,
@@ -936,7 +946,38 @@ def simulate(
         base, mech, drivers, months=months,
         curve_kind=curve_kind, curve_params=curve_params,
     )
-    return engine.run(draws=draws, seed=seed, constraint_probe=constraint_probe)
+    result = engine.run(draws=draws, seed=seed, constraint_probe=constraint_probe)
+
+    # Break-even inversion: the generic capability that turns "0% chance of
+    # profit" into "needs +X% volume". Attached to stats so every consumer —
+    # UI, agent envelope, CLI — sees the same actionable threshold.
+    try:
+        be = break_even_lift(
+            mech,
+            base,
+            months=months,
+            curve=None,
+            liability_treatment=liability_treatment,
+        )
+        result.stats["break_even"] = be.to_dict()
+        result.stats["break_even_statement"] = be.as_statement(
+            getattr(mech, "label", "") or getattr(mech, "name", "this initiative")
+        )
+        # Guard against the flat-zero being misread as a forecast: if no volume
+        # response was supplied, P(profit) reflects the mechanism's cost alone.
+        if volume_lift in (None, 0.0) and be.zero_lift_delta < 0:
+            result.stats["volume_response_assumed"] = False
+            result.stats["interpretation"] = (
+                "No demand response assumed. P(profit) here is the probability "
+                "that the mechanism's direct cost is covered without any volume "
+                "uplift — read the break-even threshold instead."
+            )
+        else:
+            result.stats["volume_response_assumed"] = True
+    except Exception as exc:  # never let an optional diagnostic break a run
+        result.stats["break_even_error"] = f"{type(exc).__name__}: {exc}"
+
+    return result
 
 
 __all__ = [
