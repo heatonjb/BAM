@@ -86,3 +86,10 @@
             .sparkline-container, .trend-arrow, .constraint-badge, .insights-btn { display: none; }
         }
     
+
+        /* ── Monte Carlo outcome range ───────────────────────────────── */
+        .mc-lede { color:#334155; line-height:1.55; margin:0.8rem 0; font-size:0.85rem; }
+        .mc-sub { color:#64748b; font-size:0.72rem; margin-bottom:0.35rem; }
+        .mc-caption { color:#94a3b8; font-size:0.68rem; line-height:1.45; margin-top:0.3rem; }
+        .mc-foot { color:#94a3b8; font-size:0.65rem; margin-top:0.7rem; font-variant-numeric:tabular-nums; }
+        .ip-dot:hover { r:5; }

@@ -1,0 +1,201 @@
+{
+  "company": "JONCO COFFEE LIMITED",
+  "company_number": "15999847",
+  "period": {
+    "start": "2024-10-01",
+    "end": "2024-12-31",
+    "description": "Q4 2024 (3 months)"
+  },
+  "currency": "GBP",
+  "monthly": {
+    "2024-10": {
+      "revenue": {
+        "total": 19415.1,
+        "by_category": {
+          "coffee": 11890.5,
+          "pastry": 3920.3,
+          "hot_drink": 2680.2,
+          "cold_drink": 924.1
+        },
+        "transaction_count": 3120,
+        "average_transaction": 6.22
+      },
+      "cost_of_goods_sold": {
+        "total": 4790.0,
+        "as_pct_of_revenue": 24.7
+      },
+      "gross_profit": {
+        "amount": 14625.1,
+        "margin_pct": 75.3
+      },
+      "staff_costs": {
+        "total_employer_cost": 11124.3,
+        "as_pct_of_revenue": 57.3,
+        "revenue_per_staff_hour": 20.47
+      },
+      "overheads": {
+        "total": 4674,
+        "as_pct_of_revenue": 24.1
+      },
+      "total_costs": 20588.3,
+      "operating_profit": {
+        "amount": -1173.2,
+        "margin_pct": -6.0
+      },
+      "corporation_tax": {
+        "amount": 0,
+        "rate": 19.0
+      },
+      "net_profit": {
+        "amount": -1173.2,
+        "margin_pct": -6.0
+      },
+      "unit_economics": {
+        "revenue_per_transaction": 6.22,
+        "cogs_per_transaction": 1.54,
+        "gross_profit_per_transaction": 4.69,
+        "overhead_per_transaction": 1.5,
+        "net_profit_per_transaction": -0.38,
+        "break_even_transactions": 3370.0
+      }
+    },
+    "2024-11": {
+      "revenue": {
+        "total": 19122.4,
+        "by_category": {
+          "coffee": 11650.8,
+          "pastry": 3710.6,
+          "hot_drink": 2890.5,
+          "cold_drink": 870.5
+        },
+        "transaction_count": 3045,
+        "average_transaction": 6.28
+      },
+      "cost_of_goods_sold": {
+        "total": 4518.1,
+        "as_pct_of_revenue": 23.6
+      },
+      "gross_profit": {
+        "amount": 14604.3,
+        "margin_pct": 76.4
+      },
+      "staff_costs": {
+        "total_employer_cost": 10387.65,
+        "as_pct_of_revenue": 54.3,
+        "revenue_per_staff_hour": 21.59
+      },
+      "overheads": {
+        "total": 4674,
+        "as_pct_of_revenue": 24.4
+      },
+      "total_costs": 19579.75,
+      "operating_profit": {
+        "amount": -457.35,
+        "margin_pct": -2.4
+      },
+      "corporation_tax": {
+        "amount": 0,
+        "rate": 19.0
+      },
+      "net_profit": {
+        "amount": -457.35,
+        "margin_pct": -2.4
+      },
+      "unit_economics": {
+        "revenue_per_transaction": 6.28,
+        "cogs_per_transaction": 1.48,
+        "gross_profit_per_transaction": 4.8,
+        "overhead_per_transaction": 1.53,
+        "net_profit_per_transaction": -0.15,
+        "break_even_transactions": 3140.0
+      }
+    },
+    "2024-12": {
+      "revenue": {
+        "total": 23752.3,
+        "by_category": {
+          "coffee": 14280.4,
+          "pastry": 4850.2,
+          "hot_drink": 3520.8,
+          "cold_drink": 1100.9
+        },
+        "transaction_count": 3267,
+        "average_transaction": 7.27
+      },
+      "cost_of_goods_sold": {
+        "total": 5502.1,
+        "as_pct_of_revenue": 23.2
+      },
+      "gross_profit": {
+        "amount": 18250.2,
+        "margin_pct": 76.8
+      },
+      "staff_costs": {
+        "total_employer_cost": 11674.1,
+        "as_pct_of_revenue": 49.1,
+        "revenue_per_staff_hour": 23.87
+      },
+      "overheads": {
+        "total": 4674,
+        "as_pct_of_revenue": 19.7
+      },
+      "total_costs": 21850.2,
+      "operating_profit": {
+        "amount": 1902.1,
+        "margin_pct": 8.0
+      },
+      "corporation_tax": {
+        "amount": 361.4,
+        "rate": 19.0
+      },
+      "net_profit": {
+        "amount": 1540.7,
+        "margin_pct": 6.5
+      },
+      "unit_economics": {
+        "revenue_per_transaction": 7.27,
+        "cogs_per_transaction": 1.68,
+        "gross_profit_per_transaction": 5.59,
+        "overhead_per_transaction": 1.43,
+        "net_profit_per_transaction": 0.47,
+        "break_even_transactions": 2927.0
+      }
+    }
+  },
+  "quarterly_total": {
+    "revenue": {
+      "total": 62289.8,
+      "transaction_count": 9432,
+      "average_transaction": 6.6
+    },
+    "cost_of_goods_sold": {
+      "total": 14810.2,
+      "as_pct_of_revenue": 23.8
+    },
+    "gross_profit": {
+      "amount": 47479.6,
+      "margin_pct": 76.2
+    },
+    "staff_costs": {
+      "total_employer_cost": 33186.05,
+      "as_pct_of_revenue": 53.3
+    },
+    "overheads": {
+      "total": 14022,
+      "as_pct_of_revenue": 22.5
+    },
+    "total_costs": 62018.25,
+    "operating_profit": {
+      "amount": 271.55,
+      "margin_pct": 0.4
+    },
+    "corporation_tax": {
+      "amount": 51.59,
+      "rate": 19.0
+    },
+    "net_profit": {
+      "amount": 219.96,
+      "margin_pct": 0.4
+    }
+  }
+}

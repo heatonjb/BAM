@@ -457,6 +457,9 @@
               +  '</select></div><div id="ipChart"></div>'
               +  '<details style="margin-top:0.5rem;"><summary style="color:#777;font-size:0.72rem;cursor:pointer;">Table view — all impacted nodes</summary>' + projectionTable(imp) + '</details></div>';
 
+            // 4b. Outcome range (Monte Carlo)
+            h += '<div class="ip-section"><h4>Outcome range</h4><div id="ipMC"></div></div>';
+
             // 5. Progress
             h += '<div class="ip-section"><h4>Progress</h4><div id="ipProgress">';
             if (!d.active) h += '<p style="color:#94a3b8;">Save this as an active initiative to track progress against the projection.</p>';
@@ -466,6 +469,7 @@
             document.getElementById('ipBody').innerHTML = h;
             drawGraph();
             drawProjection();
+            renderMonteCarlo();
         }
 
         function stat(k, v) { return '<div class="ip-stat"><div class="k">' + k + '</div><div class="v">' + v + '</div></div>'; }
@@ -554,6 +558,206 @@
                 r.addEventListener('mousemove', moveTip);
                 r.addEventListener('mouseleave', () => { cross.style.display = 'none'; hideTip(); });
             });
+        }
+
+        // ── Monte Carlo outcome range ───────────────────────────────────
+        // Three views of the same distribution. Conventions applied:
+        //  * nested intervals use one hue at graded lightness — never
+        //    categorical colours, which would imply unrelated categories;
+        //  * direct labels at the series end instead of a legend;
+        //  * probability is shown as frequency (one dot = 5% of draws) rather
+        //    than as density, because people read frequency correctly;
+        //  * the sensitivity chart is a diverging tornado sorted by strength.
+        const DRIVER_LABEL = {
+            'engine:volume_lift': 'Volume lift at full adoption',
+            'curve:peak': 'Adoption plateau',
+            'curve:ramp': 'Months to reach plateau',
+            'mechanism:n_paid': 'Loyalty ratio (n_paid)',
+            'mechanism:adoption_rate': 'Adoption rate',
+            'baseline:revenue': 'Baseline revenue',
+            'baseline:cogs': 'Baseline COGS',
+            'baseline:labour': 'Baseline labour',
+            'baseline:overheads': 'Baseline overheads'
+        };
+        function driverLabel(s) {
+            if (DRIVER_LABEL[s.target]) return DRIVER_LABEL[s.target];
+            const raw = String(s.driver || s.target || '');
+            const tail = raw.split(/[.:]/).pop();
+            return tail.replace(/_/g, ' ').replace(/^./, c => c.toUpperCase());
+        }
+        function pct(v) { return (Number(v || 0) * 100).toFixed(0) + '%'; }
+
+        function renderMonteCarlo() {
+            const el = document.getElementById('ipMC');
+            if (!el) return;
+            const mc = ipData.monte_carlo;
+            if (!mc) {
+                el.innerHTML = '<p style="color:#64748b;line-height:1.55;margin:0 0 0.7rem;">A single projection is one guess dressed as a number. '
+                    + 'This runs 2,000 simulations across the assumptions the projection is most sensitive to \u2014 the adoption ramp, '
+                    + 'the volume lift, and the target node\u2019s own historical volatility \u2014 and reports how wide the answer really is.</p>'
+                    + '<button class="ip-btn blue" id="ipMCBtn" onclick="runMonteCarlo(\'' + ipData.initiative.id + '\')">\u25b6 Run 2,000-draw simulation</button>'
+                    + '<div id="ipMCOut"></div>';
+                return;
+            }
+            const dp = mc.percentiles.delta_profit, pr = mc.probabilities;
+            let h = '<div class="ip-stats">'
+                + stat('P10 \u00b7 bad case', signedGbp(dp.p10))
+                + stat('Median', signedGbp(dp.p50))
+                + stat('P90 \u00b7 good case', signedGbp(dp.p90))
+                + stat('Chance of gain', pct(pr.positive))
+                + stat('Chance of payback', pct(pr.payback_in_horizon))
+                + stat('Worst decile', signedGbp(mc.expected_shortfall_10))
+                + '</div>';
+            h += '<p class="mc-lede">' + esc(mc.narrative) + '</p>';
+            h += '<div id="ipFan"></div>';
+            h += '<div class="mc-caption">Bands are 50% and 80% of simulated monthly operating profit; the line is the median. '
+               + 'Dashed line is the no-change baseline.</div>';
+            h += '<div id="ipDots" style="margin-top:1rem;"></div>';
+            h += '<div id="ipTornado" style="margin-top:1rem;"></div>';
+            h += '<p class="mc-foot">' + Number(mc.draws).toLocaleString() + ' draws \u00b7 ' + mc.months + ' months \u00b7 '
+               + esc(mc.mechanism || 'mechanism') + (mc.assumed_mechanism ? ' (assumed)' : '')
+               + ' \u00b7 seed ' + (mc.seed == null ? 'random' : mc.seed)
+               + (mc.computed_at ? ' \u00b7 ' + esc(String(mc.computed_at).slice(0, 10)) : '')
+               + '</p>';
+            el.innerHTML = h;
+            drawFan(mc);
+            drawDotStrip(mc);
+            drawTornado(mc);
+        }
+
+        function drawFan(mc) {
+            const el = document.getElementById('ipFan');
+            if (!el) return;
+            const bands = mc.monthly_bands || [];
+            if (!bands.length) { el.innerHTML = ''; return; }
+            const base = (mc.stats && mc.stats.baseline_monthly_profit) || 0;
+            const W = 760, H = 252, L = 66, R = 104, T = 14, B = 28;
+            let lo = Math.min(base, Math.min.apply(null, bands.map(b => b.p10)));
+            let hi = Math.max(base, Math.max.apply(null, bands.map(b => b.p90)));
+            const pad = (hi - lo) * 0.08 || Math.max(1, Math.abs(hi) * 0.02);
+            lo -= pad; hi += pad;
+            const n = bands.length;
+            const x = m => L + (W - L - R) * (m - 1) / Math.max(n - 1, 1);
+            const y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
+            const poly = (loK, hiK) => bands.map(b => x(b.month) + ',' + y(b[hiK]))
+                .concat(bands.slice().reverse().map(b => x(b.month) + ',' + y(b[loK]))).join(' ');
+            let s = '<svg id="ipFanSvg" width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;">';
+            for (let i = 0; i <= 3; i++) {
+                const v = lo + (hi - lo) * i / 3;
+                s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="#eef2f7"/>'
+                   + '<text x="' + (L - 8) + '" y="' + (y(v) + 3) + '" fill="#64748b" font-size="10" text-anchor="end">' + gbp(v) + '</text>';
+            }
+            s += '<polygon points="' + poly('p10', 'p90') + '" fill="#dbeafe"/>';
+            s += '<polygon points="' + poly('p25', 'p75') + '" fill="#93c5fd"/>';
+            s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(base) + '" y2="' + y(base) + '" stroke="#94a3b8" stroke-dasharray="4 4" stroke-width="1"/>';
+            s += '<polyline fill="none" stroke="#1d4ed8" stroke-width="2" stroke-linejoin="round" points="'
+               + bands.map(b => x(b.month) + ',' + y(b.p50)).join(' ') + '"/>';
+            bands.forEach(b => {
+                if (b.month === 1 || b.month % 3 === 0 || b.month === n) {
+                    s += '<text x="' + x(b.month) + '" y="' + (H - 9) + '" fill="#64748b" font-size="10" text-anchor="middle">M' + b.month + '</text>';
+                }
+            });
+            const last = bands[n - 1];
+            s += '<text x="' + (x(last.month) + 6) + '" y="' + (y(last.p90) + 3) + '" fill="#3b82f6" font-size="9.5">P90 ' + gbp(last.p90) + '</text>';
+            s += '<text x="' + (x(last.month) + 6) + '" y="' + (y(last.p50) + 3) + '" fill="#1d4ed8" font-size="10" font-weight="600">' + gbp(last.p50) + '</text>';
+            s += '<text x="' + (x(last.month) + 6) + '" y="' + (y(last.p10) + 3) + '" fill="#3b82f6" font-size="9.5">P10 ' + gbp(last.p10) + '</text>';
+            s += '<line id="ipFanCross" x1="0" x2="0" y1="' + T + '" y2="' + (H - B) + '" stroke="#94a3b8" stroke-width="1" style="display:none;"/>';
+            const slot = (W - L - R) / Math.max(n - 1, 1);
+            bands.forEach(b => {
+                s += '<rect class="ip-fan-hit" data-m="' + b.month + '" x="' + (x(b.month) - slot / 2) + '" y="' + T
+                   + '" width="' + slot + '" height="' + (H - T - B) + '" fill="transparent"/>';
+            });
+            s += '</svg>';
+            el.innerHTML = s;
+            const cross = document.getElementById('ipFanCross');
+            el.querySelectorAll('.ip-fan-hit').forEach(rect => {
+                const m = Number(rect.dataset.m);
+                const b = bands[m - 1];
+                const tip = '<b>Month ' + m + '</b><br>P90 ' + gbp(b.p90) + '/mo<br><b>Median ' + gbp(b.p50) + '/mo</b><br>P10 ' + gbp(b.p10) + '/mo'
+                          + '<br><span style="color:#999;">' + signedGbp(b.p50 - base) + ' vs baseline</span>';
+                rect.addEventListener('mouseenter', ev => { cross.setAttribute('x1', x(b.month)); cross.setAttribute('x2', x(b.month)); cross.style.display = ''; showTip(tip, ev); });
+                rect.addEventListener('mousemove', moveTip);
+                rect.addEventListener('mouseleave', () => { cross.style.display = 'none'; hideTip(); });
+            });
+        }
+
+        function drawDotStrip(mc) {
+            const el = document.getElementById('ipDots');
+            if (!el) return;
+            const q = mc.quantiles || [];
+            if (!q.length) { el.innerHTML = ''; return; }
+            const W = 760, H = 104, L = 24, R = 24, T = 12, B = 30;
+            const lo = Math.min(0, q[0]), hi = Math.max(0, q[q.length - 1]);
+            const pad = (hi - lo) * 0.06 || 1;
+            const x = v => L + (W - L - R) * ((v - (lo - pad)) / ((hi + pad) - (lo - pad)));
+            const rows = 5, rowH = 11;
+            let s = '<svg width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;">';
+            s += '<line x1="' + x(0) + '" x2="' + x(0) + '" y1="' + (T - 4) + '" y2="' + (H - B + 4) + '" stroke="#94a3b8" stroke-width="1"/>';
+            s += '<text x="' + x(0) + '" y="' + (H - 8) + '" fill="#64748b" font-size="9" text-anchor="middle">break-even</text>';
+            s += '<text x="' + x(lo) + '" y="' + (H - 8) + '" fill="#64748b" font-size="9" text-anchor="start">' + gbp(lo) + '</text>';
+            s += '<text x="' + x(hi) + '" y="' + (H - 8) + '" fill="#64748b" font-size="9" text-anchor="end">' + gbp(hi) + '</text>';
+            q.forEach((v, i) => {
+                const cy = T + 8 + (i % rows) * rowH;
+                const col = v >= 0 ? '#2563eb' : '#d95926';
+                s += '<circle class="ip-dot" data-v="' + v + '" cx="' + x(v).toFixed(1) + '" cy="' + cy + '" r="3.6" fill="' + col + '"/>';
+            });
+            s += '</svg>';
+            el.innerHTML = '<div class="mc-sub">Spread of the ' + mc.months + '-month cumulative result</div>' + s
+                + '<div class="mc-caption">Each dot is 5% of the simulated outcomes \u2014 21 dots cover all '
+                + Number(mc.draws).toLocaleString() + ' draws. Dots left of break-even are runs where the initiative lost money.</div>';
+        }
+
+        function drawTornado(mc) {
+            const el = document.getElementById('ipTornado');
+            if (!el) return;
+            const sens = (mc.sensitivity || []).slice(0, 7);
+            if (!sens.length) { el.innerHTML = ''; return; }
+            const W = 760, ROW = 27, PAD_T = 20, LABW = 260;
+            const H = PAD_T + sens.length * ROW + 24;
+            const plotL = LABW, plotR = W - 52, mid = plotL + (plotR - plotL) / 2;
+            const maxR = Math.max(0.2, Math.max.apply(null, sens.map(s => Math.abs(s.rank_correlation))));
+            const scale = v => (plotR - plotL) / 2 * (v / maxR);
+            let s = '<svg width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;">';
+            s += '<line x1="' + mid + '" x2="' + mid + '" y1="' + (PAD_T - 8) + '" y2="' + (H - 22) + '" stroke="#94a3b8" stroke-width="1"/>';
+            s += '<text x="' + mid + '" y="' + (H - 7) + '" fill="#64748b" font-size="9" text-anchor="middle">no effect on the answer</text>';
+            sens.forEach((d, i) => {
+                const yy = PAD_T + i * ROW;
+                const v = d.rank_correlation, w = Math.abs(scale(v));
+                const col = v >= 0 ? '#2563eb' : '#d95926';
+                const x0 = v >= 0 ? mid : mid - w;
+                s += '<text x="' + (plotL - 12) + '" y="' + (yy + 13) + '" fill="#334155" font-size="11" text-anchor="end">' + esc(driverLabel(d)) + '</text>';
+                s += '<rect x="' + x0 + '" y="' + (yy + 3) + '" width="' + Math.max(w, 1.5) + '" height="14" rx="2" fill="' + col + '" opacity="0.85"/>';
+                s += '<text x="' + (v >= 0 ? mid + w + 7 : mid - w - 7) + '" y="' + (yy + 14) + '" fill="#475569" font-size="10" text-anchor="' + (v >= 0 ? 'start' : 'end') + '">'
+                   + (v >= 0 ? '+' : '') + Number(v).toFixed(2) + '</text>';
+            });
+            s += '</svg>';
+            el.innerHTML = '<div class="mc-sub">What moves the answer</div>' + s
+                + '<div class="mc-caption">Rank correlation between each assumption and the ' + mc.months + '-month result. '
+                + 'A long bar means the outcome depends heavily on that assumption \u2014 go and measure it before committing. '
+                + 'Orange bars pull the other way; length matters more than sign.</div>';
+        }
+
+        async function runMonteCarlo(id) {
+            const btn = document.getElementById('ipMCBtn'), out = document.getElementById('ipMCOut');
+            if (btn) { btn.disabled = true; btn.textContent = 'Simulating\u2026'; }
+            if (out) out.innerHTML = '<p style="color:#64748b;font-size:0.75rem;margin-top:0.6rem;">Running 2,000 draws over 12 months\u2026</p>';
+            try {
+                const r = await fetch(tenantQS('/api/multiagent/initiatives/' + id + '/montecarlo'), {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ draws: 2000 })
+                });
+                const d = await r.json();
+                if (!d.ok) throw new Error(d.error || 'Simulation failed');
+                ipData.monte_carlo = d.monte_carlo;
+                if (ipData.initiative) {
+                    ipData.initiative.metadata = ipData.initiative.metadata || {};
+                    ipData.initiative.metadata.monte_carlo = d.monte_carlo;
+                }
+                renderMonteCarlo();
+            } catch (e) {
+                if (out) out.innerHTML = '<p style="color:#dc2626;font-size:0.75rem;">Error: ' + esc(e.message) + '</p>';
+                if (btn) { btn.disabled = false; btn.textContent = '\u25b6 Run 2,000-draw simulation'; }
+            }
         }
 
         function projectionTable(imp) {

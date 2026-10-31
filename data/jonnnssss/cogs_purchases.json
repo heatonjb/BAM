@@ -1,0 +1,449 @@
+{
+  "2024-10": {
+    "coffee_beans": {
+      "quantity_kg": 85,
+      "cost_per_kg": 22.0,
+      "supplier": "Has Bean Coffee Co",
+      "total": 1870.0
+    },
+    "filter_beans": {
+      "quantity_kg": 15,
+      "cost_per_kg": 18.0,
+      "supplier": "Has Bean Coffee Co",
+      "total": 270.0
+    },
+    "milk_whole": {
+      "quantity_litres": 420,
+      "cost_per_litre": 1.1,
+      "supplier": "Arla Foods",
+      "total": 462.0
+    },
+    "milk_oat": {
+      "quantity_litres": 180,
+      "cost_per_litre": 1.8,
+      "supplier": "Oatly UK",
+      "total": 324.0
+    },
+    "milk_almond": {
+      "quantity_litres": 60,
+      "cost_per_litre": 2.2,
+      "supplier": "Alpro UK",
+      "total": 132.0
+    },
+    "pastries_croissant": {
+      "quantity": 350,
+      "cost_per_unit": 1.05,
+      "supplier": "Bakers Delight Ltd",
+      "total": 367.5
+    },
+    "pastries_pain_au_chocolat": {
+      "quantity": 180,
+      "cost_per_unit": 1.1,
+      "supplier": "Bakers Delight Ltd",
+      "total": 198.0
+    },
+    "pastries_muffin": {
+      "quantity": 200,
+      "cost_per_unit": 0.95,
+      "supplier": "Bakers Delight Ltd",
+      "total": 190.0
+    },
+    "pastries_scone": {
+      "quantity": 120,
+      "cost_per_unit": 0.7,
+      "supplier": "Bakers Delight Ltd",
+      "total": 84.0
+    },
+    "pastries_cookie": {
+      "quantity": 250,
+      "cost_per_unit": 0.55,
+      "supplier": "Bakers Delight Ltd",
+      "total": 137.5
+    },
+    "chocolate_powder": {
+      "quantity_kg": 5,
+      "cost_per_kg": 12.0,
+      "supplier": "Callebaut UK",
+      "total": 60.0
+    },
+    "chai_concentrate": {
+      "quantity_litres": 10,
+      "cost_per_litre": 8.5,
+      "supplier": "TeaPigs Wholesale",
+      "total": 85.0
+    },
+    "smoothie_ingredients": {
+      "quantity_litres": 20,
+      "cost_per_litre": 4.2,
+      "supplier": "Fresh Direct",
+      "total": 84.0
+    },
+    "tea_bags": {
+      "quantity": 500,
+      "cost_per_unit": 0.06,
+      "supplier": "TeaPigs Wholesale",
+      "total": 30.0
+    },
+    "sugar_sachets": {
+      "quantity": 2000,
+      "cost_per_unit": 0.01,
+      "supplier": "Whittard Wholesale",
+      "total": 20.0
+    },
+    "cups_8oz": {
+      "quantity": 1500,
+      "cost_per_unit": 0.04,
+      "supplier": "Vegware",
+      "total": 60.0
+    },
+    "cups_12oz": {
+      "quantity": 2500,
+      "cost_per_unit": 0.05,
+      "supplier": "Vegware",
+      "total": 125.0
+    },
+    "lids_8oz": {
+      "quantity": 1500,
+      "cost_per_unit": 0.02,
+      "supplier": "Vegware",
+      "total": 30.0
+    },
+    "lids_12oz": {
+      "quantity": 2500,
+      "cost_per_unit": 0.03,
+      "supplier": "Vegware",
+      "total": 75.0
+    },
+    "napkins": {
+      "quantity": 5000,
+      "cost_per_unit": 0.005,
+      "supplier": "Vegware",
+      "total": 25.0
+    },
+    "stirrers": {
+      "quantity": 3000,
+      "cost_per_unit": 0.008,
+      "supplier": "Vegware",
+      "total": 24.0
+    },
+    "cleaning_chemicals": {
+      "quantity": 1,
+      "cost_per_unit": 45.0,
+      "supplier": "Ecolab",
+      "total": 45.0
+    },
+    "milk_cleaner": {
+      "quantity": 3,
+      "cost_per_unit": 12.0,
+      "supplier": "Urnex UK",
+      "total": 36.0
+    },
+    "water_filters": {
+      "quantity": 2,
+      "cost_per_unit": 28.0,
+      "supplier": "BWT Water",
+      "total": 56.0
+    },
+    "_month_total": 4790.0
+  },
+  "2024-11": {
+    "coffee_beans": {
+      "quantity_kg": 82,
+      "cost_per_kg": 22.0,
+      "supplier": "Has Bean Coffee Co",
+      "total": 1804.0
+    },
+    "filter_beans": {
+      "quantity_kg": 14,
+      "cost_per_kg": 18.0,
+      "supplier": "Has Bean Coffee Co",
+      "total": 252.0
+    },
+    "milk_whole": {
+      "quantity_litres": 400,
+      "cost_per_litre": 1.1,
+      "supplier": "Arla Foods",
+      "total": 440.0
+    },
+    "milk_oat": {
+      "quantity_litres": 170,
+      "cost_per_litre": 1.8,
+      "supplier": "Oatly UK",
+      "total": 306.0
+    },
+    "milk_almond": {
+      "quantity_litres": 55,
+      "cost_per_litre": 2.2,
+      "supplier": "Alpro UK",
+      "total": 121.0
+    },
+    "pastries_croissant": {
+      "quantity": 330,
+      "cost_per_unit": 1.05,
+      "supplier": "Bakers Delight Ltd",
+      "total": 346.5
+    },
+    "pastries_pain_au_chocolat": {
+      "quantity": 170,
+      "cost_per_unit": 1.1,
+      "supplier": "Bakers Delight Ltd",
+      "total": 187.0
+    },
+    "pastries_muffin": {
+      "quantity": 190,
+      "cost_per_unit": 0.95,
+      "supplier": "Bakers Delight Ltd",
+      "total": 180.5
+    },
+    "pastries_scone": {
+      "quantity": 110,
+      "cost_per_unit": 0.7,
+      "supplier": "Bakers Delight Ltd",
+      "total": 77.0
+    },
+    "pastries_cookie": {
+      "quantity": 240,
+      "cost_per_unit": 0.55,
+      "supplier": "Bakers Delight Ltd",
+      "total": 132.0
+    },
+    "chocolate_powder": {
+      "quantity_kg": 6,
+      "cost_per_kg": 12.0,
+      "supplier": "Callebaut UK",
+      "total": 72.0
+    },
+    "chai_concentrate": {
+      "quantity_litres": 10,
+      "cost_per_litre": 8.5,
+      "supplier": "TeaPigs Wholesale",
+      "total": 85.0
+    },
+    "smoothie_ingredients": {
+      "quantity_litres": 12,
+      "cost_per_litre": 4.2,
+      "supplier": "Fresh Direct",
+      "total": 50.4
+    },
+    "tea_bags": {
+      "quantity": 480,
+      "cost_per_unit": 0.06,
+      "supplier": "TeaPigs Wholesale",
+      "total": 28.8
+    },
+    "sugar_sachets": {
+      "quantity": 1800,
+      "cost_per_unit": 0.01,
+      "supplier": "Whittard Wholesale",
+      "total": 18.0
+    },
+    "cups_8oz": {
+      "quantity": 1400,
+      "cost_per_unit": 0.04,
+      "supplier": "Vegware",
+      "total": 56.0
+    },
+    "cups_12oz": {
+      "quantity": 2400,
+      "cost_per_unit": 0.05,
+      "supplier": "Vegware",
+      "total": 120.0
+    },
+    "lids_8oz": {
+      "quantity": 1400,
+      "cost_per_unit": 0.02,
+      "supplier": "Vegware",
+      "total": 28.0
+    },
+    "lids_12oz": {
+      "quantity": 2400,
+      "cost_per_unit": 0.03,
+      "supplier": "Vegware",
+      "total": 72.0
+    },
+    "napkins": {
+      "quantity": 4500,
+      "cost_per_unit": 0.005,
+      "supplier": "Vegware",
+      "total": 22.5
+    },
+    "stirrers": {
+      "quantity": 2800,
+      "cost_per_unit": 0.008,
+      "supplier": "Vegware",
+      "total": 22.4
+    },
+    "cleaning_chemicals": {
+      "quantity": 1,
+      "cost_per_unit": 45.0,
+      "supplier": "Ecolab",
+      "total": 45.0
+    },
+    "milk_cleaner": {
+      "quantity": 2,
+      "cost_per_unit": 12.0,
+      "supplier": "Urnex UK",
+      "total": 24.0
+    },
+    "water_filters": {
+      "quantity": 1,
+      "cost_per_unit": 28.0,
+      "supplier": "BWT Water",
+      "total": 28.0
+    },
+    "_month_total": 4518.1
+  },
+  "2024-12": {
+    "coffee_beans": {
+      "quantity_kg": 95,
+      "cost_per_kg": 22.0,
+      "supplier": "Has Bean Coffee Co",
+      "total": 2090.0
+    },
+    "filter_beans": {
+      "quantity_kg": 18,
+      "cost_per_kg": 18.0,
+      "supplier": "Has Bean Coffee Co",
+      "total": 324.0
+    },
+    "milk_whole": {
+      "quantity_litres": 480,
+      "cost_per_litre": 1.1,
+      "supplier": "Arla Foods",
+      "total": 528.0
+    },
+    "milk_oat": {
+      "quantity_litres": 200,
+      "cost_per_litre": 1.8,
+      "supplier": "Oatly UK",
+      "total": 360.0
+    },
+    "milk_almond": {
+      "quantity_litres": 70,
+      "cost_per_litre": 2.2,
+      "supplier": "Alpro UK",
+      "total": 154.0
+    },
+    "pastries_croissant": {
+      "quantity": 400,
+      "cost_per_unit": 1.05,
+      "supplier": "Bakers Delight Ltd",
+      "total": 420.0
+    },
+    "pastries_pain_au_chocolat": {
+      "quantity": 210,
+      "cost_per_unit": 1.1,
+      "supplier": "Bakers Delight Ltd",
+      "total": 231.0
+    },
+    "pastries_muffin": {
+      "quantity": 230,
+      "cost_per_unit": 0.95,
+      "supplier": "Bakers Delight Ltd",
+      "total": 218.5
+    },
+    "pastries_scone": {
+      "quantity": 140,
+      "cost_per_unit": 0.7,
+      "supplier": "Bakers Delight Ltd",
+      "total": 98.0
+    },
+    "pastries_cookie": {
+      "quantity": 290,
+      "cost_per_unit": 0.55,
+      "supplier": "Bakers Delight Ltd",
+      "total": 159.5
+    },
+    "chocolate_powder": {
+      "quantity_kg": 7,
+      "cost_per_kg": 12.0,
+      "supplier": "Callebaut UK",
+      "total": 84.0
+    },
+    "chai_concentrate": {
+      "quantity_litres": 12,
+      "cost_per_litre": 8.5,
+      "supplier": "TeaPigs Wholesale",
+      "total": 102.0
+    },
+    "smoothie_ingredients": {
+      "quantity_litres": 10,
+      "cost_per_litre": 4.2,
+      "supplier": "Fresh Direct",
+      "total": 42.0
+    },
+    "tea_bags": {
+      "quantity": 550,
+      "cost_per_unit": 0.06,
+      "supplier": "TeaPigs Wholesale",
+      "total": 33.0
+    },
+    "sugar_sachets": {
+      "quantity": 2200,
+      "cost_per_unit": 0.01,
+      "supplier": "Whittard Wholesale",
+      "total": 22.0
+    },
+    "cups_8oz": {
+      "quantity": 1700,
+      "cost_per_unit": 0.04,
+      "supplier": "Vegware",
+      "total": 68.0
+    },
+    "cups_12oz": {
+      "quantity": 2800,
+      "cost_per_unit": 0.05,
+      "supplier": "Vegware",
+      "total": 140.0
+    },
+    "lids_8oz": {
+      "quantity": 1700,
+      "cost_per_unit": 0.02,
+      "supplier": "Vegware",
+      "total": 34.0
+    },
+    "lids_12oz": {
+      "quantity": 2800,
+      "cost_per_unit": 0.03,
+      "supplier": "Vegware",
+      "total": 84.0
+    },
+    "napkins": {
+      "quantity": 5500,
+      "cost_per_unit": 0.005,
+      "supplier": "Vegware",
+      "total": 27.5
+    },
+    "stirrers": {
+      "quantity": 3200,
+      "cost_per_unit": 0.008,
+      "supplier": "Vegware",
+      "total": 25.6
+    },
+    "cleaning_chemicals": {
+      "quantity": 1,
+      "cost_per_unit": 45.0,
+      "supplier": "Ecolab",
+      "total": 45.0
+    },
+    "milk_cleaner": {
+      "quantity": 3,
+      "cost_per_unit": 12.0,
+      "supplier": "Urnex UK",
+      "total": 36.0
+    },
+    "water_filters": {
+      "quantity": 2,
+      "cost_per_unit": 28.0,
+      "supplier": "BWT Water",
+      "total": 56.0
+    },
+    "seasonal_decorations": {
+      "quantity": 1,
+      "cost_per_unit": 120.0,
+      "supplier": "Amazon Business",
+      "total": 120.0
+    },
+    "_month_total": 5502.1
+  }
+}

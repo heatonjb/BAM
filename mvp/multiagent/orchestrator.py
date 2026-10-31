@@ -18,6 +18,7 @@ per tenant with its own knowledge base path.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from ..context import get_research_context
@@ -30,6 +31,9 @@ from .external import ConnectorRegistry, build_default_registry
 from .hypothesis import Hypothesis, Initiative, InitiativeStatus, OptimisationPlan
 from .knowledge import HistoricalKnowledgeBase
 from .mechanisms import get_mechanism
+from .montecarlo import (
+    DriverSet, MonteCarloEngine, MonteCarloResult, drivers_from_graph, simulate,
+)
 from .projection import (
     AdoptionCurve, ProjectionEngine, ProjectionResult, baseline_from_business,
 )
@@ -198,6 +202,94 @@ class MultiAgentOrchestrator:
         initiative.projection_result = result
         initiative.mechanism = mechanism_name
         initiative.metadata["projection_baseline"] = baseline
+        return result
+
+    def monte_carlo_initiative(
+        self,
+        initiative: Initiative,
+        mechanism_name: Optional[str] = None,
+        *,
+        mechanism_params: Optional[Dict[str, Any]] = None,
+        months: int = 12,
+        draws: int = 2000,
+        seed: Optional[int] = None,
+        volume_lift: Optional[float] = None,
+        confidence: Optional[float] = None,
+        curve_kind: str = "logistic",
+        curve_params: Optional[Dict[str, float]] = None,
+        graph: Optional[BusinessGraph] = None,
+        business: Any = None,
+        constraint_probe=None,
+    ) -> MonteCarloResult:
+        """Attach a distribution of outcomes to an initiative.
+
+        ``project_initiative`` answers "what does this do if my assumptions
+        hold". This answers "how much could the answer move", by sampling the
+        assumptions the projection is most sensitive to — the target node's own
+        historical dispersion, the adoption ramp, and the mechanism's decision
+        parameters — and projecting a full P&L curve for every draw.
+
+        The result lands in ``initiative.metadata["monte_carlo"]`` so it travels
+        with the initiative through the API and the knowledge base, and a
+        two-number summary (P10/P90) is written to
+        ``initiative.metadata["predicted_range_gbp"]`` for list views that do
+        not want the full distribution.
+        """
+        business = business if business is not None else self.business
+        if business is None:
+            raise ValueError(
+                "monte_carlo_initiative needs a business object (pass business= or "
+                "set MultiAgentOrchestrator.business)"
+            )
+        assumed = False
+        if mechanism_name is None:
+            mechanism_name = getattr(initiative, "mechanism", None) or "loyalty_card"
+            assumed = getattr(initiative, "mechanism", None) is None
+        params = dict(mechanism_params or {})
+        if not params:
+            params = dict(initiative.metadata.get("mechanism_params") or {})
+        if not params and mechanism_name == "loyalty_card":
+            params = {"n_paid": 9}
+            assumed = True
+
+        conf = confidence
+        if conf is None:
+            try:
+                conf = float(initiative.metadata.get("confidence", 0.5))
+            except (TypeError, ValueError):
+                conf = 0.5
+
+        base = baseline_from_business(business)
+        mech = get_mechanism(mechanism_name, **params)
+        drivers = drivers_from_graph(
+            graph,
+            initiative.node_id,
+            confidence=conf,
+            base_lift=volume_lift,
+            mechanism=mech,
+            baseline=base,
+            months=months,
+        )
+        engine = MonteCarloEngine(
+            base, mech, drivers, months=months,
+            curve_kind=curve_kind, curve_params=curve_params,
+        )
+        result = engine.run(draws=draws, seed=seed, constraint_probe=constraint_probe)
+
+        payload = result.to_dict()
+        payload["mechanism"] = mechanism_name
+        payload["mechanism_params"] = params
+        payload["assumed_mechanism"] = assumed
+        payload["computed_at"] = datetime.now(timezone.utc).isoformat()
+        initiative.metadata["monte_carlo"] = payload
+        initiative.metadata["predicted_range_gbp"] = [
+            round(result.p10, 2), round(result.p90, 2),
+        ]
+        initiative.mechanism = mechanism_name
+        try:
+            self.knowledge.record_initiative(initiative)
+        except Exception:
+            pass
         return result
 
     def constraint_gate(self, projection: ProjectionResult,

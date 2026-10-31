@@ -850,10 +850,69 @@ def api_initiative_detail(initiative_id):
             "impact": impact,
             "graph": {"nodes": ids, "edges": _impact_edges(g, ids)},
             "progress_history": ini.metadata.get("progress_history", []),
+            "monte_carlo": ini.metadata.get("monte_carlo"),
+            "predicted_range_gbp": ini.metadata.get("predicted_range_gbp"),
         })
     except Exception as e:
         import traceback
         return jsonify({"ok": False, "error": str(e), "traceback": traceback.format_exc()}), 500
+
+
+@app.route("/api/multiagent/initiatives/<initiative_id>/montecarlo", methods=["POST"])
+def api_initiative_montecarlo(initiative_id):
+    """Run a Monte Carlo outcome range for one initiative.
+
+    The deterministic projection in the detail view is a single point. This
+    returns the distribution behind it: an 80% band on profit impact, the
+    probability the move is profit-positive, the probability of payback inside
+    the horizon, the worst-decile loss, and which assumption moves the answer
+    most. Body: draws, months, seed, mechanism, mechanism_params, volume_lift,
+    confidence. All optional — defaults are the ones the plan used.
+    """
+    data = request.get_json(silent=True) or {}
+    tenant = _current_tenant()
+    try:
+        ini = _find_initiative(initiative_id, tenant)
+        if not ini:
+            return jsonify({"ok": False, "error": "Initiative not found"}), 404
+
+        draws = int(data.get("draws", 2000))
+        draws = max(100, min(draws, 20000))
+        months = max(1, min(int(data.get("months", 12)), 60))
+
+        seed = data.get("seed")
+        seed = int(seed) if seed is not None else None
+
+        volume_lift = data.get("volume_lift")
+        volume_lift = float(volume_lift) if volume_lift is not None else None
+
+        confidence = data.get("confidence")
+        confidence = float(confidence) if confidence is not None else None
+
+        orch = get_orchestrator(tenant)
+        result = orch.monte_carlo_initiative(
+            ini,
+            data.get("mechanism"),
+            mechanism_params=data.get("mechanism_params"),
+            months=months,
+            draws=draws,
+            seed=seed,
+            volume_lift=volume_lift,
+            confidence=confidence,
+            graph=get_graph(tenant),
+            business=get_business(tenant),
+        )
+        return jsonify({
+            "ok": True,
+            "initiative_id": initiative_id,
+            "monte_carlo": ini.metadata.get("monte_carlo"),
+            "summary": result.summary(),
+            "narrative": result.narrative(),
+        })
+    except Exception as e:
+        import traceback
+        return jsonify({"ok": False, "error": str(e),
+                        "traceback": traceback.format_exc()}), 500
 
 
 @app.route("/api/multiagent/initiatives/<initiative_id>/activate", methods=["POST"])
