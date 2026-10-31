@@ -8,6 +8,7 @@ import uuid
 import time
 from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor
+from typing import Any, Dict, List, Optional
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, PROJECT_ROOT)
@@ -533,6 +534,95 @@ def api_onboarding_connect():
         return jsonify({"ok": bool(result.get("connect_link")), **result})
     except Exception as exc:
         return jsonify({"ok": False, "error": str(exc)}), 500
+
+
+# ── Agent interop ───────────────────────────────────────────────────────────
+# BAM decides; counterpart agents execute inside an envelope. The envelope is
+# checked here, on the way back in, before anything is recorded.
+
+from mvp.multiagent import interop as interop_mod  # noqa: E402
+
+_agent_tasks: Dict[str, Any] = {}
+_agent_tasks_lock = threading.Lock()
+
+
+@app.route("/api/agents", methods=["GET"])
+def api_agents():
+    """The counterpart agents this deployment knows about, plus the protocol."""
+    return jsonify({
+        "ok": True,
+        "agents": [a.to_dict() for a in interop_mod.default_directory()],
+        "protocol": interop_mod.protocol_document(),
+    })
+
+
+@app.route("/api/multiagent/initiatives/<initiative_id>/dispatch", methods=["POST"])
+def api_dispatch_initiative(initiative_id):
+    """Turn an initiative into an executable task for a counterpart agent.
+
+    Returns the exact request payload the external agent receives. Nothing is
+    sent from here — transport is a separate, auditable step.
+    """
+    tenant = _current_tenant()
+    try:
+        ini = _find_initiative(initiative_id, tenant)
+        if not ini:
+            return jsonify({"ok": False, "error": "Initiative not found"}), 404
+
+        decision = interop_mod.dispatch(ini)
+        if not decision.ok:
+            return jsonify({"ok": False, "error": decision.reason,
+                            "candidates": decision.candidates}), 409
+
+        task = decision.task
+        with _agent_tasks_lock:
+            _agent_tasks[task.id] = {"task": task, "tenant_id": tenant}
+        ini.metadata["pending_dispatch"] = {
+            "task_id": task.id, "agent_id": task.agent_id,
+            "action": task.action, "state": task.state.value,
+            "envelope": task.envelope.to_dict(),
+        }
+        return jsonify({
+            "ok": True,
+            "task": task.to_dict(),
+            "request": task.to_request(),
+            "reason": decision.reason,
+            "requires_approval": task.envelope.requires_approval,
+        })
+    except Exception as exc:
+        import traceback
+        return jsonify({"ok": False, "error": str(exc),
+                        "traceback": traceback.format_exc()}), 500
+
+
+@app.route("/api/multiagent/tasks/<task_id>/result", methods=["POST"])
+def api_task_result(task_id):
+    """Accept a counterpart agent's reply, enforce the envelope, reconcile."""
+    payload = request.get_json(silent=True) or {}
+    tenant = _current_tenant()
+    with _agent_tasks_lock:
+        record = _agent_tasks.get(task_id)
+    if not record or record["tenant_id"] != tenant:
+        return jsonify({"ok": False, "error": "Unknown task"}), 404
+
+    task = record["task"]
+    outcome = interop_mod.validate_result(task, payload)
+    if not outcome.ok:
+        task.state = interop_mod.TaskState.REJECTED
+        return jsonify({"ok": False, "error": "Result rejected",
+                        "violations": outcome.violations}), 422
+
+    task.state = outcome.state
+    result = interop_mod.reconcile(task, payload)
+    try:
+        ini = _find_initiative(task.initiative_id, tenant)
+        if ini:
+            ini.metadata["last_dispatch_result"] = result
+            ini.metadata.pop("pending_dispatch", None)
+            get_orchestrator(tenant).knowledge.record_initiative(ini)
+    except Exception:
+        pass
+    return jsonify({"ok": True, "state": task.state.value, "reconciliation": result})
 
 
 @app.route("/dashboard")
