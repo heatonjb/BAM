@@ -93,6 +93,23 @@ def _write_tenants(tenants: Dict[str, Any]) -> None:
     os.replace(tmp, TENANTS_PATH)
 
 
+def update_tenant_meta(tenant_id: str, patch: Dict[str, Any]) -> bool:
+    """Merge ``patch`` into one tenant's entry in tenants.json.
+
+    The single write path for per-tenant flags that are neither graph data nor
+    auth data (onboarding acknowledgements, "reading seen"). Returns False when
+    the tenant is unknown, so callers can report rather than silently drop state.
+    """
+    with _write_lock:
+        tenants = _read_tenants()
+        entry = tenants.get(tenant_id)
+        if entry is None:
+            return False
+        entry.update(patch)
+        _write_tenants(tenants)
+    return True
+
+
 def _unique_id(base: str, tenants: Dict[str, Any]) -> str:
     candidate = base
     n = 2

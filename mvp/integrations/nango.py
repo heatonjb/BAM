@@ -29,6 +29,32 @@ from typing import Any, Dict, List, Optional
 DEFAULT_BASE_URL = "https://api.nango.dev"
 
 
+def _as_list(payload: Any, *keys: str) -> List[Dict[str, Any]]:
+    """Rows from a Nango list response.
+
+    Nango wraps list payloads in ``{"data": [...]}``; a few endpoints (and older
+    deployments) use their own key (``configs``, ``connections``). Accept every
+    shape so callers get rows, never a wrapper.
+    """
+    if isinstance(payload, list):
+        return payload
+    if not isinstance(payload, dict):
+        return []
+    for key in keys + ("data",):
+        value = payload.get(key)
+        if isinstance(value, list):
+            return value
+    return []
+
+
+def _payload(payload: Any) -> Dict[str, Any]:
+    """Object from a Nango response that wraps it in ``{"data": {...}}``."""
+    if not isinstance(payload, dict):
+        return {}
+    inner = payload.get("data")
+    return inner if isinstance(inner, dict) else payload
+
+
 class NangoError(Exception):
     """Raised when Nango returns a non-2xx response."""
 
@@ -109,22 +135,23 @@ class NangoClient:
         except NangoError as e:
             return {"ok": False, "detail": str(e)}
 
+    # ── health / discovery ─────────────────────────────────────────────────
+
     def list_integrations(self) -> List[Dict[str, Any]]:
         """All integration configs in the Nango environment."""
-        data = self._request("GET", "/integrations")
-        return data.get("configs", data if isinstance(data, list) else [])
+        return _as_list(self._request("GET", "/integrations"), "configs")
 
     def list_connections(
         self, integration_id: Optional[str] = None, end_user_id: Optional[str] = None
     ) -> List[Dict[str, Any]]:
-        """Connections, optionally filtered by integration or end-user tag."""
+        """Connections, optionally filtered by integration or end user."""
         query: Dict[str, Any] = {}
         if integration_id:
-            query["integrationId"] = integration_id
+            query["providerConfigKey"] = integration_id
         if end_user_id:
-            query["tags[end_user_id]"] = end_user_id
-        data = self._request("GET", "/connections", query=query or None)
-        return data.get("connections", data if isinstance(data, list) else [])
+            query["endUserId"] = end_user_id
+        return _as_list(self._request("GET", "/connections", query=query or None),
+                        "connections")
 
     def get_connection(self, connection_id: str, integration_id: str) -> Dict[str, Any]:
         return self._request(
@@ -146,18 +173,24 @@ class NangoClient:
         end_user_id: str,
         end_user_email: Optional[str] = None,
         organization_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        """Create a hosted auth session. Returns a connect_link valid 30 minutes."""
-        tags: Dict[str, Any] = {"end_user_id": end_user_id}
+        """Create a hosted auth session. Returns ``connect_link`` (valid 30 min).
+
+        Nango scopes a session to an ``end_user`` object (the tenant, for BAM) and
+        an optional ``organization`` object. Anything else — legacy ``tags``,
+        ``metadata`` — is rejected or silently dropped by the API, so a tenant
+        bound any other way ends up with unattributable connections.
+        """
+        end_user: Dict[str, Any] = {"id": end_user_id}
         if end_user_email:
-            tags["end_user_email"] = end_user_email
+            end_user["email"] = end_user_email
+        body: Dict[str, Any] = {
+            "end_user": end_user,
+            "allowed_integrations": [integration_id],
+        }
         if organization_id:
-            tags["organization_id"] = organization_id
-        body: Dict[str, Any] = {"tags": tags, "allowed_integrations": [integration_id]}
-        if metadata:
-            body["metadata"] = metadata
-        return self._request("POST", "/connect/sessions", body=body)
+            body["organization"] = {"id": organization_id}
+        return _payload(self._request("POST", "/connect/sessions", body=body))
 
     # ── proxy ──────────────────────────────────────────────────────────────
 

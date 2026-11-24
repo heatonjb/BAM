@@ -1,0 +1,100 @@
+{% extends "shell.html" %}
+{% block title %}Change the model — BAM{% endblock %}
+{% block head %}
+<style>
+    .gc-wrap { max-width: 880px; }
+
+    .gc-lede { color: var(--text-muted); max-width: 62ch; line-height: 1.6; font-size: .88rem; }
+
+    .gc-note { border-radius: var(--radius-sm); padding: .8rem .95rem; font-size: .85rem;
+               margin-bottom: 1.2rem; white-space: pre-wrap; line-height: 1.5; }
+    .gc-note--ok   { background: var(--positive-soft); border: 1px solid var(--positive); }
+    .gc-note--warn { background: var(--warning-soft);  border: 1px solid var(--warning); }
+    .gc-note--bad  { background: var(--negative-soft); border: 1px solid var(--negative); }
+
+    .gc-card { background: var(--surface); border: 1px solid var(--border);
+               border-radius: var(--radius-sm); padding: .85rem 1rem; margin-bottom: .6rem; }
+    .gc-card__t { font-weight: 600; font-size: .9rem; }
+    .gc-card__r { color: var(--text-muted); font-size: .82rem; margin-top: .25rem; line-height: 1.45; }
+    .gc-card__m { color: var(--text-faint); font-size: .72rem; margin-top: .3rem;
+                  font-family: var(--mono); }
+    .gc-card form { margin-top: .6rem; }
+
+    textarea.gc-input { width: 100%; min-height: 5rem; padding: .7rem .85rem; font: inherit;
+                        font-size: .88rem; line-height: 1.5; color: var(--text);
+                        background: var(--surface); border: 1px solid var(--border-strong);
+                        border-radius: var(--radius-sm); resize: vertical; }
+    textarea.gc-input:focus { outline: none; border-color: var(--accent);
+                              box-shadow: 0 0 0 3px var(--accent-soft); }
+    .gc-actions { margin-top: .7rem; }
+
+    pre.gc-help { background: var(--surface); border: 1px solid var(--border);
+                  border-radius: var(--radius-sm); padding: .85rem 1rem; margin-top: 1.4rem;
+                  font-family: var(--mono); font-size: .74rem; color: var(--text-muted);
+                  white-space: pre-wrap; line-height: 1.6; }
+    .gc-h2 { font-size: 1.05rem; margin: 2rem 0 .7rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="gc-wrap">
+    <div class="page-head">
+        <h1>Change the model by chat</h1>
+        <p class="gc-lede">
+            Tell BAM how your business actually works and it will change the graph to match.
+            Value tweaks inside the policy band apply straight away; a new or removed node
+            changes every metric downstream, so that always waits for your yes.
+        </p>
+    </div>
+
+    {% if result %}
+        {% if result.applied %}
+        <div class="gc-note gc-note--ok">Applied — {{ result.summary }}.</div>
+        {% elif result.awaiting_confirmation %}
+        <div class="gc-note gc-note--warn">Proposed — {{ result.summary }}.
+{{ result.reason }}. Nothing has changed yet.</div>
+        <form method="post" action="/graph/chat/confirm">
+            <input type="hidden" name="mutation_id" value="{{ result.mutation_id }}">
+            <button class="btn btn-primary" type="submit">Apply this change</button>
+        </form>
+        {% else %}
+        <div class="gc-note gc-note--bad">{{ result.error }}</div>
+        {% endif %}
+    {% endif %}
+
+    {% if pending %}
+    <h2 class="gc-h2">Waiting for your confirmation</h2>
+    {% for p in pending %}
+    <div class="gc-card">
+        <div class="gc-card__t">{{ p.summary }}</div>
+        <div class="gc-card__r">{{ p.rationale }}</div>
+        <form method="post" action="/graph/chat/confirm">
+            <input type="hidden" name="mutation_id" value="{{ p.id }}">
+            <button class="btn btn-primary" type="submit">Apply</button>
+        </form>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <form method="post" action="/graph/chat">
+        <textarea class="gc-input" name="instruction" required autofocus
+                  placeholder="e.g. add cost node Packaging under Groceries value 250"></textarea>
+        <div class="gc-actions">
+            <button class="btn btn-primary" type="submit">Send</button>
+        </div>
+    </form>
+
+    <pre class="gc-help">{{ help }}</pre>
+
+    {% if recent %}
+    <h2 class="gc-h2">Recent changes</h2>
+    {% for r in recent %}
+    <div class="gc-card">
+        <div class="gc-card__t">{{ r.kind }} · {{ r.node_id }}</div>
+        <div class="gc-card__r">{{ r.rationale }}</div>
+        <div class="gc-card__m">{{ r.by }} · {{ r.at }}</div>
+    </div>
+    {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}

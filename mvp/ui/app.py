@@ -144,6 +144,62 @@ def get_business(tenant_id):
     return tenancy.registry.business(tenant_id)
 
 
+# ── Persistent graph shell ──────────────────────────────────────────────────
+_GRAPH_TYPES = {"revenue", "cost", "process", "input", "asset",
+                "liability", "metric", "aggregate"}
+
+
+def _shell_graph(tenant_id, max_outer=24):
+    """Compact level-0/1 projection of a tenant graph for the shell panel.
+
+    Every authenticated page renders this, so it must stay small: level 0 is
+    the P&L spine, level 1 is the first layer of drivers. Deeper nodes belong
+    in the drill view.
+    """
+    g = get_graph(tenant_id)
+    inner = [n for n in g.nodes.values() if n.level == 0]
+    outer = sorted((n for n in g.nodes.values() if n.level == 1),
+                   key=lambda n: abs(n.value), reverse=True)[:max_outer]
+    chosen = inner + outer
+    ids = {n.id for n in chosen}
+
+    nodes = []
+    for n in chosen:
+        nodes.append({
+            "id": n.id,
+            "label": n.label,
+            "short": (n.label[:15] + "…") if len(n.label) > 16 else n.label,
+            "type": n.node_type.value if n.node_type.value in _GRAPH_TYPES else "aggregate",
+            "value": round(n.value, 2),
+            "level": n.level,
+        })
+
+    edges = [{"source": e["source"], "target": e["target"]}
+             for e in g.edges
+             if e.get("source") in ids and e.get("target") in ids]
+
+    return {
+        "tenant": tenant_id,
+        "nodes": nodes,
+        "edges": edges,
+        "levels": len({n["level"] for n in nodes}),
+    }
+
+
+@app.context_processor
+def _inject_shell_graph():
+    """Give every page the tenant graph, without touching individual routes."""
+    if not getattr(current_user, "is_authenticated", False):
+        return {"shell_graph": None}
+    try:
+        tenant_id = auth.current_tenant(None)
+        if not tenant_id or not tenancy.require_tenant(tenant_id):
+            return {"shell_graph": None}
+        return {"shell_graph": _shell_graph(tenant_id)}
+    except Exception:
+        return {"shell_graph": None}
+
+
 
 # ── Marketing site ───────────────────────────────────────────────────────────
 # Badge colours are presentation-only; the provider list itself comes from the
@@ -332,9 +388,10 @@ def signup():
         login_user(auth._load_user(str(user["id"])), remember=False)
     except Exception:
         app.logger.exception("auto-login after signup failed")
-    # Not the dashboard: the first two steps exist precisely so the user sees a
-    # populated graph before being dropped into a dense screen.
-    return redirect("/onboarding/connect")
+    # Not the dashboard: the first steps exist so the user sees a populated graph
+    # before being dropped into a dense screen. Which step that is belongs to the
+    # onboarding state machine, not to this handler.
+    return redirect(onboarding_mod.next_step_url(entry["id"]))
 
 
 def build_category_revenue(business):
@@ -418,6 +475,25 @@ def build_product_list(business):
 # actually are rather than at the beginning.
 
 from mvp import onboarding as onboarding_mod  # noqa: E402
+from mvp import interview as interview_mod  # noqa: E402
+from mvp import graph_chat as graph_chat_mod  # noqa: E402
+
+
+def _graph_owner_label() -> str:
+    """Who is making the change — recorded on every mutation's ledger entry."""
+    return getattr(current_user, "email", "") or getattr(current_user, "id", "") or "owner"
+
+
+def _graph_chat_guard():
+    """Signed-in tenant that has finished onboarding, or a redirect."""
+    tenant, redir = _onboarding_guard("connect")
+    if redir is not None:
+        return None, redir
+    # Chat mutation is a post-onboarding tool: it changes a model the owner has
+    # already seen and accepted. Before that, send them back through the flow.
+    if not interview_mod.is_plan_acknowledged(tenant):
+        return None, redirect(onboarding_mod.next_step_url(tenant))
+    return tenant, None
 
 
 def _onboarding_guard(step: str):
@@ -446,7 +522,7 @@ def onboarding_business():
             entry = _tenant_meta_or_empty(tenant)
             if chosen and chosen != onboarding_mod._type_of(entry):
                 provisioning.retemplate(tenant, chosen)
-            return redirect("/onboarding/connect")
+            return redirect(onboarding_mod.next_step_url(tenant))
         except (provisioning.ProvisioningError, type_registry.TypeRegistryError) as exc:
             st = onboarding_mod.state(tenant)
             return render_template(
@@ -478,11 +554,123 @@ def _onboarding_types():
     return out
 
 
+@app.route("/onboarding/interview", methods=["GET", "POST"])
+def onboarding_interview():
+    """Chat the owner through the business questions before any data is connected."""
+    tenant, redir = _onboarding_guard("interview")
+    if redir is not None:
+        return redir
+
+    if request.method == "POST":
+        if (request.form.get("action") or "") == "finish":
+            interview_mod.finish(tenant)
+        else:
+            interview_mod.answer(tenant, request.form.get("answer") or "")
+        if interview_mod.is_complete(tenant):
+            interview_mod.derive_plan(tenant)
+            return redirect("/onboarding/plan")
+        return redirect("/onboarding/interview")
+
+    session = interview_mod.start(tenant)
+    # The template's readings exist the moment the business is provisioned — no
+    # answers, no connections. Lead with them so the questions read as refinement
+    # rather than as a toll gate in front of all the value.
+    try:
+        fv = onboarding_mod.first_value(tenant)
+    except Exception:
+        app.logger.exception("first_value failed")
+        fv = {"findings": [], "disclaimer": "Could not build a reading.", "recommended": []}
+    return render_template(
+        "onboarding.html", step="interview", st=onboarding_mod.state(tenant),
+        transcript=session["transcript"],
+        question=interview_mod.next_question(tenant),
+        answered=len(session["answers"]), total=len(interview_mod.QUESTIONS),
+        fv=fv,
+        plan_ready=interview_mod.is_complete(tenant),
+    )
+
+
+@app.route("/onboarding/plan", methods=["GET", "POST"])
+def onboarding_plan():
+    """Play the derived agent structure back; reviewing it unlocks connecting."""
+    tenant, redir = _onboarding_guard("plan")
+    if redir is not None:
+        return redir
+
+    if request.method == "POST":
+        interview_mod.acknowledge_plan(tenant)
+        return redirect("/onboarding/connect")
+
+    if not interview_mod.is_complete(tenant):
+        return redirect("/onboarding/interview")
+    plan = interview_mod.plan(tenant) or interview_mod.derive_plan(tenant)
+    return render_template("onboarding.html", step="plan",
+                           st=onboarding_mod.state(tenant), plan=plan)
+
+
+@app.route("/graph/chat", methods=["GET", "POST"])
+def graph_chat_page():
+    """Change the graph by typing an instruction. Post-onboarding only."""
+    tenant, redir = _graph_chat_guard()
+    if redir is not None:
+        return redir
+
+    result = None
+    if request.method == "POST":
+        result = graph_chat_mod.submit(
+            tenant, tenancy.registry.graph(tenant),
+            (request.form.get("instruction") or "").strip(),
+            by=_graph_owner_label(),
+        )
+        if result.get("applied"):
+            tenancy.registry.invalidate(tenant)
+    return render_template(
+        "graph_chat.html", result=result,
+        pending=graph_chat_mod.pending(tenant),
+        recent=graph_chat_mod.recent(tenant),
+        help=graph_chat_mod.HELP,
+    )
+
+
+@app.route("/graph/chat/confirm", methods=["POST"])
+def graph_chat_confirm():
+    """Owner accepts a staged structural change. This is the release gate."""
+    tenant, redir = _graph_chat_guard()
+    if redir is not None:
+        return redir
+    result = graph_chat_mod.confirm(
+        tenant, tenancy.registry.graph(tenant),
+        (request.form.get("mutation_id") or "").strip(),
+        by=_graph_owner_label(),
+    )
+    if result.get("applied"):
+        tenancy.registry.invalidate(tenant)
+    return render_template(
+        "graph_chat.html", result=result,
+        pending=graph_chat_mod.pending(tenant),
+        recent=graph_chat_mod.recent(tenant),
+        help=graph_chat_mod.HELP,
+    )
+
+
+@app.route("/api/graph/chat", methods=["GET"])
+def api_graph_chat_state():
+    """Pending and committed changes for the current tenant."""
+    tenant, redir = _graph_chat_guard()
+    if redir is not None:
+        return redir
+    return jsonify({"ok": True, "pending": graph_chat_mod.pending(tenant),
+                    "recent": graph_chat_mod.recent(tenant)})
+
+
 @app.route("/onboarding/connect", methods=["GET"])
 def onboarding_connect():
     tenant, redir = _onboarding_guard("connect")
     if redir is not None:
         return redir
+    # Connecting is only offered once the owner has seen and accepted the plan.
+    if not interview_mod.is_plan_acknowledged(tenant):
+        return redirect(onboarding_mod.next_step_url(tenant))
     st = onboarding_mod.state(tenant)
     meta = _tenant_meta_or_empty(tenant)
     btype = onboarding_mod._type_of(meta) or "business"
@@ -490,10 +678,24 @@ def onboarding_connect():
         ready = nango_client.available()
     except Exception:
         ready = False
+    # Which providers this deployment has actually configured in Nango. Without
+    # this, every card offers a button that 400s with "Integration does not exist"
+    # — a dead click per provider. None means "could not find out": assume
+    # available and let the click report the real error.
+    configured_providers = None
+    if ready:
+        try:
+            configured_providers = {
+                c.get("uniqueKey")
+                for c in nango_client.client_from_env().list_integrations()
+            }
+        except Exception:
+            app.logger.warning("could not list Nango integrations", exc_info=True)
     return render_template(
         "onboarding.html", step="connect", st=st,
         providers=onboarding_mod.recommended_providers(btype, limit=8),
         nango_ready=ready,
+        configured_providers=configured_providers,
     )
 
 
@@ -502,6 +704,11 @@ def onboarding_value():
     tenant, redir = _onboarding_guard("value")
     if redir is not None:
         return redir
+    # Same rule as connect: the steps are a sequence, so this page is only
+    # reachable once the plan has been reviewed. Without it the URL was an
+    # out-of-order shortcut that left the step list disagreeing with the screen.
+    if not interview_mod.is_plan_acknowledged(tenant):
+        return redirect(onboarding_mod.next_step_url(tenant))
     st = onboarding_mod.state(tenant)
     try:
         fv = onboarding_mod.first_value(tenant)
@@ -509,6 +716,7 @@ def onboarding_value():
         app.logger.exception("first_value failed")
         fv = {"findings": [], "disclaimer": f"Could not build a reading: {exc}",
               "recommended": []}
+    onboarding_mod.mark_value_seen(tenant)
     return render_template("onboarding.html", step="value", st=st, fv=fv)
 
 

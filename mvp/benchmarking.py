@@ -167,6 +167,27 @@ def period_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m")
 
 
+def latest_period(type_template: Optional[str] = None) -> Optional[str]:
+    """Newest period that actually holds observations, optionally type-scoped.
+
+    A benchmark compares a tenant against peers recorded in the *same* period,
+    so the honest default comparison period is the most recent one that has
+    data. Defaulting to the wall-clock month silently produced empty
+    recommendations whenever peers were last recorded in an earlier period
+    (e.g. a monthly boundary, or peer figures ingested from quarterly/annual
+    filings rather than live syncs).
+    """
+    init_db()
+    sql = "SELECT MAX(period) AS p FROM observations"
+    params: List[Any] = []
+    if type_template:
+        sql += " WHERE type_template = ?"
+        params.append(type_template)
+    with _connect() as conn:
+        row = conn.execute(sql, params).fetchone()
+    return (row["p"] or None) if row else None
+
+
 def record_observation(
     tenant_id: str,
     type_template: str,
@@ -245,7 +266,7 @@ def benchmark_tenant(
     as insufficient rather than compared against a handful of businesses.
     """
     init_db()
-    p = period or period_now()
+    p = period or latest_period(type_template) or period_now()
     if metrics is None:
         metrics = {}
         with _connect() as conn:

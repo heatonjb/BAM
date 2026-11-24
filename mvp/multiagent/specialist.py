@@ -506,3 +506,27 @@ def default_specialists(model: str = "deepseek/deepseek-v4.1-flash",
         s.knowledge = knowledge
         s.constraint_store = constraint_store
     return specs
+
+
+#: Runtime meaning for the short keys ``TypeSpec.specialists`` uses. The type
+#: registry declares *which* specialists a business type should run; nothing
+#: consumed those keys until onboarding needed to describe a proposed team. This
+#: keeps the roster single-sourced rather than restated in the onboarding layer.
+SPECIALIST_ROSTER: Dict[str, type] = {
+    "revenue": RevenueOptimizer,
+    "cost": CostController,
+    "marketing": MarketingAgent,
+    "operations": OperationsAgent,
+    "staffing": StaffingAgent,
+}
+
+
+def specialist_for(key: str) -> Optional[SpecialistAgent]:
+    """Instantiate the specialist a registry key names, or ``None`` if unknown.
+
+    Cheap and side-effect free: no LLM, no knowledge base, no graph. Callers use
+    it to *describe* a proposed agent (name, remit, owned node types) before any
+    work is implemented or any data is connected.
+    """
+    cls = SPECIALIST_ROSTER.get(key)
+    return cls() if cls is not None else None

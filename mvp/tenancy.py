@@ -35,6 +35,7 @@ from mvp.loader import (
     load_graph,
     load_tenant_config,
 )
+from mvp.multiagent.mutations import MutationQueue
 
 __all__ = [
     "TenantAccessError",
@@ -94,7 +95,14 @@ class TenantRegistry:
         tid = require_tenant(tenant_id)
         with self._lock:
             if tid not in self._graphs:
-                self._graphs[tid] = load_graph(tid)
+                graph = load_graph(tid)
+                # The graph is rebuilt from source files on every load, so the
+                # tenant's committed mutations (kept in its ledger) have to be
+                # re-applied here. This is the one place business data is read,
+                # which is what makes a committed change durable and visible
+                # everywhere rather than only in the request that made it.
+                MutationQueue(tid).replay(graph)
+                self._graphs[tid] = graph
             return self._graphs[tid]
 
     # --- flat business object --------------------------------------------

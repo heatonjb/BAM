@@ -21,6 +21,7 @@ progress survives logout, a new device, or a half-finished signup.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from . import types as type_registry
@@ -29,6 +30,8 @@ from . import types as type_registry
 STEPS: List[Dict[str, str]] = [
     {"id": "account", "label": "Account", "title": "Create your account"},
     {"id": "business", "label": "Business", "title": "Describe the business"},
+    {"id": "interview", "label": "Interview", "title": "Tell us how it works"},
+    {"id": "plan", "label": "Your team", "title": "See the agents we'd run"},
     {"id": "connect", "label": "Connect", "title": "Connect your numbers"},
     {"id": "value", "label": "First look", "title": "Your first reading"},
 ]
@@ -184,15 +187,60 @@ def state(tenant_id: str) -> Dict[str, Any]:
         statuses["business"] = "upcoming" if not has_graph else "current"
         details["business"] = "Pick the template that best matches your business."
 
+    # Interview: the owner's own account of how the business works. Nothing is
+    # connected yet — this is the step that earns the right to ask for data.
+    from . import interview as interview_mod
+    session = interview_mod.load(tenant_id)
+    answered = len(session.get("answers") or {})
+    if interview_mod.is_complete(tenant_id):
+        statuses["interview"] = "done"
+        details["interview"] = (
+            "You described how the business works."
+            if answered >= len(interview_mod.QUESTIONS)
+            else f"You described how the business works — {answered} of "
+                 f"{len(interview_mod.QUESTIONS)} answered, the rest can sharpen the plan."
+        )
+    else:
+        statuses["interview"] = "upcoming"
+        details["interview"] = (
+            f"{answered} of {len(interview_mod.QUESTIONS)} questions answered."
+            if answered else
+            "A few questions about how the business works — no data needed."
+        )
+
+    agent_plan = interview_mod.plan(tenant_id)
+    if agent_plan and agent_plan.get("acknowledged_at"):
+        statuses["plan"] = "done"
+        details["plan"] = f"{len(agent_plan.get('agents') or [])} agents proposed and reviewed."
+    else:
+        statuses["plan"] = "upcoming"
+        details["plan"] = "See the agent team we'd run for you, and how they'd work together."
+
+    value_seen = bool(meta.get("value_seen_at"))
     if connections:
         statuses["connect"] = "done"
         details["connect"] = f"{connections} source{'s' if connections != 1 else ''} connected."
-    else:
+    elif value_seen:
+        # Reaching the reading means this step was passed. Say so plainly rather
+        # than leaving the funnel parked on a step the owner already walked past.
+        statuses["connect"] = "done"
+        details["connect"] = "Skipped — nothing connected yet."
+    elif interview_mod.is_plan_acknowledged(tenant_id):
         statuses["connect"] = "upcoming"
-        details["connect"] = "Connect accounting or payments to replace estimates with facts."
+        details["connect"] = (
+            "Now connect the sources your agents need — you've seen what they'll do with them."
+        )
+    else:
+        # Connection is deliberately *not* offered until the plan is reviewed.
+        statuses["connect"] = "upcoming"
+        details["connect"] = "Connect accounting or payments — once you've seen the plan."
 
-    statuses["value"] = "upcoming"
-    details["value"] = "Three readings from your graph."
+    if value_seen:
+        statuses["value"] = "done"
+        details["value"] = "Your first reading was delivered."
+    else:
+        statuses["value"] = "upcoming"
+        details["value"] = "Three readings from your graph."
 
     # First non-done step becomes current, everything after it stays upcoming.
     current_set = False
@@ -253,6 +301,21 @@ def _num(node: Any, default: float = 0.0) -> float:
         return float(getattr(node, "value", default) or 0.0)
     except (TypeError, ValueError):
         return default
+
+
+def mark_value_seen(tenant_id: str) -> None:
+    """Record that the owner has been shown their first reading.
+
+    Written once: the funnel's terminal step is "delivered", and rewriting the
+    timestamp on every reload would make the stored state churn for no gain.
+    """
+    if _tenant_meta(tenant_id).get("value_seen_at"):
+        return
+    from . import provisioning
+    provisioning.update_tenant_meta(
+        tenant_id,
+        {"value_seen_at": datetime.now(timezone.utc).isoformat()},
+    )
 
 
 def first_value(tenant_id: str) -> Dict[str, Any]:
@@ -374,8 +437,7 @@ def connect_link(tenant_id: str, provider_id: str, email: str = "") -> Dict[str,
             end_user_id=tenant_id,
             end_user_email=email or None,
         )
-        link = (session or {}).get("data", {}).get("connect_link") or \
-               (session or {}).get("connect_link")
+        link = (session or {}).get("connect_link")
         return {"configured": True, "connect_link": link, "raw": session}
     except Exception as exc:  # network, auth, or malformed response
         return {"configured": True, "connect_link": None,
@@ -399,6 +461,7 @@ __all__ = [
     "StepState",
     "state",
     "first_value",
+    "mark_value_seen",
     "recommended_providers",
     "connect_link",
     "next_step_url",

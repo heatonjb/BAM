@@ -317,8 +317,15 @@ def all_specs() -> List[ProviderSpec]:
 
 
 def providers_for_field(canonical_field: str) -> List[ProviderSpec]:
-    """Which providers can supply a given canonical field."""
-    return [s for s in all_specs() if canonical_field in s.fields]
+    """Which providers can actually *fetch* a given canonical field.
+
+    Capability is defined by an implemented endpoint, not by the declared
+    ``fields`` list: a spec may list a field it derives locally or has not
+    wired up yet. Coverage must report what a sync can really deliver, so the
+    UI gap panel and the sync report do not advertise data that would fail at
+    call time (``connector.py`` resolves ``spec.endpoints[field]``).
+    """
+    return [s for s in all_specs() if canonical_field in s.endpoints]
 
 
 def fields_for_provider(provider_id: str) -> List[str]:

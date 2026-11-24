@@ -474,11 +474,45 @@ class MutationQueue:
             "proposed_by": m.proposed_by,
             "evidence_ids": list(m.evidence_ids),
             "rationale": m.rationale,
+            "payload": dict(m.payload),
             "previous": previous,
             "at": m.committed_at,
         })
         self._remove(mutation_id)
         return m
+
+    def replay(self, graph: BusinessGraph) -> Dict[str, int]:
+        """Re-apply every committed mutation, oldest first, to a fresh graph.
+
+        The graph is rebuilt from source files on every read, so a commit is only
+        durable if it can be re-applied. ``commit`` records each mutation's
+        payload in the ledger for exactly this purpose: the ledger is the record
+        of truth, and a committed change that cannot reconstruct itself is an
+        incomplete record. A mutation that no longer applies (its node was later
+        removed, or the tenant was retemplated) is skipped and counted rather
+        than aborting the load — one stale entry must not take the graph down.
+        """
+        applied = 0
+        skipped = 0
+        for event in self.history(limit=1_000_000):
+            if event.get("event") != "committed":
+                continue
+            m = GraphMutation(
+                kind=event.get("kind", ""),
+                tenant_id=self.tenant_id,
+                node_id=event.get("node_id", ""),
+                rationale=event.get("rationale", ""),
+                evidence_ids=list(event.get("evidence_ids") or []),
+                proposed_by=event.get("proposed_by", ""),
+                payload=dict(event.get("payload") or {}),
+                id=event.get("id", ""),
+            )
+            try:
+                self._apply(m, graph)
+                applied += 1
+            except Exception:
+                skipped += 1
+        return {"applied": applied, "skipped": skipped}
 
     def _already_committed(self, mutation_id: str) -> bool:
         return any(h.get("event") == "committed" and h.get("id") == mutation_id

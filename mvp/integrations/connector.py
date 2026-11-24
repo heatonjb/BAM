@@ -109,9 +109,8 @@ class NangoConnector(BaseConnector):
             end_user_id=end_user_id,
             end_user_email=params.get("email"),
             organization_id=params.get("organization_id"),
-            metadata=params.get("metadata"),
         )
-        link = session.get("connect_link") or session.get("data", {}).get("connect_link")
+        link = session.get("connect_link")
         return {
             "ok": True,
             "detail": f"Auth link generated for {spec.label}",
