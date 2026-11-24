@@ -1,0 +1,42 @@
+[
+  {
+    "id": "S001",
+    "name": "Sarah Mitchell",
+    "role": "barista",
+    "hourly_rate": 12.5,
+    "contract_hours_per_week": 30,
+    "start_date": "2023-04-01"
+  },
+  {
+    "id": "S002",
+    "name": "Tom Bradley",
+    "role": "barista",
+    "hourly_rate": 12.5,
+    "contract_hours_per_week": 25,
+    "start_date": "2023-06-15"
+  },
+  {
+    "id": "S003",
+    "name": "Priya Sharma",
+    "role": "shift_supervisor",
+    "hourly_rate": 14.75,
+    "contract_hours_per_week": 35,
+    "start_date": "2023-03-20"
+  },
+  {
+    "id": "S004",
+    "name": "Jake O'Brien",
+    "role": "barista",
+    "hourly_rate": 12.0,
+    "contract_hours_per_week": 20,
+    "start_date": "2024-09-01"
+  },
+  {
+    "id": "S005",
+    "name": "Emma Chen",
+    "role": "manager",
+    "hourly_rate": 17.5,
+    "contract_hours_per_week": 40,
+    "start_date": "2023-03-15"
+  }
+]

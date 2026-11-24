@@ -1,0 +1,29 @@
+{
+  "competitors": [
+    {
+      "name": "The Grind",
+      "distance_m": 180,
+      "price_index": 1.08,
+      "notes": "Premium positioning, slower service"
+    },
+    {
+      "name": "Costa Coffee",
+      "distance_m": 350,
+      "price_index": 0.95,
+      "notes": "Chain, high footfall, loyalty app"
+    },
+    {
+      "name": "Local Deli",
+      "distance_m": 120,
+      "price_index": 0.88,
+      "notes": "Cheaper, strong lunch trade, weak coffee"
+    },
+    {
+      "name": "Blank Street",
+      "distance_m": 450,
+      "price_index": 0.92,
+      "notes": "App-only, fast service, younger crowd"
+    }
+  ],
+  "market_notes": "JonCo sits at price index 1.00. Local Deli undercuts by 12% on coffee but has no loyalty programme. Costa's app drives 40% of its transactions."
+}

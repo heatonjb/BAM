@@ -1,0 +1,140 @@
+{
+  "espresso": {
+    "category": "coffee",
+    "price": 2.8,
+    "cog_beans_per_shot": 0.018,
+    "cog_beans_kg_price": 22.0,
+    "cog_milk_litres": 0,
+    "cog_milk_price_per_litre": 0,
+    "cog_cup": 0.04,
+    "cog_lid": 0.02
+  },
+  "americano": {
+    "category": "coffee",
+    "price": 3.2,
+    "cog_beans_per_shot": 0.018,
+    "cog_beans_kg_price": 22.0,
+    "cog_milk_litres": 0,
+    "cog_milk_price_per_litre": 0,
+    "cog_cup": 0.04,
+    "cog_lid": 0.02
+  },
+  "latte": {
+    "category": "coffee",
+    "price": 3.8,
+    "cog_beans_per_shot": 0.018,
+    "cog_beans_kg_price": 22.0,
+    "cog_milk_litres": 0.22,
+    "cog_milk_price_per_litre": 1.1,
+    "cog_cup": 0.04,
+    "cog_lid": 0.03
+  },
+  "cappuccino": {
+    "category": "coffee",
+    "price": 3.8,
+    "cog_beans_per_shot": 0.018,
+    "cog_beans_kg_price": 22.0,
+    "cog_milk_litres": 0.2,
+    "cog_milk_price_per_litre": 1.1,
+    "cog_cup": 0.04,
+    "cog_lid": 0.03
+  },
+  "flat_white": {
+    "category": "coffee",
+    "price": 3.7,
+    "cog_beans_per_shot": 0.018,
+    "cog_beans_kg_price": 22.0,
+    "cog_milk_litres": 0.18,
+    "cog_milk_price_per_litre": 1.1,
+    "cog_cup": 0.04,
+    "cog_lid": 0.03
+  },
+  "mocha": {
+    "category": "coffee",
+    "price": 4.2,
+    "cog_beans_per_shot": 0.018,
+    "cog_beans_kg_price": 22.0,
+    "cog_milk_litres": 0.22,
+    "cog_milk_price_per_litre": 1.1,
+    "cog_cup": 0.04,
+    "cog_lid": 0.03,
+    "cog_chocolate": 0.15
+  },
+  "chai_latte": {
+    "category": "hot_drink",
+    "price": 3.6,
+    "cog_beans_per_shot": 0,
+    "cog_beans_kg_price": 0,
+    "cog_milk_litres": 0.22,
+    "cog_milk_price_per_litre": 1.1,
+    "cog_cup": 0.04,
+    "cog_lid": 0.03,
+    "cog_chai": 0.35
+  },
+  "hot_chocolate": {
+    "category": "hot_drink",
+    "price": 3.5,
+    "cog_beans_per_shot": 0,
+    "cog_beans_kg_price": 0,
+    "cog_milk_litres": 0.22,
+    "cog_milk_price_per_litre": 1.1,
+    "cog_cup": 0.04,
+    "cog_lid": 0.03,
+    "cog_chocolate": 0.2
+  },
+  "filter_coffee": {
+    "category": "coffee",
+    "price": 2.5,
+    "cog_beans_per_shot": 0.03,
+    "cog_beans_kg_price": 18.0,
+    "cog_milk_litres": 0,
+    "cog_milk_price_per_litre": 0,
+    "cog_cup": 0.04,
+    "cog_lid": 0.02
+  },
+  "iced_latte": {
+    "category": "coffee",
+    "price": 4.0,
+    "cog_beans_per_shot": 0.025,
+    "cog_beans_kg_price": 22.0,
+    "cog_milk_litres": 0.25,
+    "cog_milk_price_per_litre": 1.1,
+    "cog_cup": 0.05,
+    "cog_lid": 0.04
+  },
+  "croissant": {
+    "category": "pastry",
+    "price": 3.2,
+    "cog_cost": 1.05
+  },
+  "pain_au_chocolat": {
+    "category": "pastry",
+    "price": 3.4,
+    "cog_cost": 1.1
+  },
+  "muffin": {
+    "category": "pastry",
+    "price": 3.0,
+    "cog_cost": 0.95
+  },
+  "scone": {
+    "category": "pastry",
+    "price": 2.8,
+    "cog_cost": 0.7
+  },
+  "cookie": {
+    "category": "pastry",
+    "price": 2.2,
+    "cog_cost": 0.55
+  },
+  "tea": {
+    "category": "hot_drink",
+    "price": 2.4,
+    "cog_cost": 0.12
+  },
+  "smoothie": {
+    "category": "cold_drink",
+    "price": 4.5,
+    "cog_cost": 1.65
+  }
+}

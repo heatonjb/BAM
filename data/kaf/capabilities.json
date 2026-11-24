@@ -1,0 +1,39 @@
+{
+  "tenant_id": "jonco",
+  "_note": "JonCo's own commercial choices. Core provides the 'loyalty_card' family; these parameters are the tenant's, not BAM's.",
+  "mechanisms": [
+    {
+      "name": "stamp_card_9",
+      "family": "loyalty_card",
+      "label": "9+1 stamp card",
+      "lever_type": "retention",
+      "params": {
+        "n_paid": 9,
+        "adoption_rate": 1.0,
+        "liability_treatment": "provision_on_earn"
+      }
+    },
+    {
+      "name": "stamp_card_19",
+      "family": "loyalty_card",
+      "label": "19+1 stamp card (thinner give-away)",
+      "lever_type": "retention",
+      "params": {
+        "n_paid": 19,
+        "adoption_rate": 1.0,
+        "liability_treatment": "provision_on_earn"
+      }
+    },
+    {
+      "name": "stamp_card_29",
+      "family": "loyalty_card",
+      "label": "29+1 stamp card",
+      "lever_type": "retention",
+      "params": {
+        "n_paid": 29,
+        "adoption_rate": 1.0,
+        "liability_treatment": "provision_on_earn"
+      }
+    }
+  ]
+}

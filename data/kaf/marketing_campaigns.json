@@ -1,0 +1,82 @@
+{
+  "campaigns": [
+    {
+      "id": "cmp_001",
+      "name": "Instagram local awareness",
+      "channel": "instagram",
+      "start": "2025-07-01",
+      "end": "2025-07-31",
+      "spend_gbp": 450.0,
+      "impressions": 18500,
+      "clicks": 620,
+      "conversions": 94,
+      "revenue_gbp": 2110.0,
+      "new_customers": 61,
+      "status": "completed"
+    },
+    {
+      "id": "cmp_002",
+      "name": "Google Local Services",
+      "channel": "google_ads",
+      "start": "2025-08-01",
+      "end": "2025-08-31",
+      "spend_gbp": 380.0,
+      "impressions": 9200,
+      "clicks": 310,
+      "conversions": 48,
+      "revenue_gbp": 1180.0,
+      "new_customers": 32,
+      "status": "completed"
+    },
+    {
+      "id": "cmp_003",
+      "name": "Loyalty card launch",
+      "channel": "in_store",
+      "start": "2025-09-01",
+      "end": "2025-09-30",
+      "spend_gbp": 120.0,
+      "impressions": 0,
+      "clicks": 0,
+      "conversions": 210,
+      "revenue_gbp": 3400.0,
+      "new_customers": 14,
+      "status": "completed"
+    },
+    {
+      "id": "cmp_004",
+      "name": "Autumn menu push",
+      "channel": "email",
+      "start": "2025-10-01",
+      "end": "2025-10-31",
+      "spend_gbp": 95.0,
+      "impressions": 4200,
+      "clicks": 480,
+      "conversions": 71,
+      "revenue_gbp": 1890.0,
+      "new_customers": 22,
+      "status": "running"
+    },
+    {
+      "id": "cmp_005",
+      "name": "Winter warmers promo",
+      "channel": "instagram",
+      "start": "2025-11-15",
+      "end": "2025-12-15",
+      "spend_gbp": 520.0,
+      "impressions": 0,
+      "clicks": 0,
+      "conversions": 0,
+      "revenue_gbp": 0.0,
+      "new_customers": 0,
+      "status": "planned"
+    }
+  ],
+  "summary": {
+    "total_spend_gbp": 1045.0,
+    "total_revenue_attributed_gbp": 5180.0,
+    "roas": 4.96,
+    "best_channel": "in_store_loyalty",
+    "worst_channel": "google_ads",
+    "notes": "Instagram and in-store loyalty outperform paid search. Google Ads conversion rate is 15.5% vs Instagram 15.2% but CPA is 2.4x higher."
+  }
+}

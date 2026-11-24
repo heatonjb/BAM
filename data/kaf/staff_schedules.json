@@ -1,0 +1,2207 @@
+[
+  {
+    "date": "2024-10-01",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.104706821246019
+  },
+  {
+    "date": "2024-10-01",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.015049231134366
+  },
+  {
+    "date": "2024-10-01",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-01",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-02",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.065470948645953
+  },
+  {
+    "date": "2024-10-02",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.117057727347794
+  },
+  {
+    "date": "2024-10-02",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-02",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-03",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.214169202543824
+  },
+  {
+    "date": "2024-10-03",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.911359354981283
+  },
+  {
+    "date": "2024-10-03",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-04",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.451644628225408
+  },
+  {
+    "date": "2024-10-04",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.172961554405365
+  },
+  {
+    "date": "2024-10-04",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-04",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-05",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.973770398467221
+  },
+  {
+    "date": "2024-10-05",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.261304006433296
+  },
+  {
+    "date": "2024-10-05",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-06",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.26461164692224
+  },
+  {
+    "date": "2024-10-06",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.821708957039276
+  },
+  {
+    "date": "2024-10-06",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-07",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.547616979341873
+  },
+  {
+    "date": "2024-10-07",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.600888896133336
+  },
+  {
+    "date": "2024-10-07",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-07",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-08",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.06802869196499
+  },
+  {
+    "date": "2024-10-08",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.560939101695752
+  },
+  {
+    "date": "2024-10-08",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-08",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-09",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.598117204117386
+  },
+  {
+    "date": "2024-10-09",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.4520506949305485
+  },
+  {
+    "date": "2024-10-09",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-09",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-10",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.136001051566534
+  },
+  {
+    "date": "2024-10-10",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.063775411207426
+  },
+  {
+    "date": "2024-10-10",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-10",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-11",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.401773306275277
+  },
+  {
+    "date": "2024-10-11",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.972450428647594
+  },
+  {
+    "date": "2024-10-11",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-11",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-12",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.274893969835215
+  },
+  {
+    "date": "2024-10-12",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.602524594543468
+  },
+  {
+    "date": "2024-10-12",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-13",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.976359502062199
+  },
+  {
+    "date": "2024-10-13",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.38977813449547
+  },
+  {
+    "date": "2024-10-13",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-14",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.949024318961347
+  },
+  {
+    "date": "2024-10-14",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.458327941996345
+  },
+  {
+    "date": "2024-10-14",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-15",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.941157013436491
+  },
+  {
+    "date": "2024-10-15",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.957579854705905
+  },
+  {
+    "date": "2024-10-15",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-15",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-16",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.208493109211298
+  },
+  {
+    "date": "2024-10-16",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.84578429800634
+  },
+  {
+    "date": "2024-10-16",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-16",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-17",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.008421807581802
+  },
+  {
+    "date": "2024-10-17",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.465586047565023
+  },
+  {
+    "date": "2024-10-17",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-17",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-18",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.9725647550350525
+  },
+  {
+    "date": "2024-10-18",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.306173390059586
+  },
+  {
+    "date": "2024-10-18",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-18",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-19",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.432101373212808
+  },
+  {
+    "date": "2024-10-19",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.414135570486117
+  },
+  {
+    "date": "2024-10-19",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-20",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.889405745409909
+  },
+  {
+    "date": "2024-10-20",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.275864428471705
+  },
+  {
+    "date": "2024-10-20",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-21",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.290878528509912
+  },
+  {
+    "date": "2024-10-21",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.201837936940354
+  },
+  {
+    "date": "2024-10-21",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-22",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.318658765380814
+  },
+  {
+    "date": "2024-10-22",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.737791164902994
+  },
+  {
+    "date": "2024-10-22",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-22",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-23",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.341366523103675
+  },
+  {
+    "date": "2024-10-23",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.436252693412102
+  },
+  {
+    "date": "2024-10-23",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-23",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-24",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.586106950368497
+  },
+  {
+    "date": "2024-10-24",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.0872729984780625
+  },
+  {
+    "date": "2024-10-24",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-24",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-25",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.062776678662264
+  },
+  {
+    "date": "2024-10-25",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.92626194344838
+  },
+  {
+    "date": "2024-10-25",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-26",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.793142831898054
+  },
+  {
+    "date": "2024-10-26",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.343211349868206
+  },
+  {
+    "date": "2024-10-26",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-27",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.5966751937328985
+  },
+  {
+    "date": "2024-10-27",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.642709750044024
+  },
+  {
+    "date": "2024-10-27",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-28",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.27998805397019
+  },
+  {
+    "date": "2024-10-28",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.921122278533662
+  },
+  {
+    "date": "2024-10-28",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-28",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-29",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.019485566894488
+  },
+  {
+    "date": "2024-10-29",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.080305774402365
+  },
+  {
+    "date": "2024-10-29",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-29",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-30",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.467942324908672
+  },
+  {
+    "date": "2024-10-30",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.388226855810385
+  },
+  {
+    "date": "2024-10-30",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-30",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-31",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.276577085390034
+  },
+  {
+    "date": "2024-10-31",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.596281006209228
+  },
+  {
+    "date": "2024-10-31",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-10-31",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-01",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.242653736300188
+  },
+  {
+    "date": "2024-11-01",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.041703970604516
+  },
+  {
+    "date": "2024-11-01",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-01",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-02",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.440002621765808
+  },
+  {
+    "date": "2024-11-02",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.318626727478884
+  },
+  {
+    "date": "2024-11-02",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-03",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.019691895115799
+  },
+  {
+    "date": "2024-11-03",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.242342947768716
+  },
+  {
+    "date": "2024-11-03",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-04",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.326692480573389
+  },
+  {
+    "date": "2024-11-04",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.077098750445597
+  },
+  {
+    "date": "2024-11-04",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-05",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.1260407244486
+  },
+  {
+    "date": "2024-11-05",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.31372406428185
+  },
+  {
+    "date": "2024-11-05",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-06",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.7204083777761445
+  },
+  {
+    "date": "2024-11-06",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.228440885623925
+  },
+  {
+    "date": "2024-11-06",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-06",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-07",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.481767130093749
+  },
+  {
+    "date": "2024-11-07",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.53391922470313
+  },
+  {
+    "date": "2024-11-07",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-08",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.194463127207472
+  },
+  {
+    "date": "2024-11-08",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.558900982868984
+  },
+  {
+    "date": "2024-11-08",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-09",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.40304795342638
+  },
+  {
+    "date": "2024-11-09",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.011904413776639
+  },
+  {
+    "date": "2024-11-09",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-10",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.331570663398065
+  },
+  {
+    "date": "2024-11-10",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.375579761123685
+  },
+  {
+    "date": "2024-11-10",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-11",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.471137858819622
+  },
+  {
+    "date": "2024-11-11",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.407204830050233
+  },
+  {
+    "date": "2024-11-11",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-11",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-12",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.032953387548396
+  },
+  {
+    "date": "2024-11-12",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.152875251203024
+  },
+  {
+    "date": "2024-11-12",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-13",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.011658348435374
+  },
+  {
+    "date": "2024-11-13",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.980929207022613
+  },
+  {
+    "date": "2024-11-13",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-14",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.595819670927735
+  },
+  {
+    "date": "2024-11-14",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.9068940756346775
+  },
+  {
+    "date": "2024-11-14",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-14",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-15",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.938905309013134
+  },
+  {
+    "date": "2024-11-15",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.0189619690483305
+  },
+  {
+    "date": "2024-11-15",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-16",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.724675282654914
+  },
+  {
+    "date": "2024-11-16",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.068959204013675
+  },
+  {
+    "date": "2024-11-16",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-17",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.614841565844093
+  },
+  {
+    "date": "2024-11-17",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.278594230419319
+  },
+  {
+    "date": "2024-11-17",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-18",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.085107485739288
+  },
+  {
+    "date": "2024-11-18",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.3364056607394055
+  },
+  {
+    "date": "2024-11-18",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-18",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-19",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.3837192268637395
+  },
+  {
+    "date": "2024-11-19",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.086355215366156
+  },
+  {
+    "date": "2024-11-19",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-20",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.389667173825009
+  },
+  {
+    "date": "2024-11-20",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.514899386650802
+  },
+  {
+    "date": "2024-11-20",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-21",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.3447782935724355
+  },
+  {
+    "date": "2024-11-21",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.59474825948342
+  },
+  {
+    "date": "2024-11-21",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-21",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-22",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.883482732826997
+  },
+  {
+    "date": "2024-11-22",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.951804264349255
+  },
+  {
+    "date": "2024-11-22",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-23",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.992747287199788
+  },
+  {
+    "date": "2024-11-23",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.4240306920899455
+  },
+  {
+    "date": "2024-11-23",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-24",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.628103541887984
+  },
+  {
+    "date": "2024-11-24",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.434503632938283
+  },
+  {
+    "date": "2024-11-24",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-25",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.069032363576792
+  },
+  {
+    "date": "2024-11-25",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.056115805865149
+  },
+  {
+    "date": "2024-11-25",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-25",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-26",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.9009021006494375
+  },
+  {
+    "date": "2024-11-26",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.235617063326625
+  },
+  {
+    "date": "2024-11-26",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-26",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-27",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.015767185388837
+  },
+  {
+    "date": "2024-11-27",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.48347557993179
+  },
+  {
+    "date": "2024-11-27",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-28",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.498346652800553
+  },
+  {
+    "date": "2024-11-28",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.116175920110447
+  },
+  {
+    "date": "2024-11-28",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-28",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-29",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.795052199126985
+  },
+  {
+    "date": "2024-11-29",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.090877630188812
+  },
+  {
+    "date": "2024-11-29",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-29",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-11-30",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.451266965863645
+  },
+  {
+    "date": "2024-11-30",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.299947136266216
+  },
+  {
+    "date": "2024-11-30",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-01",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.349402556335295
+  },
+  {
+    "date": "2024-12-01",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.33786106069057
+  },
+  {
+    "date": "2024-12-01",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-02",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.004927852484188
+  },
+  {
+    "date": "2024-12-02",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.347149308497329
+  },
+  {
+    "date": "2024-12-02",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-02",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-03",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.5122088030253344
+  },
+  {
+    "date": "2024-12-03",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.629332436144707
+  },
+  {
+    "date": "2024-12-03",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-04",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.03955466132237
+  },
+  {
+    "date": "2024-12-04",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.083691749326374
+  },
+  {
+    "date": "2024-12-04",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-04",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-05",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.170783828737378
+  },
+  {
+    "date": "2024-12-05",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.187413404031147
+  },
+  {
+    "date": "2024-12-05",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-05",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-06",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.033742143487046
+  },
+  {
+    "date": "2024-12-06",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.232374056621101
+  },
+  {
+    "date": "2024-12-06",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-07",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.410824945682178
+  },
+  {
+    "date": "2024-12-07",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.222853410442272
+  },
+  {
+    "date": "2024-12-07",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-08",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.583310400907312
+  },
+  {
+    "date": "2024-12-08",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.242195698339934
+  },
+  {
+    "date": "2024-12-08",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-09",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.739133400354633
+  },
+  {
+    "date": "2024-12-09",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.475976699013568
+  },
+  {
+    "date": "2024-12-09",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-10",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.011563273625675
+  },
+  {
+    "date": "2024-12-10",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.082547779172371
+  },
+  {
+    "date": "2024-12-10",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-11",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.455876188727434
+  },
+  {
+    "date": "2024-12-11",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.842891644982254
+  },
+  {
+    "date": "2024-12-11",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-12",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.04075517270636
+  },
+  {
+    "date": "2024-12-12",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.132530057731579
+  },
+  {
+    "date": "2024-12-12",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-12",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-13",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.451015939367884
+  },
+  {
+    "date": "2024-12-13",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.758152154464155
+  },
+  {
+    "date": "2024-12-13",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-14",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.810462214602039
+  },
+  {
+    "date": "2024-12-14",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.4922406883739665
+  },
+  {
+    "date": "2024-12-14",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-15",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.390416175197968
+  },
+  {
+    "date": "2024-12-15",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.019825080546356
+  },
+  {
+    "date": "2024-12-15",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-16",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.224670805150067
+  },
+  {
+    "date": "2024-12-16",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.093348790176684
+  },
+  {
+    "date": "2024-12-16",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-16",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-17",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.908675292949606
+  },
+  {
+    "date": "2024-12-17",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.57169596350457
+  },
+  {
+    "date": "2024-12-17",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-18",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.3254850570159
+  },
+  {
+    "date": "2024-12-18",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.31980222512889
+  },
+  {
+    "date": "2024-12-18",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-18",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-19",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.447551941784993
+  },
+  {
+    "date": "2024-12-19",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.250831055237851
+  },
+  {
+    "date": "2024-12-19",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-19",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-20",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.151634431485375
+  },
+  {
+    "date": "2024-12-20",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.122331322382674
+  },
+  {
+    "date": "2024-12-20",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-21",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.001423694994584
+  },
+  {
+    "date": "2024-12-21",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.218325617330082
+  },
+  {
+    "date": "2024-12-21",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-22",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.814825120044235
+  },
+  {
+    "date": "2024-12-22",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.961537790571879
+  },
+  {
+    "date": "2024-12-22",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-23",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.286142736625138
+  },
+  {
+    "date": "2024-12-23",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.35035998018951
+  },
+  {
+    "date": "2024-12-23",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-24",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.42633137095489
+  },
+  {
+    "date": "2024-12-24",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.659445748641718
+  },
+  {
+    "date": "2024-12-24",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-24",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-25",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.377436667442034
+  },
+  {
+    "date": "2024-12-25",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.717482289442768
+  },
+  {
+    "date": "2024-12-25",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-25",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-26",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.077729282601618
+  },
+  {
+    "date": "2024-12-26",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.766421214197669
+  },
+  {
+    "date": "2024-12-26",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-27",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.335417103867407
+  },
+  {
+    "date": "2024-12-27",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.227976974127929
+  },
+  {
+    "date": "2024-12-27",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-28",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.2884720605445015
+  },
+  {
+    "date": "2024-12-28",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.402701879190711
+  },
+  {
+    "date": "2024-12-28",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-29",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.498913184250586
+  },
+  {
+    "date": "2024-12-29",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.524549649634529
+  },
+  {
+    "date": "2024-12-29",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-30",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.163918565618966
+  },
+  {
+    "date": "2024-12-30",
+    "staff_id": "S001",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.109402068792226
+  },
+  {
+    "date": "2024-12-30",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-31",
+    "staff_id": "S004",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.446237005224827
+  },
+  {
+    "date": "2024-12-31",
+    "staff_id": "S002",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 7.550698684310415
+  },
+  {
+    "date": "2024-12-31",
+    "staff_id": "S003",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  },
+  {
+    "date": "2024-12-31",
+    "staff_id": "S005",
+    "shift_start": "06:00",
+    "shift_end": "15:00",
+    "hours_worked": 8.0
+  }
+]

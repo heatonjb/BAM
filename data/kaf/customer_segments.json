@@ -1,0 +1,71 @@
+{
+  "segments": [
+    {
+      "id": "seg_regulars",
+      "name": "Daily regulars",
+      "share_pct": 22,
+      "avg_visits_per_month": 18,
+      "avg_spend_gbp": 4.8,
+      "churn_risk": "low",
+      "preferred_items": [
+        "flat_white",
+        "americano"
+      ]
+    },
+    {
+      "id": "seg_weekenders",
+      "name": "Weekend brunch crowd",
+      "share_pct": 31,
+      "avg_visits_per_month": 4,
+      "avg_spend_gbp": 12.4,
+      "churn_risk": "medium",
+      "preferred_items": [
+        "latte",
+        "pastry",
+        "brunch_plate"
+      ]
+    },
+    {
+      "id": "seg_remote",
+      "name": "Remote workers",
+      "share_pct": 18,
+      "avg_visits_per_month": 12,
+      "avg_spend_gbp": 6.2,
+      "churn_risk": "medium",
+      "preferred_items": [
+        "americano",
+        "chai_latte"
+      ]
+    },
+    {
+      "id": "seg_students",
+      "name": "Students",
+      "share_pct": 15,
+      "avg_visits_per_month": 8,
+      "avg_spend_gbp": 3.6,
+      "churn_risk": "high",
+      "preferred_items": [
+        "hot_chocolate",
+        "pastry"
+      ]
+    },
+    {
+      "id": "seg_tourists",
+      "name": "Tourists / occasional",
+      "share_pct": 14,
+      "avg_visits_per_month": 1,
+      "avg_spend_gbp": 7.9,
+      "churn_risk": "n/a",
+      "preferred_items": [
+        "latte",
+        "cappuccino"
+      ]
+    }
+  ],
+  "retention": {
+    "repeat_rate_pct": 42,
+    "avg_lifetime_value_gbp": 186.0,
+    "loyalty_members": 312
+  },
+  "notes": "Weekend brunch is the highest-value segment but only visits 4x/month. Converting 10% of weekenders to weekday regulars would add ~\u00a34.2k/month."
+}

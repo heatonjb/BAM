@@ -5,8 +5,8 @@
     "number": "15999847",
     "type": "cafe",
     "data_dir": "jonco",
-    "period": "Oct–Dec 2024 (monthly averages)",
-    "icon": "☕",
+    "period": "Oct\u2013Dec 2024 (monthly averages)",
+    "icon": "\u2615",
     "color": "#8d6e63",
     "type_template": "coffee_shop",
     "benchmark_cohort": "coffee_shop"
@@ -18,7 +18,7 @@
     "type": "saas",
     "data_dir": "joncrm",
     "period": "Last 30 days (monthly averages)",
-    "icon": "🧩",
+    "icon": "\ud83e\udde9",
     "color": "#5c6bc0",
     "type_template": "saas",
     "benchmark_cohort": "saas"
@@ -30,9 +30,9 @@
     "type": "cafe",
     "data_dir": "northside-coffee",
     "period": "Starter model (monthly averages)",
-    "icon": "☕",
+    "icon": "\u2615",
     "color": "#8d6e63",
-    "display_type": "Café / physical retail",
+    "display_type": "Caf\u00e9 / physical retail",
     "created_at": "2026-10-29T14:18:31.204147+00:00",
     "plan": "free",
     "type_template": "coffee_shop",
@@ -46,7 +46,7 @@
     "type_template": "developer_tools",
     "data_dir": "acme-devtools",
     "period": "Starter model (monthly averages)",
-    "icon": "🛠",
+    "icon": "\ud83d\udee0",
     "color": "#3949ab",
     "display_type": "Developer tools",
     "benchmark_cohort": "developer_tools",
@@ -61,9 +61,9 @@
     "type_template": "coffee_shop",
     "data_dir": "jonsssssss",
     "period": "Starter model (monthly averages)",
-    "icon": "☕",
+    "icon": "\u2615",
     "color": "#8d6e63",
-    "display_type": "Café / coffee shop",
+    "display_type": "Caf\u00e9 / coffee shop",
     "benchmark_cohort": "coffee_shop",
     "created_at": "2026-10-29T14:48:55.721563+00:00",
     "plan": "free"
@@ -76,9 +76,9 @@
     "type_template": "coffee_shop",
     "data_dir": "jonnnssss",
     "period": "Starter model (monthly averages)",
-    "icon": "☕",
+    "icon": "\u2615",
     "color": "#8d6e63",
-    "display_type": "Café / coffee shop",
+    "display_type": "Caf\u00e9 / coffee shop",
     "benchmark_cohort": "coffee_shop",
     "created_at": "2026-10-31T07:37:45.195656+00:00",
     "plan": "free"
@@ -91,13 +91,24 @@
     "type_template": null,
     "data_dir": "bam",
     "period": "Operating model (monthly)",
-    "icon": "◈",
+    "icon": "\u25c8",
     "color": "#2563eb",
     "display_type": "BAM (business as a machine)",
     "benchmark_cohort": "saas",
     "created_at": "2026-10-31T00:00:00+00:00",
     "plan": "internal",
-    "self_hosted": true
+    "self_hosted": true,
+    "interview": {
+      "answers": {},
+      "transcript": [
+        {
+          "role": "agent",
+          "qid": "product",
+          "text": "Before you connect anything, tell me how the business actually works. A few questions \u2014 answer as briefly or as fully as you like.\n\nWhat's the product, and how does it work?"
+        }
+      ],
+      "completed_at": null
+    }
   },
   "bamdad": {
     "id": "bamdad",
@@ -107,11 +118,266 @@
     "type_template": "services",
     "data_dir": "bamdad",
     "period": "Starter model (monthly averages)",
-    "icon": "📐",
+    "icon": "\ud83d\udcd0",
     "color": "#4db6ac",
     "display_type": "Professional services",
     "benchmark_cohort": "services",
     "created_at": "2026-10-31T09:28:28.765518+00:00",
     "plan": "free"
+  },
+  "kaf": {
+    "id": "kaf",
+    "name": "Kaf",
+    "number": "STARTER",
+    "type": "cafe",
+    "type_template": "coffee_shop",
+    "data_dir": "kaf",
+    "period": "Starter model (monthly averages)",
+    "icon": "\u2615",
+    "color": "#8d6e63",
+    "display_type": "Caf\u00e9 / coffee shop",
+    "benchmark_cohort": "coffee_shop",
+    "created_at": "2026-11-19T10:20:16.253549+00:00",
+    "plan": "free",
+    "interview": {
+      "answers": {
+        "product": "i sell coffee",
+        "leads": "people walk in off the street",
+        "convert": "by having good coffee, nice space and nice food"
+      },
+      "transcript": [
+        {
+          "role": "agent",
+          "qid": "product",
+          "text": "Before you connect anything, tell me how the business actually works. A few questions \u2014 answer as briefly or as fully as you like.\n\nWhat's the product, and how does it work?"
+        },
+        {
+          "role": "owner",
+          "qid": "product",
+          "text": "i sell coffee"
+        },
+        {
+          "role": "agent",
+          "qid": "product",
+          "text": "Good \u2014 that tells me where value is actually created. You said: \u201ci sell coffee\u201d"
+        },
+        {
+          "role": "model",
+          "qid": "product",
+          "text": "Model updated \u2014 add process node \u201cProduct & delivery\u201d (at top level). No numbers invented: it records the structure you described, and the figures come when you connect data."
+        },
+        {
+          "role": "agent",
+          "qid": "leads",
+          "text": "How do you get leads in?"
+        },
+        {
+          "role": "owner",
+          "qid": "leads",
+          "text": "people walk in off the street"
+        },
+        {
+          "role": "agent",
+          "qid": "leads",
+          "text": "Noted. Demand is the first thing an agent can measure rather than guess. You said: \u201cpeople walk in off the street\u201d"
+        },
+        {
+          "role": "model",
+          "qid": "leads",
+          "text": "Model updated \u2014 add process node \u201cLead generation\u201d (at top level). No numbers invented: it records the structure you described, and the figures come when you connect data."
+        },
+        {
+          "role": "agent",
+          "qid": "convert",
+          "text": "How do you turn a lead into a sale?"
+        },
+        {
+          "role": "owner",
+          "qid": "convert",
+          "text": "by having good coffee, nice space and nice food"
+        },
+        {
+          "role": "agent",
+          "qid": "convert",
+          "text": "That's the bit most businesses can't see clearly. Useful. You said: \u201cby having good coffee, nice space and nice food\u201d"
+        },
+        {
+          "role": "model",
+          "qid": "convert",
+          "text": "Model updated \u2014 add process node \u201cSales conversion\u201d (at top level). No numbers invented: it records the structure you described, and the figures come when you connect data."
+        },
+        {
+          "role": "agent",
+          "qid": "retain",
+          "text": "How do you keep customers, and how does that drive loyalty?"
+        }
+      ],
+      "completed_at": null
+    },
+    "agent_plan": {
+      "tenant_id": "kaf",
+      "business_type": "coffee_shop",
+      "business_label": "Caf\u00e9 / coffee shop",
+      "business_name": "Kaf",
+      "generated_at": "2026-11-19T10:21:11.097543+00:00",
+      "acknowledged_at": "2026-11-19T10:21:25.569157+00:00",
+      "implemented": false,
+      "note": "This is a proposal. Nothing has been built and nothing has been connected \u2014 connect data only when you're happy with the plan.",
+      "answers_used": 3,
+      "questions_total": 6,
+      "agents": [
+        {
+          "key": "revenue",
+          "id": "revenue_optimizer",
+          "name": "Revenue Optimizer",
+          "remit": "revenue nodes \u2014 pricing, volume, mix, and channel economics",
+          "owns": [
+            "revenue"
+          ],
+          "levers": [
+            "price",
+            "volume",
+            "menu",
+            "retention"
+          ],
+          "why": "You said: \u201cpeople walk in off the street\u201d"
+        },
+        {
+          "key": "marketing",
+          "id": "marketing_agent",
+          "name": "Marketing & Demand Agent",
+          "remit": "demand-side levers on revenue nodes \u2014 campaigns, local marketing, promotions, loyalty",
+          "owns": [
+            "revenue"
+          ],
+          "levers": [
+            "demand_generation",
+            "marketing",
+            "retention"
+          ],
+          "why": "You said: \u201cpeople walk in off the street\u201d"
+        },
+        {
+          "key": "cost",
+          "id": "cost_controller",
+          "name": "Cost Controller",
+          "remit": "cost nodes \u2014 COGS, overheads, procurement, waste",
+          "owns": [
+            "cost"
+          ],
+          "levers": [
+            "cost_reduction",
+            "procurement"
+          ],
+          "why": "You said: \u201ci sell coffee\u201d"
+        },
+        {
+          "key": "operations",
+          "id": "operations_agent",
+          "name": "Operations Agent",
+          "remit": "process nodes \u2014 throughput, cycle time, utilisation, capacity",
+          "owns": [
+            "process"
+          ],
+          "levers": [
+            "process",
+            "capacity"
+          ],
+          "why": "You said: \u201ci sell coffee\u201d"
+        },
+        {
+          "key": "staffing",
+          "id": "staffing_agent",
+          "name": "Staffing & Labour Agent",
+          "remit": "labour and input nodes \u2014 rota design, productivity, wage efficiency",
+          "owns": [
+            "input"
+          ],
+          "levers": [
+            "staffing",
+            "process"
+          ],
+          "why": "Part of how this kind of business is run, based on its shape."
+        }
+      ],
+      "threads": [
+        "Marketing brings demand in; Revenue turns it into price, mix and repeat business.",
+        "Cost Controller and Staffing Agent both guard margin \u2014 procurement and waste on one side, rota and productivity on the other.",
+        "Operations keeps throughput honest, so revenue is delivered rather than forecast.",
+        "Revenue and Cost Controller share one question: grow the top line without letting unit cost drift.",
+        "Marketing promises what Operations has to deliver \u2014 capacity has to keep up with demand.",
+        "Revenue sets the target; Staffing Agent says what labour it actually takes to hit it.",
+        "Operations surfaces where work is wasted; Cost Controller prices the fix.",
+        "Marketing moves demand; Staffing Agent keeps the rota able to serve it.",
+        "Operations and Staffing Agent split the same constraint \u2014 process versus people.",
+        "Marketing spends; Cost Controller measures whether the spend earned its keep."
+      ],
+      "benefits": [
+        "Every number on the dashboard gets a named owner instead of a shared shrug.",
+        "Recommendations are ranked by your measured gap against similar businesses, not generic advice.",
+        "Agents propose; you authorise. Nothing changes behind your back.",
+        "You can see the whole plan before connecting anything \u2014 and stop here if you don't like it."
+      ],
+      "examples": [
+        "Revenue Optimizer: if its metrics trail the coffee_shop peer set, pricing and mix is the first lever it tests.",
+        "Marketing & Demand Agent: if its metrics trail the coffee_shop peer set, demand generation and retention is the first lever it tests.",
+        "Cost Controller: if its metrics trail the coffee_shop peer set, supplier terms and waste is the first lever it tests.",
+        "Operations Agent: if its metrics trail the coffee_shop peer set, process and capacity is the first lever it tests.",
+        "Staffing & Labour Agent: if its metrics trail the coffee_shop peer set, rota and productivity is the first lever it tests."
+      ],
+      "data_needed": [
+        {
+          "field": "revenue",
+          "why": "Monthly revenue or enough transactions to derive it",
+          "severity": "critical",
+          "if_missing": "derive from transactions"
+        },
+        {
+          "field": "cogs",
+          "why": "Cost of goods sold over the same period as revenue",
+          "severity": "critical",
+          "if_missing": "derive from purchases"
+        },
+        {
+          "field": "units",
+          "why": "Units sold, for average spend and per-unit economics",
+          "severity": "critical",
+          "if_missing": "derive from transactions line items"
+        },
+        {
+          "field": "gross_margin",
+          "why": "Gross margin ratio; drives discount-depth rule",
+          "severity": "important",
+          "if_missing": "(revenue - cogs) / revenue"
+        },
+        {
+          "field": "visits_per_week",
+          "why": "Customer purchase frequency; drives attainability",
+          "severity": "important",
+          "if_missing": "segment avg_visits_per_month / 4.33"
+        },
+        {
+          "field": "avg_spend",
+          "why": "Average transaction value; drives perceived-value rule",
+          "severity": "important",
+          "if_missing": "revenue / units"
+        },
+        {
+          "field": "customer_segments",
+          "why": "Segment mix for weighting average behaviour",
+          "severity": "important",
+          "if_missing": "treat business as one segment"
+        }
+      ],
+      "node_families": [
+        "cogs",
+        "gross_profit",
+        "menu",
+        "overheads",
+        "revenue",
+        "staff",
+        "wastage"
+      ]
+    }
   }
 }
