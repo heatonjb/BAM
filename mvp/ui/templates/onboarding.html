@@ -1,16 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ st.steps|selectattr('id','equalto',step)|map(attribute='title')|first }} — BAM</title>
-    <link rel="stylesheet" href="/static/base.css">
-    <style>
-        .ob-wrap { max-width: 940px; margin: 0 auto; padding: 2.2rem 1.2rem 4rem; }
-        .ob-brand { display:flex; align-items:center; gap:0.6rem; margin-bottom:2rem; }
-        .ob-brand__mark { color: var(--accent); font-size:1.3rem; }
-        .ob-brand__name { font-weight:650; letter-spacing:0.02em; }
-        .ob-brand__biz { color: var(--text-muted); font-size:0.8rem; margin-left:auto; }
+{% extends "shell.html" %}
+{% block title %}{{ st.steps|selectattr('id','equalto',step)|map(attribute='title')|first }} — BAM{% endblock %}
+{% block head %}
+<style>
+        .ob-wrap { max-width: 940px; }
+        .ob-progress { color: var(--text-faint); font-family: var(--mono);
+                       font-size: 0.68rem; letter-spacing: 0.04em; text-transform: uppercase; }
 
         .ob-steps { display:flex; gap:0.4rem; margin-bottom:2.4rem; flex-wrap:wrap; }
         .ob-step { flex:1; min-width:120px; padding-top:0.6rem; border-top:2px solid var(--border); }
@@ -39,7 +33,7 @@
         .ob-btn { display:inline-block; padding:0.62rem 1.1rem; border-radius:var(--radius-sm);
                   font-size:0.85rem; font-weight:600; border:1px solid var(--border-strong);
                   background:var(--surface); color:var(--text); cursor:pointer; text-decoration:none; }
-        .ob-btn--primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+        .ob-btn--primary { background:var(--accent); border-color:var(--accent); color:var(--bg); }
         .ob-btn--ghost { background:transparent; border-color:transparent; color:var(--text-muted); }
         .ob-btn:disabled { opacity:0.55; cursor:wait; }
         .ob-actions { display:flex; gap:0.6rem; align-items:center; margin-top:1.8rem; flex-wrap:wrap; }
@@ -54,18 +48,30 @@
         .ob-finding__q { color:var(--text-muted); font-size:0.8rem; margin-top:0.45rem; font-style:italic; }
         .ob-finding__g { color:var(--text-faint); font-size:0.72rem; margin-top:0.35rem; }
 
-        .ob-note { background:var(--warning-soft); border:1px solid #fcd34d; color:#92400e;
+        .ob-note { background:var(--warning-soft); border:1px solid var(--warning); color:var(--warning);
                    border-radius:var(--radius-sm); padding:0.7rem 0.9rem; font-size:0.8rem; margin-bottom:1.2rem; }
         .ob-skip { color:var(--text-faint); font-size:0.78rem; margin-top:1rem; }
+
+        /* Owner interview — a transcript, not a form dump. */
+        .ob-chat { display:flex; flex-direction:column; gap:0.55rem; margin:1.2rem 0 1.4rem; }
+        .ob-chat__msg { max-width:78%; padding:0.65rem 0.85rem; border-radius:var(--radius-sm);
+                        background:var(--surface); border:1px solid var(--border); font-size:0.86rem;
+                        line-height:1.5; white-space:pre-wrap; }
+        .ob-chat__msg--owner { align-self:flex-end; border-color:var(--accent);
+                               box-shadow:0 0 0 2px var(--accent-soft); }
+        .ob-chat__msg--model { border-color:var(--positive); border-left:3px solid var(--positive); }
+        .ob-chat__who { display:block; font-family:var(--mono); font-size:0.6rem; color:var(--text-faint);
+                        text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.25rem; }
+        textarea.ob-answer { width:100%; min-height:5.5rem; padding:0.7rem 0.85rem; font:inherit;
+                             font-size:0.86rem; line-height:1.5; color:var(--text); background:var(--surface);
+                             border:1px solid var(--border-strong); border-radius:var(--radius-sm); resize:vertical; }
+        fieldset.ob-team { border:none; padding:0; margin:0; }
     </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
 <div class="ob-wrap">
-    <div class="ob-brand">
-        <span class="ob-brand__mark">◈</span>
-        <span class="ob-brand__name">BAM</span>
-        <span class="ob-brand__biz">{{ st.business_name or 'Your business' }} · {{ st.percent }}% set up</span>
-    </div>
+    <p class="ob-progress">{{ st.business_name or 'Your business' }} · {{ st.percent }}% set up</p>
 
     <div class="ob-steps">
         {% for s in st.steps %}
@@ -105,6 +111,124 @@
         </div>
     </form>
 
+    {% elif step == 'interview' %}
+    <h1 class="ob-h1">Tell us how the business works</h1>
+    <p class="ob-lede">
+        Before you connect anything, I'd like to understand the business in your own words.
+        From this conversation I can map out what a team of agents would look like for you —
+        and show you that plan before you decide whether to hand over any data.
+    </p>
+
+    {% if fv and fv.findings %}
+    <h2 class="ob-h1" style="font-size:1.05rem;margin-bottom:0.2rem;">What your template already says</h2>
+    <p class="ob-skip" style="margin-top:0;margin-bottom:1rem;">
+        Readings from the shape of your business — nothing connected, nothing typed yet.
+        Your answers below are what turn these estimates into your actual numbers.
+    </p>
+    {% with findings = fv.findings[:3], compact = true %}{% include "_findings.html" %}{% endwith %}
+    {% endif %}
+
+    <div class="ob-chat">
+        {% for m in transcript %}
+        <div class="ob-chat__msg ob-chat__msg--{{ m.role }}">
+            <span class="ob-chat__who">{{ {'owner': 'You', 'model': 'Model'}.get(m.role, 'BAM') }}</span>{{ m.text }}
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if question %}
+    <form method="post" action="/onboarding/interview">
+        <textarea class="ob-answer" name="answer" required autofocus
+                  placeholder="{{ question.prompt }}"></textarea>
+        <div class="ob-actions">
+            <button class="ob-btn ob-btn--primary" type="submit">Send</button>
+            <span class="ob-skip">{{ answered }} of {{ total }} answered</span>
+        </div>
+    </form>
+    {% if plan_ready %}
+    <p class="ob-skip">You've covered what the plan needs — anything more is optional detail.</p>
+    {% endif %}
+    <form method="post" action="/onboarding/interview">
+        <input type="hidden" name="action" value="finish">
+        <button class="ob-btn {{ 'ob-btn--primary' if plan_ready else 'ob-btn--ghost' }}" type="submit">That's enough — show me the plan</button>
+    </form>
+    {% else %}
+    <div class="ob-actions">
+        <a class="ob-btn ob-btn--primary" href="/onboarding/plan">See the plan</a>
+    </div>
+    {% endif %}
+
+    {% elif step == 'plan' %}
+    <h1 class="ob-h1">Here's the team I'd run for you</h1>
+    <p class="ob-lede">
+        Derived from what you told me about {{ plan.business_label }}. Nothing has been built, and
+        nothing has been connected — judge the plan first.
+    </p>
+    <div class="ob-note">{{ plan.note }}</div>
+    {% if plan.answers_used is defined and plan.questions_total is defined and plan.answers_used < plan.questions_total %}
+    <p class="ob-skip">
+        Built from {{ plan.answers_used }} of {{ plan.questions_total }} answers.
+        <a href="/onboarding/interview">Add more detail</a> — the plan sharpens as you go.
+    </p>
+    {% endif %}
+
+    <div class="ob-grid">
+        {% for a in plan.agents %}
+        <div class="ob-card {{ 'ob-card--primary' if loop.first }}">
+            <div class="ob-card__top"><span class="ob-card__label">{{ a.name }}</span></div>
+            <div class="ob-card__cat">owns {{ a.owns|join(', ') }}</div>
+            <div class="ob-card__why">{{ a.remit }}</div>
+            <div class="ob-card__why" style="font-style:italic;">{{ a.why }}</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if plan.threads %}
+    <h2 class="ob-h1" style="font-size:1.05rem;margin-top:2rem;">How they'd work together</h2>
+    {% for t in plan.threads %}
+    <div class="ob-finding"><div class="ob-finding__r">{{ t }}</div></div>
+    {% endfor %}
+    {% endif %}
+
+    {% if plan.examples %}
+    <h2 class="ob-h1" style="font-size:1.05rem;margin-top:2rem;">What that looks like in practice</h2>
+    {% for e in plan.examples %}
+    <div class="ob-finding"><div class="ob-finding__r">{{ e }}</div></div>
+    {% endfor %}
+    {% endif %}
+
+    <h2 class="ob-h1" style="font-size:1.05rem;margin-top:2rem;">Why this is worth having</h2>
+    <div class="ob-finding">
+        {% for b in plan.benefits %}
+        <div class="ob-finding__r">· {{ b }}</div>
+        {% endfor %}
+    </div>
+
+    {% if plan.data_needed %}
+    <h2 class="ob-h1" style="font-size:1.05rem;margin-top:2rem;">What they'd need to stop estimating</h2>
+    <p class="ob-lede" style="margin-bottom:1rem;">
+        Not needed to see this plan — but this is what sharpens each agent's answer into a fact.
+    </p>
+    {% for d in plan.data_needed %}
+    <div class="ob-finding">
+        <div class="ob-finding__row">
+            <span class="ob-finding__t">{{ d.field }}</span>
+            <span class="ob-finding__v">{{ d.severity }}</span>
+        </div>
+        <div class="ob-finding__r">{{ d.why }}</div>
+        <div class="ob-finding__g">if missing: {{ d.if_missing }}</div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <form method="post" action="/onboarding/plan">
+        <div class="ob-actions">
+            <button class="ob-btn ob-btn--primary" type="submit">I'm happy — connect my data</button>
+            <a class="ob-btn ob-btn--ghost" href="/onboarding/interview">Change my answers</a>
+        </div>
+    </form>
+    <p class="ob-skip">Connecting comes last on purpose — it's the step that replaces estimates with your real numbers.</p>
+
     {% elif step == 'connect' %}
     <h1 class="ob-h1">Connect the numbers you already have</h1>
     <p class="ob-lede">
@@ -117,20 +241,28 @@
         Connections are not switched on for this deployment yet (no Nango credentials configured).
         You can skip this step — everything else works, using template estimates.
     </div>
+    {% elif configured_providers is not none and not configured_providers %}
+    <div class="ob-note">
+        No sources are set up in this deployment yet, so there is nothing to connect to.
+        Everything else works on template estimates — go straight to your first reading.
+    </div>
     {% endif %}
     <div class="ob-grid">
         {% for p in providers %}
+        {% set available = nango_ready and (configured_providers is none or p.id in configured_providers) %}
         <div class="ob-card {{ 'ob-card--primary' if p.primary }}">
             <div class="ob-card__top">
                 <span class="ob-card__label">{{ p.label }}</span>
             </div>
-            <div class="ob-card__cat">{{ p.category }}</div>
+            <div class="ob-card__cat">
+                {{ p.category }}{% if nango_ready and configured_providers is not none and p.id not in configured_providers %} · not set up yet{% endif %}
+            </div>
             <div class="ob-card__why">{{ p.why }}</div>
             <div class="ob-card__fields">{{ p.fields|join(' · ') }}</div>
             <div style="margin-top:0.5rem;">
                 <button class="ob-btn" data-provider="{{ p.id }}"
                         onclick="connectProvider(this)"
-                        {% if not nango_ready %}disabled title="Nango not configured"{% endif %}>
+                        {% if not available %}disabled title="{% if not nango_ready %}Nango not configured{% else %}Not set up in this deployment yet{% endif %}"{% endif %}>
                     Connect
                 </button>
             </div>
@@ -171,17 +303,7 @@
     <h1 class="ob-h1">Your first reading</h1>
     <p class="ob-lede">{{ fv.disclaimer }}</p>
 
-    {% for f in fv.findings %}
-    <div class="ob-finding">
-        <div class="ob-finding__row">
-            <span class="ob-finding__t">{{ f.title }}</span>
-            <span class="ob-finding__v">{{ f.value }}</span>
-        </div>
-        <div class="ob-finding__r">{{ f.reading }}</div>
-        <div class="ob-finding__q">{{ f.question }}</div>
-        <div class="ob-finding__g">{{ f.template_gap }}</div>
-    </div>
-    {% endfor %}
+    {% with findings = fv.findings, compact = false %}{% include "_findings.html" %}{% endwith %}
 
     <div class="ob-actions">
         <a class="ob-btn ob-btn--primary" href="/dashboard">Open your dashboard →</a>
@@ -191,5 +313,4 @@
     </div>
     {% endif %}
 </div>
-</body>
-</html>
+{% endblock %}

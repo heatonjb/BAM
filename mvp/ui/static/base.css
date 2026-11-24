@@ -1,50 +1,55 @@
 /* ==========================================================================
-   BAM Design System — Light
-   A small, dependency-free design system. Tokens -> primitives -> utilities.
-   Slate palette, blue accent, semantic colors darkened for light contrast.
+   BAM Design System
+   Tokens -> primitives -> utilities. Palette and type mirror the marketing
+   site: near-black surfaces, ink text, acid accent, serif display headings.
+   Every logged-in page consumes these tokens; do not hardcode colours.
    ========================================================================== */
 
 /* ── Tokens ─────────────────────────────────────────────────────────────── */
 :root {
+  color-scheme: dark;
+
   /* surfaces */
-  --bg:            #f8fafc;   /* page */
-  --surface:       #ffffff;   /* cards, chips */
-  --surface-2:     #f1f5f9;   /* subtle fills, total rows */
-  --surface-3:     #e2e8f0;   /* hover on light fills */
+  --bg:            #0a0b0d;   /* page */
+  --bg-2:          #101216;   /* inset panels, e.g. the graph aside */
+  --surface:       #14171c;   /* cards, chips */
+  --surface-2:     #1a1e25;   /* subtle fills, total rows */
+  --surface-3:     #22272f;   /* hover on fills */
 
   /* borders */
-  --border:        #e2e8f0;
-  --border-strong: #cbd5e1;
+  --border:        #262b33;
+  --border-strong: #3a4149;
 
   /* text */
-  --text:          #0f172a;
-  --text-muted:    #64748b;
-  --text-faint:    #94a3b8;
+  --text:          #f4f1ea;
+  --text-muted:    #b6b3ac;
+  --text-faint:    #7d7a74;
 
   /* accent + semantics */
-  --accent:        #2563eb;
-  --accent-soft:   #eef2ff;
-  --accent-strong: #1d4ed8;
-  --positive:      #059669;
-  --positive-soft: #dcfce7;
-  --negative:      #dc2626;
-  --negative-soft: #fee2e2;
-  --warning:       #d97706;
-  --warning-soft:  #fef3c7;
+  --accent:        #d7ff3e;
+  --accent-soft:   rgba(215, 255, 62, .10);
+  --accent-strong: #e6ff6b;
+  --positive:      #5bd6a0;
+  --positive-soft: rgba(91, 214, 160, .12);
+  --negative:      #ff6b5a;
+  --negative-soft: rgba(255, 107, 90, .12);
+  --warning:       #e8a33d;
+  --warning-soft:  rgba(232, 163, 61, .12);
 
   /* geometry */
-  --radius:        10px;
-  --radius-sm:     6px;
+  --radius:        4px;
+  --radius-sm:     4px;
   --radius-pill:   999px;
 
   /* elevation */
-  --shadow-sm: 0 1px 2px rgba(15, 23, 42, .06);
-  --shadow:    0 1px 3px rgba(15, 23, 42, .10), 0 1px 2px rgba(15, 23, 42, .06);
-  --shadow-lg: 0 10px 25px rgba(15, 23, 42, .08), 0 4px 10px rgba(15, 23, 42, .05);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .35);
+  --shadow:    0 1px 3px rgba(0, 0, 0, .45), 0 1px 2px rgba(0, 0, 0, .3);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, .5), 0 4px 10px rgba(0, 0, 0, .35);
 
   /* type */
-  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', ui-monospace, monospace;
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Monaco, 'Cascadia Mono', 'Liberation Mono', monospace;
+  --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
 }
 
 /* ── Reset ──────────────────────────────────────────────────────────────── */
@@ -62,10 +67,15 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4 { line-height: 1.25; font-weight: 650; letter-spacing: -0.011em; }
-h1 { font-size: 1.45rem; }
-h2 { font-size: 1.15rem; }
-h3 { font-size: 1rem; }
+h1, h2, h3, h4 {
+  font-family: var(--serif);
+  line-height: 1.15;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+}
+h1 { font-size: 1.9rem; }
+h2 { font-size: 1.35rem; }
+h3 { font-size: 1.1rem; }
 
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -83,13 +93,13 @@ a:hover { text-decoration: underline; }
 
 /* ── Header ─────────────────────────────────────────────────────────────── */
 .header {
-  background: var(--surface);
+  background: rgba(10, 11, 13, .82);
+  backdrop-filter: saturate(180%) blur(14px);
   border-bottom: 1px solid var(--border);
   padding: 1.1rem 2rem;
   position: sticky;
   top: 0;
   z-index: 50;
-  backdrop-filter: saturate(180%) blur(8px);
 }
 .header h1 { font-size: 1.3rem; color: var(--text); display: flex; align-items: center; gap: .45rem; }
 .header .sub { color: var(--text-faint); font-size: .78rem; margin-top: .15rem; letter-spacing: .01em; }
@@ -213,11 +223,12 @@ tbody tr:hover { background: var(--surface-2); }
 .mb-sm { margin-bottom: .4rem; } .mb { margin-bottom: .75rem; } .mb-lg { margin-bottom: 1.5rem; }
 
 /* ── Select / form controls ─────────────────────────────────────────────── */
-select, input[type="text"], input[type="search"] {
+select, input[type="text"], input[type="search"],
+input[type="email"], input[type="password"] {
   font-family: var(--font);
   font-size: .8rem;
   color: var(--text);
-  background: var(--surface);
+  background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: .35rem .55rem;
@@ -226,7 +237,7 @@ select, input[type="text"], input[type="search"] {
 select:focus, input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 /* ── Buttons ────────────────────────────────────────────────────────────── */
@@ -246,12 +257,6 @@ select:focus, input:focus {
   transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
 }
 .btn:hover { background: var(--surface-2); border-color: var(--border-strong); }
-.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--bg); }
 .btn-primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
 .btn:disabled { opacity: .55; cursor: not-allowed; }
-
-/* ── Dark-mode escape hatch (opt-in only) ───────────────────────────────── */
-[data-theme="dark"] {
-  --bg: #0f172a; --surface: #1e293b; --surface-2: #334155;
-  --border: #334155; --text: #f1f5f9; --text-muted: #94a3b8; --text-faint: #64748b;
-}

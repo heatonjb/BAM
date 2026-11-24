@@ -1,26 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drill: {{ node.label }} — Business as a Machine</title>
-        <link rel="stylesheet" href="/static/base.css">
+{% extends "shell.html" %}
+{% block title %}Drill: {{ node.label }} — BAM{% endblock %}
+{% block head %}
+    <script src="/static/tokens.js"></script>
     <link rel="stylesheet" href="/static/drill.css">
-</head>
-<body>
-    <div class="header">
-        <a href="/?tenant={{ current_tenant }}" class="back">← P&L</a>
-        <h1>{{ node.icon }} {{ node.label }}</h1>
-        <div style="display:flex;align-items:center;gap:0.4rem;margin-left:auto;">
-            <label for="tenantSelect" style="color:#64748b;font-size:0.75rem;">Company:</label>
-            <select id="tenantSelect" onchange="switchTenant(this.value)" style="background:#ffffff;color:#334155;border:1px solid #e2e8f0;border-radius:4px;padding:0.35rem 0.6rem;font-size:0.8rem;cursor:pointer;">
-                {% for tid, t in tenants.items() %}
-                <option value="{{ tid }}" {% if tid == current_tenant %}selected{% endif %}>{{ t.icon or '' }} {{ t.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <a href="/dashboard?tenant={{ current_tenant }}" class="back" style="margin-left:10px;">📊 Dashboard</a>
-    </div>
+{% endblock %}
+{% block content %}
     <div class="breadcrumb">
         <a href="/?tenant={{ current_tenant }}">P&L</a>
         {% for p in path[:-1] %}
@@ -46,7 +30,7 @@
             <div class="ticker-changes">
                 <div class="ticker-change">
                     <span class="period">7D</span>
-                    <span style="color:{% if node.trend == 'up' %}#16a34a{% elif node.trend == 'down' %}#dc2626{% else %}#64748b{% endif %};font-size:0.9rem;">{% if node.trend == 'up' %}▲{% elif node.trend == 'down' %}▼{% else %}─{% endif %}</span>
+                    <span style="color:{% if node.trend == 'up' %}var(--positive){% elif node.trend == 'down' %}var(--negative){% else %}var(--text-faint){% endif %};font-size:0.9rem;">{% if node.trend == 'up' %}▲{% elif node.trend == 'down' %}▼{% else %}─{% endif %}</span>
                     <span class="val {% if node.trend == 'up' %}up{% elif node.trend == 'down' %}down{% else %}flat{% endif %}">£{{ "{:,.2f}".format(node.change_7d|abs) }} ({{ "%+.1f"|format(node.change_7d_pct) }}%)</span>
                 </div>
                 <div class="ticker-change">
@@ -61,7 +45,7 @@
             <div class="ticker-sparkline">
                 <svg viewBox="0 0 300 40" preserveAspectRatio="none">
                     {% set vals = node.sparkline[-30:] %}{% set min_v = vals|min %}{% set max_v = vals|max %}{% set range_v = max_v - min_v if max_v != min_v else 1 %}
-                    {% set tc = '#16a34a' if node.trend == 'up' else '#dc2626' if node.trend == 'down' else '#94a3b8' %}
+                    {% set tc = 'var(--positive)' if node.trend == 'up' else 'var(--negative)' if node.trend == 'down' else 'var(--text-faint)' %}
                     <polygon fill="{{ tc }}" opacity="0.08" points="0,40 {% for v in vals %}{{ (loop.index0 / (vals|length - 1)) * 300 }},{{ 38 - ((v - min_v) / range_v) * 34 }}{% endfor %} 300,40" />
                     <polyline fill="none" stroke="{{ tc }}" stroke-width="1.5" points="{% for v in vals %}{{ (loop.index0 / (vals|length - 1)) * 300 }},{{ 38 - ((v - min_v) / range_v) * 34 }}{% endfor %}" />
                     <circle cx="300" cy="{{ 38 - ((vals[-1] - min_v) / range_v) * 34 }}" r="3" fill="{{ tc }}" />
@@ -120,10 +104,10 @@
         <div class="insights-section">
             <div class="insights-header">
                 <h3>💡 AI Insights & Hypotheses</h3>
-                <button onclick="generateInsights()" id="insightsBtn" style="background:#eef2ff;color:#16a34a;border:1px solid #16a34a;padding:0.3rem 0.8rem;border-radius:4px;cursor:pointer;font-size:0.8rem;">Generate</button>
+                <button onclick="generateInsights()" id="insightsBtn" style="background:var(--surface-2);color:var(--positive);border:1px solid var(--positive);padding:0.3rem 0.8rem;border-radius:4px;cursor:pointer;font-size:0.8rem;">Generate</button>
             </div>
             <div class="insights-body" id="insightsBody">
-                <p style="color:#94a3b8;font-size:0.8rem;">Click Generate to get constraint-aware hypotheses from the AI model. The model will consider all {{ constraints|length if constraints else 0 }} active constraints, research context, and current performance data for <strong>{{ node.label }}</strong> (£{{ "{:,.2f}".format(node.value) }}/mo, 7d trend: {{ node.trend }} {{ "%+.1f"|format(node.change_7d_pct) }}%).</p>
+                <p style="color:var(--text-faint);font-size:0.8rem;">Click Generate to get constraint-aware hypotheses from the AI model. The model will consider all {{ constraints|length if constraints else 0 }} active constraints, research context, and current performance data for <strong>{{ node.label }}</strong> (£{{ "{:,.2f}".format(node.value) }}/mo, 7d trend: {{ node.trend }} {{ "%+.1f"|format(node.change_7d_pct) }}%).</p>
             </div>
         </div>
 
@@ -158,12 +142,9 @@
     <div class="footer">Business as a Machine · Click any row to drill deeper</div>
 
     <script>
+{% endblock %}
+{% block scripts %}
         const CURRENT_TENANT = "{{ current_tenant }}";
-        function switchTenant(tid) {
-            const url = new URL(window.location.href);
-            url.searchParams.set('tenant', tid);
-            window.location.href = url.toString();
-        }
         function tenantQS(url) {
             const sep = url.includes('?') ? '&' : '?';
             return url + sep + 'tenant=' + encodeURIComponent(CURRENT_TENANT);
@@ -173,7 +154,8 @@
         const focusNode = '{{ node.id }}';
         let showLabels = true;
         let showAnnotations = true;
-        const typeColors = { revenue:'#16a34a', cost:'#dc2626', process:'#2196f3', input:'#d97706', asset:'#00bcd4', liability:'#e91e63', metric:'#9c27b0', aggregate:'#607d8b' };
+        // Canvas cannot resolve CSS custom properties — see /static/tokens.js.
+        const typeColors = { revenue:BAM_BAM_TOK.positive, cost:BAM_BAM_TOK.negative, process:BAM_BAM_TOK.accent, input:BAM_BAM_TOK.warning, asset:BAM_TOK.process, liability:BAM_BAM_TOK.negative, metric:BAM_TOK.metric, aggregate:BAM_BAM_TOK.textMuted };
         const positions = {};
         const velocities = {};
 
@@ -245,16 +227,16 @@
                     const contribText = Math.round(e.contribution_pct) + '%';
                     const tw = ctx.measureText(contribText).width + 8;
                     ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.beginPath(); ctx.roundRect(mx+perpX-tw/2, my+perpY-7, tw, 14, 3); ctx.fill();
-                    ctx.fillStyle = e.trend === 'up' ? '#16a34a' : e.trend === 'down' ? '#dc2626' : '#64748b'; ctx.fillText(contribText, mx+perpX, my+perpY);
+                    ctx.fillStyle = e.trend === 'up' ? BAM_TOK.positive : e.trend === 'down' ? BAM_TOK.negative : BAM_TOK.textFaint; ctx.fillText(contribText, mx+perpX, my+perpY);
                     const changeText = (e.change_pct>=0?'+':'') + e.change_pct.toFixed(1) + '%';
                     const tw2 = ctx.measureText(changeText).width + 8;
                     ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.beginPath(); ctx.roundRect(mx-perpX-tw2/2, my-perpY-7, tw2, 14, 3); ctx.fill();
-                    ctx.fillStyle = e.change_pct>0?'#16a34a':e.change_pct<0?'#dc2626':'#64748b'; ctx.fillText(changeText, mx-perpX, my-perpY);
+                    ctx.fillStyle = e.change_pct>0?BAM_TOK.positive:e.change_pct<0?BAM_TOK.negative:BAM_TOK.textFaint; ctx.fillText(changeText, mx-perpX, my-perpY);
                 }
             });
             graphNodes.forEach(n => {
                 const pos = positions[n.id]; if (!pos) return;
-                const color = typeColors[n.node_type] || '#607d8b';
+                const color = typeColors[n.node_type] || BAM_TOK.textMuted;
                 const radius = Math.max(16, Math.min(32, Math.sqrt(Math.abs(n.value))*1.0));
                 const isFocus = n.id === focusNode;
                 if (isFocus) { ctx.beginPath(); ctx.arc(pos.x, pos.y, radius+8, 0, Math.PI*2); ctx.fillStyle = color+'22'; ctx.fill(); }
@@ -262,10 +244,10 @@
                 ctx.strokeStyle = color; ctx.lineWidth = isFocus?2.5:1.5; ctx.stroke();
                 if (n.icon) { ctx.font = Math.min(14,radius)+'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(n.icon, pos.x, pos.y); }
                 if (showLabels) {
-                    ctx.font = '10px -apple-system, sans-serif'; ctx.fillStyle = '#aaa'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+                    ctx.font = '10px -apple-system, sans-serif'; ctx.fillStyle = BAM_TOK.textFaint; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
                     ctx.fillText(n.label.length>18?n.label.slice(0,17)+'…':n.label, pos.x, pos.y+radius+5);
-                    ctx.font = '9px monospace'; ctx.fillStyle = '#94a3b8'; ctx.fillText('£'+n.value.toLocaleString(), pos.x, pos.y+radius+17);
-                    ctx.font = '11px sans-serif'; ctx.fillStyle = n.trend==='up'?'#16a34a':n.trend==='down'?'#dc2626':'#94a3b8';
+                    ctx.font = '9px monospace'; ctx.fillStyle = BAM_TOK.textFaint; ctx.fillText('£'+n.value.toLocaleString(), pos.x, pos.y+radius+17);
+                    ctx.font = '11px sans-serif'; ctx.fillStyle = n.trend==='up'?BAM_TOK.positive:n.trend==='down'?BAM_TOK.negative:BAM_TOK.textFaint;
                     ctx.fillText(n.trend==='up'?'↗':n.trend==='down'?'↘':'→', pos.x, pos.y+radius+28);
                 }
             });
@@ -293,12 +275,12 @@
             const btn = document.getElementById('insightsBtn');
             const body = document.getElementById('insightsBody');
             btn.textContent = 'Generating...'; btn.disabled = true;
-            body.innerHTML = '<p style="color:#16a34a;">⏳ Thinking...</p>';
+            body.innerHTML = '<p style="color:var(--positive);">⏳ Thinking...</p>';
             try {
                 const startRes = await fetch(tenantQS('/api/insights/{{ node.id }}'), { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({model:'deepseek/deepseek-v4.1-flash'}) });
                 const startData = await startRes.json();
                 if (!startData.ok) {
-                    body.innerHTML = '<p style="color:#dc2626;">Error: ' + (startData.error||'failed to start') + '</p>';
+                    body.innerHTML = '<p style="color:var(--negative);">Error: ' + (startData.error||'failed to start') + '</p>';
                     btn.textContent = 'Regenerate'; btn.disabled = false;
                     return;
                 }
@@ -310,30 +292,30 @@
                     const pollData = await pollRes.json();
                     if (pollData.status === 'completed') { data = pollData.result; break; }
                     if (pollData.status === 'error') {
-                        body.innerHTML = '<p style="color:#dc2626;">Error: ' + pollData.error + '</p>';
+                        body.innerHTML = '<p style="color:var(--negative);">Error: ' + pollData.error + '</p>';
                         btn.textContent = 'Regenerate'; btn.disabled = false;
                         return;
                     }
-                    body.innerHTML = '<p style="color:#16a34a;">⏳ Thinking... (' + (attempt*2) + 's)</p>';
+                    body.innerHTML = '<p style="color:var(--positive);">⏳ Thinking... (' + (attempt*2) + 's)</p>';
                 }
                 if (!data) {
-                    body.innerHTML = '<p style="color:#dc2626;">Timed out waiting for insights.</p>';
+                    body.innerHTML = '<p style="color:var(--negative);">Timed out waiting for insights.</p>';
                     btn.textContent = 'Regenerate'; btn.disabled = false;
                     return;
                 }
                 if (data.error) {
-                    body.innerHTML = '<p style="color:#dc2626;">Error: ' + data.error + '</p>';
+                    body.innerHTML = '<p style="color:var(--negative);">Error: ' + data.error + '</p>';
                 } else {
-                    let html = '<p style="color:#16a34a;margin-bottom:0.8rem;">' + (data.hypotheses||[]).length + ' hypotheses for ' + data.node_label + ' (£' + data.current_value.toLocaleString() + '/mo)</p>';
+                    let html = '<p style="color:var(--positive);margin-bottom:0.8rem;">' + (data.hypotheses||[]).length + ' hypotheses for ' + data.node_label + ' (£' + data.current_value.toLocaleString() + '/mo)</p>';
                     (data.hypotheses||[]).forEach((h, i) => {
-                        const confColor = h.confidence==='high'?'#16a34a':h.confidence==='medium'?'#d97706':'#64748b';
+                        const confColor = h.confidence==='high'?'var(--positive)':h.confidence==='medium'?'var(--warning)':'var(--text-faint)';
                         html += '<div class="hypothesis-card">';
                         html += '<h4>' + (i+1) + '. ' + h.title + '</h4>';
                         html += '<p class="desc">' + h.description + '</p>';
                         html += '<div class="meta">';
-                        html += '<span style="color:#16a34a;">💷 £' + (h.expected_impact_gbp||0).toLocaleString() + '/mo</span>';
+                        html += '<span style="color:var(--positive);">💷 £' + (h.expected_impact_gbp||0).toLocaleString() + '/mo</span>';
                         html += '<span style="color:'+confColor+';">🎯 '+h.confidence+'</span>';
-                        html += '<span style="color:#64748b;">⏱ '+h.timeline+'</span>';
+                        html += '<span style="color:var(--text-faint);">⏱ '+h.timeline+'</span>';
                         html += '</div>';
                         if (h.constraints_affected && h.constraints_affected.length) html += '<p class="metrics">⚡ Constraints: '+h.constraints_affected.join(', ')+'</p>';
                         if (h.risk) html += '<p class="risk">⚠️ '+h.risk+'</p>';
@@ -344,10 +326,9 @@
                     body.innerHTML = html;
                 }
             } catch(e) {
-                body.innerHTML = '<p style="color:#dc2626;">Error: '+e.message+'</p>';
+                body.innerHTML = '<p style="color:var(--negative);">Error: '+e.message+'</p>';
             }
             btn.textContent = 'Regenerate'; btn.disabled = false;
         }
     </script>
-</body>
-</html>
+{% endblock %}

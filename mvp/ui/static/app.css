@@ -1,0 +1,306 @@
+/* ==========================================================================
+   BAM application shell — authenticated pages.
+   Mirrors the marketing site chrome: translucent sticky nav, mono labels,
+   acid accent, serif titles. Page-specific CSS layers on top of this.
+   ========================================================================== */
+
+body.app {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+/* ── Top navigation ─────────────────────────────────────────────────────── */
+.app-nav {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  min-height: 58px;
+  padding: 0 1.5rem;
+  background: rgba(10, 11, 13, .82);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+.app-nav__brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.app-nav__brand:hover { text-decoration: none; }
+.app-nav__mark { color: var(--accent); }
+.app-nav__links {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  overflow-x: auto;
+}
+.app-nav__links a { color: var(--text-faint); text-decoration: none; white-space: nowrap; padding: .35rem 0; }
+.app-nav__links a:hover { color: var(--text); text-decoration: none; }
+.app-nav__links a.active { color: var(--accent); }
+.app-nav__right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  font-size: .72rem;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+.app-nav__right select {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: .68rem;
+  padding: .3rem .45rem;
+  border-radius: var(--radius-sm);
+}
+.app-nav__user { color: var(--text-muted); font-family: var(--mono); font-size: .68rem; }
+.app-nav__signout {
+  font-family: var(--mono);
+  font-size: .68rem;
+  letter-spacing: .04em;
+  color: var(--text-faint);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: .3rem .55rem;
+  cursor: pointer;
+}
+.app-nav__signout:hover { color: var(--text); border-color: var(--border-strong); }
+
+/* ── Two-column shell: content + persistent graph ───────────────────────── */
+.app-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  max-width: 1440px;
+  margin: 0 auto;
+  align-items: start;
+}
+.app-main { min-width: 0; }
+
+.app-aside {
+  position: sticky;
+  top: 58px;
+  height: calc(100vh - 58px);
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  padding: 1.25rem 1.25rem 1.5rem;
+  border-left: 1px solid var(--border);
+  background: var(--bg-2);
+  overflow: hidden;
+}
+.app-graph__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .5rem;
+}
+.app-graph__eyebrow {
+  font-family: var(--mono);
+  font-size: .66rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.app-graph__live {
+  font-family: var(--mono);
+  font-size: .62rem;
+  color: var(--text-faint);
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+}
+.app-graph__live::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--positive);
+  box-shadow: 0 0 6px var(--positive);
+}
+.app-graph__canvas {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background:
+    radial-gradient(circle at 50% 40%, rgba(215, 255, 62, .04), transparent 60%),
+    var(--surface);
+}
+.app-graph__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem .8rem;
+  font-family: var(--mono);
+  font-size: .6rem;
+  color: var(--text-faint);
+}
+.app-graph__legend span { display: inline-flex; align-items: center; gap: .3rem; }
+.app-graph__legend i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+.app-graph__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  font-family: var(--mono);
+  font-size: .62rem;
+  color: var(--text-faint);
+}
+.app-graph__foot a { color: var(--accent); }
+.app-graph__empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: .5rem;
+  padding: 1rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  color: var(--text-faint);
+  font-size: .78rem;
+}
+
+/* Page headings inside the content column */
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.page-head h1 { font-size: 1.9rem; }
+.page-head .page-sub {
+  font-family: var(--mono);
+  font-size: .68rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: .4rem;
+}
+.back-link {
+  font-family: var(--mono);
+  font-size: .7rem;
+  color: var(--text-faint);
+}
+.back-link:hover { color: var(--accent); text-decoration: none; }
+
+/* Auth / utility pages keep the marketing frame without the graph column */
+.auth-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.25rem;
+}
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+}
+.auth-card .eyebrow {
+  font-family: var(--mono);
+  font-size: .65rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: .75rem;
+}
+.auth-card h1 { font-size: 1.6rem; margin-bottom: .35rem; }
+.auth-card .sub { color: var(--text-faint); font-size: .78rem; margin-bottom: 1.6rem; }
+.auth-card label {
+  display: block;
+  font-family: var(--mono);
+  font-size: .64rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: .35rem;
+}
+.auth-card input[type=email],
+.auth-card input[type=password],
+.auth-card input[type=text] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: .6rem .7rem;
+  margin-bottom: 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: .9rem;
+}
+.auth-card input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.auth-card button {
+  width: 100%;
+  padding: .65rem;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  background: var(--accent);
+  color: var(--bg);
+  font-family: var(--mono);
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.auth-card button:hover { background: var(--accent-strong); }
+.auth-card .flash {
+  padding: .6rem .75rem;
+  border-radius: var(--radius-sm);
+  font-size: .78rem;
+  margin-bottom: 1rem;
+  border: 1px solid;
+}
+.auth-card .flash.error { background: var(--negative-soft); border-color: var(--negative); color: var(--negative); }
+.auth-card .flash.message { background: var(--positive-soft); border-color: var(--positive); color: var(--positive); }
+.auth-card .foot { margin-top: 1.4rem; font-size: .66rem; color: var(--text-faint); text-align: center; }
+
+/* ── Responsive: graph moves above the content, never disappears ────────── */
+@media (max-width: 1080px) {
+  .app-shell { grid-template-columns: minmax(0, 1fr); }
+  .app-aside {
+    position: relative;
+    top: 0;
+    height: auto;
+    order: -1;
+    border-left: none;
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.25rem;
+  }
+  .app-graph__canvas { height: 260px; flex: none; }
+}
+@media (max-width: 720px) {
+  .app-nav { flex-wrap: wrap; gap: .6rem 1rem; padding: .6rem 1rem; }
+  .app-nav__links { order: 3; width: 100%; gap: .9rem; }
+  .app-nav__right { margin-left: 0; order: 2; }
+  .app-nav__brand { margin-right: auto; }
+}

@@ -1,42 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Business as a Machine — {{ company.name }}</title>
+{% extends "shell.html" %}
+{% block title %}{{ company.name }} — Dashboard · BAM{% endblock %}
+{% block head %}
+    <script src="/static/tokens.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-        <link rel="stylesheet" href="/static/base.css">
     <link rel="stylesheet" href="/static/dashboard.css">
-</head>
-<body>
-    <div class="header">
-        <h1>Business as a Machine</h1>
-        <div class="subtitle">{{ company.name }} — {{ company.period }}</div>
-        <div class="company-number">Company Number: {{ company.number }}</div>
-        {% if auth_user %}
-        <div class="company-number" style="display:flex;gap:0.5rem;align-items:center;margin-top:0.35rem;">
-            <span>{{ auth_user.display_name }}</span>
-            <form method="post" action="/logout" style="margin:0;">
-                <button type="submit" style="font-size:0.72rem;padding:0.2rem 0.5rem;border:1px solid #e2e8f0;border-radius:5px;background:#fff;cursor:pointer;">Sign out</button>
-            </form>
-        </div>
-        {% endif %}
-    </div>
-
-    <div class="nav">
-        <a href="#overview" class="active">Overview</a>
-        <a href="#revenue">Revenue</a>
-        <a href="#costs">Costs</a>
-        <a href="#hourly">Hourly</a>
-        <a href="#kpi">KPIs</a>
-        <a href="#staff">Staff</a>
-        <a href="#products">Products</a>
-        <a href="#graph">Graph</a>
-        <a href="#query">Ask</a>
-        <a href="#experiment">Experiments</a>
-    </div>
-
+{% endblock %}
+{% block content %}
     <div class="container">
+        <div class="page-head">
+            <div>
+                <div class="page-sub">Dashboard · {{ company.period }}</div>
+                <h1>{{ company.name }}</h1>
+            </div>
+            <a class="back-link" href="/">← P&amp;L overview</a>
+        </div>
         <!-- Overview Stats -->
         <div class="stats-grid" id="overview">
             <div class="stat-card">
@@ -143,10 +120,10 @@
             <h2 class="section-title">KPI Dashboard vs Benchmarks</h2>
             <div class="card">
                 {% for status in ["critical", "poor", "ok", "good"] %}
-                {% if status == "critical" %}<h3 style="color:#dc2626;margin-bottom:0.5rem;">Critical</h3>{% endif %}
-                {% if status == "poor" %}<h3 style="color:#ea580c;margin-bottom:0.5rem;">Poor</h3>{% endif %}
-                {% if status == "ok" %}<h3 style="color:#d97706;margin-bottom:0.5rem;">OK</h3>{% endif %}
-                {% if status == "good" %}<h3 style="color:#16a34a;margin-bottom:0.5rem;">Good</h3>{% endif %}
+                {% if status == "critical" %}<h3 style="color:var(--negative);margin-bottom:0.5rem;">Critical</h3>{% endif %}
+                {% if status == "poor" %}<h3 style="color:var(--warning);margin-bottom:0.5rem;">Poor</h3>{% endif %}
+                {% if status == "ok" %}<h3 style="color:var(--warning);margin-bottom:0.5rem;">OK</h3>{% endif %}
+                {% if status == "good" %}<h3 style="color:var(--positive);margin-bottom:0.5rem;">Good</h3>{% endif %}
                 {% for kpi_name, kpi in kpis.items() %}
                 {% if kpi.status == status and kpi.benchmark and kpi.value is not none %}
                 <div class="kpi-row">
@@ -175,7 +152,7 @@
             <div class="opp-card">
                 <div>
                     <h4>{{ opp.kpi.replace("_", " ").title() }}</h4>
-                    <div style="color:#64748b;font-size:0.85rem;">Current: <strong>{{ "%.1f"|format(opp.current) }}</strong> → Target: <strong>{{ "%.1f"|format(opp.target) }}</strong></div>
+                    <div style="color:var(--text-faint);font-size:0.85rem;">Current: <strong>{{ "%.1f"|format(opp.current) }}</strong> → Target: <strong>{{ "%.1f"|format(opp.target) }}</strong></div>
                 </div>
                 <div class="gap">Gap: {{ "%+.1f"|format(opp.gap) }}</div>
             </div>
@@ -310,9 +287,11 @@
         Business as a Machine MVP — {{ company.name }} — Built with Flask + Chart.js
     </div>
 
+{% endblock %}
+{% block scripts %}
     <script>
-        Chart.defaults.color = '#64748b';
-        Chart.defaults.borderColor = '#e2e8f0';
+        Chart.defaults.color = BAM_TOK.textFaint;
+        Chart.defaults.borderColor = BAM_TOK.text;
         Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, sans-serif';
 
         const months = {{ monthly | map(attribute='month') | list | tojson }};
@@ -328,15 +307,15 @@
             data: {
                 labels: months,
                 datasets: [
-                    { label: 'Revenue', data: revenues, backgroundColor: 'rgba(76, 175, 80, 0.6)', borderColor: '#16a34a', borderWidth: 1 },
-                    { label: 'COGS', data: cogs, backgroundColor: 'rgba(255, 87, 34, 0.6)', borderColor: '#ea580c', borderWidth: 1 },
-                    { label: 'Staff', data: staffCosts, backgroundColor: 'rgba(255, 152, 0, 0.6)', borderColor: '#d97706', borderWidth: 1 },
-                    { label: 'Overheads', data: overheads, backgroundColor: 'rgba(156, 39, 176, 0.6)', borderColor: '#9c27b0', borderWidth: 1 }
+                    { label: 'Revenue', data: revenues, backgroundColor: 'rgba(76, 175, 80, 0.6)', borderColor: BAM_TOK.positive, borderWidth: 1 },
+                    { label: 'COGS', data: cogs, backgroundColor: 'rgba(255, 87, 34, 0.6)', borderColor: BAM_TOK.warning, borderWidth: 1 },
+                    { label: 'Staff', data: staffCosts, backgroundColor: 'rgba(255, 152, 0, 0.6)', borderColor: BAM_TOK.warning, borderWidth: 1 },
+                    { label: 'Overheads', data: overheads, backgroundColor: 'rgba(156, 39, 176, 0.6)', borderColor: BAM_TOK.metric, borderWidth: 1 }
                 ]
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                plugins: { title: { display: true, text: 'Monthly Revenue vs Costs', color: '#fff' } },
+                plugins: { title: { display: true, text: 'Monthly Revenue vs Costs', color: 'var(--text)' } },
                 scales: { y: { beginAtZero: true, ticks: { callback: v => '£' + v.toLocaleString() } } }
             }
         });
@@ -349,17 +328,17 @@
                 datasets: [{
                     label: 'Operating Profit',
                     data: opProfits,
-                    borderColor: '#16a34a',
+                    borderColor: BAM_TOK.positive,
                     backgroundColor: 'rgba(76, 175, 80, 0.1)',
                     fill: true,
                     tension: 0.3,
                     pointRadius: 6,
-                    pointBackgroundColor: '#16a34a'
+                    pointBackgroundColor: BAM_TOK.positive
                 }]
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                plugins: { title: { display: true, text: 'Operating Profit Trend', color: '#fff' } },
+                plugins: { title: { display: true, text: 'Operating Profit Trend', color: 'var(--text)' } },
                 scales: { y: { ticks: { callback: v => '£' + v.toLocaleString() } } }
             }
         });
@@ -375,14 +354,14 @@
                 labels: ['COGS', 'Staff', 'Overheads'],
                 datasets: [{
                     data: [avgCogs, avgStaff, avgOh],
-                    backgroundColor: ['#ea580c', '#d97706', '#9c27b0'],
+                    backgroundColor: [BAM_TOK.warning, BAM_TOK.warning, BAM_TOK.metric],
                     borderWidth: 0
                 }]
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
                 plugins: {
-                    title: { display: true, text: 'Avg Monthly Cost Breakdown', color: '#fff' },
+                    title: { display: true, text: 'Avg Monthly Cost Breakdown', color: 'var(--text)' },
                     legend: { position: 'bottom' }
                 }
             }
@@ -392,7 +371,7 @@
         const catRevenue = {{ cat_revenue | tojson }};
         const catLabels = Object.keys(catRevenue).map(l => l.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
         const catValues = Object.values(catRevenue);
-        const catColors = ['#16a34a', '#2196f3', '#d97706', '#9c27b0'];
+        const catColors = [BAM_TOK.positive, BAM_TOK.accent, BAM_TOK.warning, BAM_TOK.metric];
 
         new Chart(document.getElementById('categoryChart'), {
             type: 'pie',
@@ -407,7 +386,7 @@
             options: {
                 responsive: true, maintainAspectRatio: false,
                 plugins: {
-                    title: { display: true, text: 'Revenue by Category (3 months)', color: '#fff' },
+                    title: { display: true, text: 'Revenue by Category (3 months)', color: 'var(--text)' },
                     legend: { position: 'bottom' }
                 }
             }
@@ -425,12 +404,12 @@
                 labels: hours,
                 datasets: [
                     { label: 'Revenue (£)', data: hourRev, backgroundColor: 'rgba(76, 175, 80, 0.5)', yAxisID: 'y' },
-                    { label: 'Transactions', data: hourTxn, type: 'line', borderColor: '#2196f3', backgroundColor: 'transparent', yAxisID: 'y1', tension: 0.3, pointRadius: 4 }
+                    { label: 'Transactions', data: hourTxn, type: 'line', borderColor: BAM_TOK.accent, backgroundColor: 'transparent', yAxisID: 'y1', tension: 0.3, pointRadius: 4 }
                 ]
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                plugins: { title: { display: true, text: 'Hourly Revenue & Transaction Volume (3 months)', color: '#fff' } },
+                plugins: { title: { display: true, text: 'Hourly Revenue & Transaction Volume (3 months)', color: 'var(--text)' } },
                 scales: {
                     y: { type: 'linear', position: 'left', ticks: { callback: v => '£' + v.toLocaleString() } },
                     y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false } }
@@ -476,7 +455,7 @@
                 case 'rent': params.rent_reduction = value; name = 'Rent Reduction £' + value; break;
             }
 
-            results.innerHTML = '<p style="color:#64748b;">Running experiment...</p>';
+            results.innerHTML = '<p style="color:var(--text-faint);">Running experiment...</p>';
 
             try {
                 const res = await fetch('/api/experiment', {
@@ -491,12 +470,12 @@
                 for (const [key, val] of Object.entries(data.impact)) {
                     const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
                     if (typeof val === 'number') {
-                        const color = val > 0 ? '#16a34a' : val < 0 ? '#dc2626' : '#64748b';
+                        const color = val > 0 ? 'var(--positive)' : val < 0 ? 'var(--negative)' : 'var(--text-faint)';
                         html += '<div class="impact">' + label + ': <span style="color:' + color + '">£' + val.toLocaleString('en-GB', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</span></div>';
                     }
                 }
                 if (data.assumptions) {
-                    html += '<div style="margin-top:0.5rem;color:#64748b;font-size:0.85rem;">';
+                    html += '<div style="margin-top:0.5rem;color:var(--text-faint);font-size:0.85rem;">';
                     html += '<strong>Assumptions:</strong><br>';
                     data.assumptions.forEach(a => { html += '<span class="assumption">• ' + a + '</span><br>'; });
                     html += '</div>';
@@ -504,9 +483,8 @@
                 html += '</div>';
                 results.innerHTML = html;
             } catch (err) {
-                results.innerHTML = '<p style="color:#dc2626;">Error: ' + err.message + '</p>';
+                results.innerHTML = '<p style="color:var(--negative);">Error: ' + err.message + '</p>';
             }
         }
     </script>
-</body>
-</html>
+{% endblock %}

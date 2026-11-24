@@ -1,0 +1,30 @@
+<nav class="app-nav">
+  <a class="app-nav__brand" href="/"><span class="app-nav__mark">◈</span> BAM</a>
+  <div class="app-nav__links">
+    <a href="/" class="{% if request.path == '/' %}active{% endif %}">Overview</a>
+    <a href="/dashboard" class="{% if request.path.startswith('/dashboard') %}active{% endif %}">Dashboard</a>
+    <a href="/graph/chat" class="{% if request.path.startswith('/graph') %}active{% endif %}">Change model</a>
+  </div>
+  <div class="app-nav__right">
+    {% if tenants and current_tenant %}
+    <select id="tenantSelect" onchange="switchTenant(this.value)" aria-label="Company">
+      {% for tid, t in tenants.items() %}
+      <option value="{{ tid }}" {% if tid == current_tenant %}selected{% endif %}>{{ t.icon or '' }} {{ t.name }}</option>
+      {% endfor %}
+    </select>
+    {% endif %}
+    {% if auth_user %}
+    <span class="app-nav__user">{{ auth_user.display_name }}</span>
+    <form method="post" action="/logout" style="margin:0;">
+      <button type="submit" class="app-nav__signout">Sign out</button>
+    </form>
+    {% endif %}
+  </div>
+</nav>
+<script>
+  function switchTenant(tid) {
+    var url = new URL(window.location.href);
+    url.searchParams.set('tenant', tid);
+    window.location.href = url.toString();
+  }
+</script>

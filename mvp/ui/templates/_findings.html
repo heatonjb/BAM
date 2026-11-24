@@ -1,0 +1,13 @@
+{% for f in findings %}
+<div class="ob-finding">
+    <div class="ob-finding__row">
+        <span class="ob-finding__t">{{ f.title }}</span>
+        <span class="ob-finding__v">{{ f.value }}</span>
+    </div>
+    <div class="ob-finding__r">{{ f.reading }}</div>
+    {% if not compact %}
+    <div class="ob-finding__q">{{ f.question }}</div>
+    <div class="ob-finding__g">{{ f.template_gap }}</div>
+    {% endif %}
+</div>
+{% endfor %}

@@ -1,0 +1,121 @@
+<aside class="app-aside" aria-label="Transformation graph">
+  <div class="app-graph__head">
+    <span class="app-graph__eyebrow">Transformation graph</span>
+    {% if shell_graph and shell_graph.nodes %}<span class="app-graph__live">live</span>{% endif %}
+  </div>
+
+  {% if shell_graph and shell_graph.nodes %}
+  <svg id="shellGraph" class="app-graph__canvas" viewBox="0 0 320 360" role="img"
+       aria-label="Graph of this business: {{ shell_graph.nodes|length }} nodes across {{ shell_graph.levels }} layers"></svg>
+  <div class="app-graph__legend">
+    <span><i style="background:#d7ff3e"></i>revenue</span>
+    <span><i style="background:#ff6b5a"></i>cost</span>
+    <span><i style="background:#7cc4ff"></i>process</span>
+    <span><i style="background:#e8a33d"></i>input</span>
+    <span><i style="background:#b6a6ff"></i>metric</span>
+    <span><i style="background:#b6b3ac"></i>aggregate</span>
+  </div>
+  <div class="app-graph__foot">
+    <span>{{ shell_graph.nodes|length }} nodes · {{ shell_graph.levels }} layers</span>
+    <a href="/graph/chat">Change model →</a>
+  </div>
+  {% else %}
+  <div class="app-graph__empty">
+    <span>No graph yet.</span>
+    <span>Connect a source or describe the business to build one.</span>
+    <a class="back-link" href="/onboarding">Start onboarding →</a>
+  </div>
+  {% endif %}
+</aside>
+{% if shell_graph and shell_graph.nodes %}
+<script>
+(function () {
+  var data = {{ shell_graph | tojson }};
+  var svg = document.getElementById("shellGraph");
+  if (!svg) return;
+  var NS = "http://www.w3.org/2000/svg";
+  var W = 320, H = 360, CX = W / 2, CY = H / 2;
+  var COLOURS = {
+    revenue: "#d7ff3e", cost: "#ff6b5a", process: "#7cc4ff", input: "#e8a33d",
+    asset: "#5bd6a0", liability: "#ff8fd0", metric: "#b6a6ff", aggregate: "#b6b3ac"
+  };
+
+  // Two rings: level 0 inside, level 1 outside. Deterministic, so the same
+  // business always draws the same schematic.
+  var inner = data.nodes.filter(function (n) { return n.level === 0; });
+  var outer = data.nodes.filter(function (n) { return n.level > 0; });
+  var pos = {};
+  inner.forEach(function (n, i) {
+    var a = -Math.PI / 2 + (2 * Math.PI * i) / Math.max(inner.length, 1);
+    pos[n.id] = { x: CX + Math.cos(a) * 66, y: CY + Math.sin(a) * 118 };
+  });
+  outer.forEach(function (n, i) {
+    var a = -Math.PI / 2 + (2 * Math.PI * i) / Math.max(outer.length, 1);
+    pos[n.id] = { x: CX + Math.cos(a) * 128, y: CY + Math.sin(a) * 158 };
+  });
+
+  var byId = {};
+  data.nodes.forEach(function (n) { byId[n.id] = n; });
+
+  data.edges.forEach(function (e, i) {
+    var a = pos[e.source], b = pos[e.target];
+    if (!a || !b) return;
+    var line = document.createElementNS(NS, "line");
+    line.setAttribute("x1", a.x); line.setAttribute("y1", a.y);
+    line.setAttribute("x2", b.x); line.setAttribute("y2", b.y);
+    line.setAttribute("stroke", "#2b313a");
+    line.setAttribute("stroke-width", "1");
+    svg.appendChild(line);
+
+    var dot = document.createElementNS(NS, "circle");
+    dot.setAttribute("r", "1.6");
+    dot.setAttribute("fill", "#d7ff3e");
+    dot.setAttribute("opacity", "0.75");
+    var anim = document.createElementNS(NS, "animateMotion");
+    anim.setAttribute("dur", (3.2 + (i % 4) * 0.6).toFixed(1) + "s");
+    anim.setAttribute("repeatCount", "indefinite");
+    anim.setAttribute("path", "M" + a.x + "," + a.y + " L" + b.x + "," + b.y);
+    anim.setAttribute("begin", (i * 0.35).toFixed(2) + "s");
+    dot.appendChild(anim);
+    svg.appendChild(dot);
+  });
+
+  data.nodes.forEach(function (n) {
+    var p = pos[n.id];
+    if (!p) return;
+    var colour = COLOURS[n.type] || "#b6b3ac";
+    var r = Math.max(3.5, Math.min(8, Math.sqrt(Math.abs(n.value || 0)) / 4));
+    var g = document.createElementNS(NS, "g");
+    g.setAttribute("class", "graph-node");
+    g.setAttribute("data-id", n.id);
+    g.style.cursor = "pointer";
+
+    var c = document.createElementNS(NS, "circle");
+    c.setAttribute("cx", p.x); c.setAttribute("cy", p.y); c.setAttribute("r", r);
+    c.setAttribute("fill", n.level === 0 ? colour : "#14171c");
+    c.setAttribute("stroke", colour);
+    c.setAttribute("stroke-width", n.level === 0 ? "1" : "1.2");
+    g.appendChild(c);
+
+    var title = document.createElementNS(NS, "title");
+    title.textContent = n.label + " · " + n.value.toLocaleString("en-GB", { maximumFractionDigits: 0 });
+    g.appendChild(title);
+
+    if (n.level === 0) {
+      var t = document.createElementNS(NS, "text");
+      t.setAttribute("x", p.x + r + 5);
+      t.setAttribute("y", p.y + 3);
+      t.setAttribute("fill", "#b6b3ac");
+      t.setAttribute("font-family", "ui-monospace, SFMono-Regular, Menlo, monospace");
+      t.setAttribute("font-size", "8");
+      t.textContent = n.short;
+      g.appendChild(t);
+    }
+    g.addEventListener("click", function () {
+      window.location.href = "/drill/" + encodeURIComponent(n.id) + "?tenant=" + encodeURIComponent(data.tenant);
+    });
+    svg.appendChild(g);
+  });
+})();
+</script>
+{% endif %}

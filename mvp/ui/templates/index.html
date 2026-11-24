@@ -1,53 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Business as a Machine — {{ company.name }}</title>
-        <link rel="stylesheet" href="/static/base.css">
+{% extends "shell.html" %}
+{% block title %}{{ company.name }} — Business as a Machine{% endblock %}
+{% block head %}
+    <script src="/static/tokens.js"></script>
     <link rel="stylesheet" href="/static/index.css">
-</head>
-<body>
-    <div class="header">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
-            <div>
-                <h1>⚙️ Business as a Machine</h1>
-                <div class="sub">{{ company.name }} · {{ company.number }} · {{ company.period }}</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:0.4rem;">
-                <label for="tenantSelect" style="color:#64748b;font-size:0.75rem;">Company:</label>
-                <select id="tenantSelect" onchange="switchTenant(this.value)" style="background:#ffffff;color:#334155;border:1px solid #e2e8f0;border-radius:4px;padding:0.35rem 0.6rem;font-size:0.8rem;cursor:pointer;">
-                    {% for tid, t in tenants.items() %}
-                    <option value="{{ tid }}" {% if tid == current_tenant %}selected{% endif %}>{{ t.icon or '' }} {{ t.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <a href="/dashboard?tenant={{ current_tenant }}" style="color:#64748b;font-size:0.8rem;text-decoration:none;padding:0.35rem 0.6rem;border:1px solid #e2e8f0;border-radius:6px;background:#ffffff;">📊 Dashboard</a>
-            {% if auth_user %}
-            <span style="color:#64748b;font-size:0.75rem;">{{ auth_user.display_name }}</span>
-            <form method="post" action="/logout" style="margin:0;">
-                <button type="submit" style="color:#64748b;font-size:0.75rem;padding:0.35rem 0.6rem;border:1px solid #e2e8f0;border-radius:6px;background:#ffffff;cursor:pointer;">Sign out</button>
-            </form>
-            {% endif %}
-        </div>
-    </div>
-    <script>
-        const CURRENT_TENANT = "{{ current_tenant }}";
-        function tenantQS(url) {
-            const sep = url.includes('?') ? '&' : '?';
-            return url + sep + 'tenant=' + encodeURIComponent(CURRENT_TENANT);
-        }
-        function switchTenant(tid) {
-            const url = new URL(window.location.href);
-            url.searchParams.set('tenant', tid);
-            window.location.href = url.toString();
-        }
-    </script>
+{% endblock %}
+{% block content %}
     <div class="container">
+        <div class="page-head">
+            <div>
+                <div class="page-sub">Profit &amp; loss · {{ company.period }}</div>
+                <h1>{{ company.name }}</h1>
+            </div>
+            <a class="back-link" href="/dashboard">Full dashboard →</a>
+        </div>
         
         <div style="margin-bottom:0.5rem;">
-            <h2 style="font-size:1rem;color:#64748b;font-family:-apple-system,sans-serif;font-weight:400;">Profit & Loss</h2>
-            <p style="color:#e2e8f0;font-size:0.7rem;margin-bottom:0.8rem;">Click a row to drill in · 💡 for AI hypotheses</p>
+            <h2 style="font-size:1rem;color:var(--text-faint);font-weight:400;">Profit & Loss</h2>
+            <p style="color:var(--text);font-size:0.7rem;margin-bottom:0.8rem;">Click a row to drill in · 💡 for AI hypotheses</p>
         </div>
         <div class="pnl-section">
         {% for row in pnl %}
@@ -61,14 +30,14 @@
                 <div>
                     {% if row.sparkline|length > 0 %}
                     <div class="change-badge {% if row.trend == 'up' %}change-up{% elif row.trend == 'down' %}change-down{% else %}change-flat{% endif %}">{% if row.trend == 'up' %}▲{% elif row.trend == 'down' %}▼{% else %}─{% endif %} {{ "%+.1f"|format(row.change_7d_pct) }}%</div>
-                    <div style="font-size:0.6rem;color:#94a3b8;text-align:right;margin-top:2px;">30d {{ "%+.1f"|format(row.change_30d_pct) }}%</div>
+                    <div style="font-size:0.6rem;color:var(--text-faint);text-align:right;margin-top:2px;">30d {{ "%+.1f"|format(row.change_30d_pct) }}%</div>
                     {% endif %}
                 </div>
                 <div class="sparkline-container">
                     {% if row.sparkline|length > 0 %}
                     <svg width="50" height="24" viewBox="0 0 50 24">
                         {% set vals = row.sparkline %}{% set min_v = vals|min %}{% set max_v = vals|max %}{% set range_v = max_v - min_v if max_v != min_v else 1 %}
-                        {% set trend_color = '#16a34a' if row.trend == 'up' else '#dc2626' if row.trend == 'down' else '#94a3b8' %}
+                        {% set trend_color = 'var(--positive)' if row.trend == 'up' else 'var(--negative)' if row.trend == 'down' else 'var(--text-faint)' %}
                         <polyline fill="none" stroke="{{ trend_color }}" stroke-width="1.2" points="{% for v in vals %}{{ (loop.index0 / (vals|length - 1)) * 50 }},{{ 22 - ((v - min_v) / range_v) * 20 }}{% endfor %}" />
                     </svg>{% endif %}
                 </div>
@@ -85,101 +54,105 @@
         <div style="margin-top:2.5rem;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;">
                 <div>
-                    <h2 style="font-size:1rem;color:#64748b;font-family:-apple-system,sans-serif;font-weight:400;">Strategy Arbiter</h2>
-                    <p style="color:#e2e8f0;font-size:0.7rem;margin-top:0.15rem;">Runs the root agent — specialists generate growth hypotheses, the arbiter selects the portfolio</p>
+                    <h2 style="font-size:1rem;color:var(--text-faint);font-weight:400;">Strategy Arbiter</h2>
+                    <p style="color:var(--text);font-size:0.7rem;margin-top:0.15rem;">Runs the root agent — specialists generate growth hypotheses, the arbiter selects the portfolio</p>
                 </div>
-                <button id="arbiterBtn" onclick="runStrategyArbiter()" style="background:#eef2ff;color:#16a34a;border:1px solid #16a34a;border-radius:6px;padding:0.5rem 1rem;cursor:pointer;font-size:0.8rem;font-family:-apple-system,sans-serif;white-space:nowrap;">▶ Run Arbiter</button>
+                <button id="arbiterBtn" onclick="runStrategyArbiter()" style="background:var(--surface-2);color:var(--positive);border:1px solid var(--positive);border-radius:6px;padding:0.5rem 1rem;cursor:pointer;font-size:0.8rem;white-space:nowrap;">▶ Run Arbiter</button>
             </div>
-            <div id="arbiterResult" style="display:none;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:1rem;margin-top:0.8rem;">
-                <div id="arbiterContent" style="color:#475569;font-size:0.8rem;font-family:-apple-system,sans-serif;"></div>
+            <div id="arbiterResult" style="display:none;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-top:0.8rem;">
+                <div id="arbiterContent" style="color:var(--text-muted);font-size:0.8rem;"></div>
             </div>
             <div id="activeInitiatives" style="display:none;margin-top:1rem;">
-                <h4 style="color:#777;font-size:0.75rem;margin:0 0 0.5rem;font-weight:500;font-family:-apple-system,sans-serif;">Active Initiatives <span style="color:#94a3b8;font-weight:400;">· the arbiter plans around these</span></h4>
-                <div id="activeInitiativesList" style="font-family:-apple-system,sans-serif;"></div>
+                <h4 style="color:var(--text-faint);font-size:0.75rem;margin:0 0 0.5rem;font-weight:500;">Active Initiatives <span style="color:var(--text-faint);font-weight:400;">· the arbiter plans around these</span></h4>
+                <div id="activeInitiativesList" style=""></div>
             </div>
         </div>
 
         <!-- P&L Projections (Nothing Changes) -->
         <div style="margin-top:2.5rem;">
-            <h2 style="font-size:1rem;color:#64748b;font-family:-apple-system,sans-serif;font-weight:400;margin-bottom:0.2rem;">P&L Projections</h2>
-            <p style="color:#e2e8f0;font-size:0.7rem;margin-bottom:0.8rem;">Assuming nothing changes · current monthly averages held flat</p>
-            <div style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
+            <h2 style="font-size:1rem;color:var(--text-faint);font-weight:400;margin-bottom:0.2rem;">P&L Projections</h2>
+            <p style="color:var(--text);font-size:0.7rem;margin-bottom:0.8rem;">Assuming nothing changes · current monthly averages held flat</p>
+            <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
                 <table style="width:100%;border-collapse:collapse;font-size:0.8rem;">
                     <thead>
-                        <tr style="border-bottom:1px solid #f1f5f9;color:#94a3b8;font-weight:400;text-align:right;">
-                            <th style="text-align:left;padding:0.7rem 1rem;font-weight:500;font-family:-apple-system,sans-serif;">Line Item</th>
-                            <th style="padding:0.7rem 1rem;font-weight:500;font-family:-apple-system,sans-serif;">Current (mo)</th>
-                            <th style="padding:0.7rem 1rem;font-weight:500;font-family:-apple-system,sans-serif;">1 Month</th>
-                            <th style="padding:0.7rem 1rem;font-weight:500;font-family:-apple-system,sans-serif;">3 Months</th>
-                            <th style="padding:0.7rem 1rem;font-weight:500;font-family:-apple-system,sans-serif;">1 Year</th>
+                        <tr style="border-bottom:1px solid var(--border);color:var(--text-faint);font-weight:400;text-align:right;">
+                            <th style="text-align:left;padding:0.7rem 1rem;font-weight:500;">Line Item</th>
+                            <th style="padding:0.7rem 1rem;font-weight:500;">Current (mo)</th>
+                            <th style="padding:0.7rem 1rem;font-weight:500;">1 Month</th>
+                            <th style="padding:0.7rem 1rem;font-weight:500;">3 Months</th>
+                            <th style="padding:0.7rem 1rem;font-weight:500;">1 Year</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for p in projections %}
-                        <tr style="border-bottom:1px solid #ffffff;{% if p.type == 'metric' %}background:#080808;{% endif %}">
-                            <td style="padding:0.6rem 1rem;color:{% if p.type == 'metric' %}#0f172a{% else %}#475569{% endif %};font-family:-apple-system,sans-serif;">
+                        <tr style="border-bottom:1px solid var(--border);{% if p.type == 'metric' %}background:var(--surface-2);{% endif %}">
+                            <td style="padding:0.6rem 1rem;color:{% if p.type == 'metric' %}var(--text){% else %}var(--text-muted){% endif %};">
                                 <span style="margin-right:0.4rem;">{{ p.icon }}</span>{{ p.label }}
                             </td>
-                            <td style="padding:0.6rem 1rem;text-align:right;color:#64748b;font-variant-numeric:tabular-nums;font-family:-apple-system,sans-serif;">£{{ "{:,.2f}".format(p.current) }}</td>
-                            <td style="padding:0.6rem 1rem;text-align:right;color:#475569;font-variant-numeric:tabular-nums;font-family:-apple-system,sans-serif;">£{{ "{:,.2f}".format(p.m1) }}</td>
-                            <td style="padding:0.6rem 1rem;text-align:right;color:#475569;font-variant-numeric:tabular-nums;font-family:-apple-system,sans-serif;">£{{ "{:,.2f}".format(p.m3) }}</td>
-                            <td style="padding:0.6rem 1rem;text-align:right;color:#475569;font-variant-numeric:tabular-nums;font-family:-apple-system,sans-serif;">£{{ "{:,.2f}".format(p.y1) }}</td>
+                            <td style="padding:0.6rem 1rem;text-align:right;color:var(--text-faint);font-variant-numeric:tabular-nums;">£{{ "{:,.2f}".format(p.current) }}</td>
+                            <td style="padding:0.6rem 1rem;text-align:right;color:var(--text-muted);font-variant-numeric:tabular-nums;">£{{ "{:,.2f}".format(p.m1) }}</td>
+                            <td style="padding:0.6rem 1rem;text-align:right;color:var(--text-muted);font-variant-numeric:tabular-nums;">£{{ "{:,.2f}".format(p.m3) }}</td>
+                            <td style="padding:0.6rem 1rem;text-align:right;color:var(--text-muted);font-variant-numeric:tabular-nums;">£{{ "{:,.2f}".format(p.y1) }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-            <p style="color:#94a3b8;font-size:0.65rem;margin-top:0.6rem;font-family:-apple-system,sans-serif;">This is a flat projection — no growth, no cost inflation, no seasonal variation. It shows what happens if every month looks like the current average.</p>
+            <p style="color:var(--text-faint);font-size:0.65rem;margin-top:0.6rem;">This is a flat projection — no growth, no cost inflation, no seasonal variation. It shows what happens if every month looks like the current average.</p>
         </div>
     </div>
     <div class="footer">Business as a Machine MVP · {{ company.name }}</div>
 
     <!-- Insights Panel (hidden by default) -->
     <div id="insightsPanel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;overflow-y:auto;">
-        <div style="max-width:700px;margin:2rem auto;background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:1.5rem;">
+        <div style="max-width:700px;margin:2rem auto;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.5rem;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-                <h3 style="color:#0f172a;font-family:-apple-system,sans-serif;" id="insightsTitle">💡 AI Insights</h3>
-                <button onclick="document.getElementById('insightsPanel').style.display='none'" style="background:#f1f5f9;color:#64748b;border:1px solid #94a3b8;padding:0.3rem 0.8rem;border-radius:4px;cursor:pointer;">✕</button>
+                <h3 style="color:var(--text);" id="insightsTitle">💡 AI Insights</h3>
+                <button onclick="document.getElementById('insightsPanel').style.display='none'" style="background:var(--surface-2);color:var(--text-faint);border:1px solid var(--text-faint);padding:0.3rem 0.8rem;border-radius:4px;cursor:pointer;">✕</button>
             </div>
-            <div id="insightsContent" style="color:#475569;font-size:0.85rem;">
-                <p style="color:#94a3b8;">Click "Generate" to get AI-powered hypotheses...</p>
+            <div id="insightsContent" style="color:var(--text-muted);font-size:0.85rem;">
+                <p style="color:var(--text-faint);">Click "Generate" to get AI-powered hypotheses...</p>
             </div>
-            <button id="insightsGenerate" onclick="generateInsights()" style="width:100%;padding:0.7rem;background:#eef2ff;color:#16a34a;border:1px solid #16a34a;border-radius:6px;cursor:pointer;font-size:0.9rem;margin-top:1rem;">Generate Hypotheses</button>
+            <button id="insightsGenerate" onclick="generateInsights()" style="width:100%;padding:0.7rem;background:var(--surface-2);color:var(--positive);border:1px solid var(--positive);border-radius:6px;cursor:pointer;font-size:0.9rem;margin-top:1rem;">Generate Hypotheses</button>
         </div>
     </div>
     <!-- Initiative detail panel (hidden by default) -->
     <div id="initiativePanel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:100;overflow-y:auto;" onclick="if(event.target===this)closeInitiative()">
-        <div style="max-width:820px;margin:2rem auto;background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:1.5rem;font-family:-apple-system,sans-serif;">
+        <div style="max-width:820px;margin:2rem auto;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.5rem;">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;">
                 <div>
-                    <h3 id="ipTitle" style="color:#0f172a;font-size:1.05rem;"></h3>
-                    <div id="ipSub" style="color:#64748b;font-size:0.72rem;margin-top:0.25rem;"></div>
+                    <h3 id="ipTitle" style="color:var(--text);font-size:1.05rem;"></h3>
+                    <div id="ipSub" style="color:var(--text-faint);font-size:0.72rem;margin-top:0.25rem;"></div>
                 </div>
-                <button onclick="closeInitiative()" style="background:#f1f5f9;color:#64748b;border:1px solid #94a3b8;padding:0.3rem 0.8rem;border-radius:4px;cursor:pointer;">✕</button>
+                <button onclick="closeInitiative()" style="background:var(--surface-2);color:var(--text-faint);border:1px solid var(--text-faint);padding:0.3rem 0.8rem;border-radius:4px;cursor:pointer;">✕</button>
             </div>
             <div id="ipActions" style="display:flex;gap:0.5rem;margin-top:1rem;flex-wrap:wrap;align-items:center;"></div>
-            <div id="ipBody" style="color:#475569;font-size:0.8rem;"></div>
+            <div id="ipBody" style="color:var(--text-muted);font-size:0.8rem;"></div>
         </div>
     </div>
     <div id="ipTooltip" class="ip-tooltip"></div>
+
+    </div>
+{% endblock %}
+{% block scripts %}
     <script>
         let currentNodeId = '', currentNodeLabel = '', currentNodeValue = 0, currentNodeTrend = '', currentNodeChange = 0;
         document.querySelectorAll('polyline').forEach(p => { const l = p.getTotalLength(); p.style.strokeDasharray = l; p.style.strokeDashoffset = l; p.style.transition = 'stroke-dashoffset 1s ease-out'; setTimeout(() => { p.style.strokeDashoffset = '0'; }, 200); });
         function showInsights(id, label, value, trend, change) {
             currentNodeId = id; currentNodeLabel = label; currentNodeValue = value; currentNodeTrend = trend; currentNodeChange = change;
             document.getElementById('insightsTitle').textContent = '💡 ' + label + ' — AI Insights';
-            document.getElementById('insightsContent').innerHTML = '<p style="color:#94a3b8;">Current: £' + value.toLocaleString() + '/mo · 7d trend: ' + trend + ' (' + (change >= 0 ? '+' : '') + change.toFixed(1) + '%)</p><p style="color:#94a3b8;font-size:0.8rem;">Click Generate to get constraint-aware hypotheses from the AI model.</p>';
+            document.getElementById('insightsContent').innerHTML = '<p style="color:var(--text-faint);">Current: £' + value.toLocaleString() + '/mo · 7d trend: ' + trend + ' (' + (change >= 0 ? '+' : '') + change.toFixed(1) + '%)</p><p style="color:var(--text-faint);font-size:0.8rem;">Click Generate to get constraint-aware hypotheses from the AI model.</p>';
             document.getElementById('insightsPanel').style.display = 'block';
         }
         async function generateInsights() {
             const btn = document.getElementById('insightsGenerate');
             btn.textContent = 'Generating...'; btn.disabled = true;
-            document.getElementById('insightsContent').innerHTML = '<p style="color:#16a34a;">⏳ Thinking...</p>';
+            document.getElementById('insightsContent').innerHTML = '<p style="color:var(--positive);">⏳ Thinking...</p>';
             try {
                 const startRes = await fetch(tenantQS('/api/insights/' + currentNodeId), { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({model:'deepseek/deepseek-v4.1-flash'}) });
                 const startData = await startRes.json();
                 if (!startData.ok) {
-                    document.getElementById('insightsContent').innerHTML = '<p style="color:#dc2626;">Error: ' + (startData.error||'failed to start') + '</p>';
+                    document.getElementById('insightsContent').innerHTML = '<p style="color:var(--negative);">Error: ' + (startData.error||'failed to start') + '</p>';
                     btn.textContent = 'Generate Hypotheses'; btn.disabled = false;
                     return;
                 }
@@ -191,40 +164,40 @@
                     const pollData = await pollRes.json();
                     if (pollData.status === 'completed') { data = pollData.result; break; }
                     if (pollData.status === 'error') {
-                        document.getElementById('insightsContent').innerHTML = '<p style="color:#dc2626;">Error: ' + pollData.error + '</p>';
+                        document.getElementById('insightsContent').innerHTML = '<p style="color:var(--negative);">Error: ' + pollData.error + '</p>';
                         btn.textContent = 'Generate Hypotheses'; btn.disabled = false;
                         return;
                     }
-                    document.getElementById('insightsContent').innerHTML = '<p style="color:#16a34a;">⏳ Thinking... (' + (attempt*2) + 's)</p>';
+                    document.getElementById('insightsContent').innerHTML = '<p style="color:var(--positive);">⏳ Thinking... (' + (attempt*2) + 's)</p>';
                 }
                 if (!data) {
-                    document.getElementById('insightsContent').innerHTML = '<p style="color:#dc2626;">Timed out waiting for insights.</p>';
+                    document.getElementById('insightsContent').innerHTML = '<p style="color:var(--negative);">Timed out waiting for insights.</p>';
                     btn.textContent = 'Generate Hypotheses'; btn.disabled = false;
                     return;
                 }
                 if (data.error) {
-                    document.getElementById('insightsContent').innerHTML = '<p style="color:#dc2626;">Error: ' + data.error + '</p>';
+                    document.getElementById('insightsContent').innerHTML = '<p style="color:var(--negative);">Error: ' + data.error + '</p>';
                 } else {
-                    let html = '<p style="color:#16a34a;margin-bottom:0.8rem;">Found ' + (data.hypotheses||[]).length + ' hypotheses for ' + data.node_label + ' (£' + data.current_value.toLocaleString() + '/mo)</p>';
+                    let html = '<p style="color:var(--positive);margin-bottom:0.8rem;">Found ' + (data.hypotheses||[]).length + ' hypotheses for ' + data.node_label + ' (£' + data.current_value.toLocaleString() + '/mo)</p>';
                     (data.hypotheses||[]).forEach((h, i) => {
-                        const confColor = h.confidence === 'high' ? '#16a34a' : h.confidence === 'medium' ? '#d97706' : '#64748b';
-                        html += '<div style="background:#f8fafc;border:1px solid #f1f5f9;border-radius:6px;padding:1rem;margin-bottom:0.8rem;">';
-                        html += '<h4 style="color:#0f172a;margin:0 0 0.3rem;">' + (i+1) + '. ' + h.title + '</h4>';
-                        html += '<p style="color:#aaa;font-size:0.8rem;margin:0.3rem 0;">' + h.description + '</p>';
+                        const confColor = h.confidence === 'high' ? BAM_TOK.positive : h.confidence === 'medium' ? BAM_TOK.warning : BAM_TOK.textFaint;
+                        html += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1rem;margin-bottom:0.8rem;">';
+                        html += '<h4 style="color:var(--text);margin:0 0 0.3rem;">' + (i+1) + '. ' + h.title + '</h4>';
+                        html += '<p style="color:var(--text-faint);font-size:0.8rem;margin:0.3rem 0;">' + h.description + '</p>';
                         html += '<div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:0.5rem;">';
-                        html += '<span style="color:#16a34a;font-size:0.75rem;">💷 £' + (h.expected_impact_gbp||0).toLocaleString() + '/mo</span>';
+                        html += '<span style="color:var(--positive);font-size:0.75rem;">💷 £' + (h.expected_impact_gbp||0).toLocaleString() + '/mo</span>';
                         html += '<span style="color:' + confColor + ';font-size:0.75rem;">🎯 ' + h.confidence + ' confidence</span>';
-                        html += '<span style="color:#64748b;font-size:0.75rem;">⏱ ' + h.timeline + '</span>';
+                        html += '<span style="color:var(--text-faint);font-size:0.75rem;">⏱ ' + h.timeline + '</span>';
                         html += '</div>';
-                        if (h.risk) html += '<p style="color:#dc2626;font-size:0.75rem;margin-top:0.5rem;">⚠️ ' + h.risk + '</p>';
-                        if (h.counterfactual) html += '<p style="color:#64748b;font-size:0.75rem;margin-top:0.3rem;">↩️ ' + h.counterfactual + '</p>';
-                        if (h.metrics_to_track && h.metrics_to_track.length) html += '<p style="color:#94a3b8;font-size:0.7rem;margin-top:0.3rem;">📊 Track: ' + h.metrics_to_track.join(', ') + '</p>';
+                        if (h.risk) html += '<p style="color:var(--negative);font-size:0.75rem;margin-top:0.5rem;">⚠️ ' + h.risk + '</p>';
+                        if (h.counterfactual) html += '<p style="color:var(--text-faint);font-size:0.75rem;margin-top:0.3rem;">↩️ ' + h.counterfactual + '</p>';
+                        if (h.metrics_to_track && h.metrics_to_track.length) html += '<p style="color:var(--text-faint);font-size:0.7rem;margin-top:0.3rem;">📊 Track: ' + h.metrics_to_track.join(', ') + '</p>';
                         html += '</div>';
                     });
                     document.getElementById('insightsContent').innerHTML = html;
                 }
             } catch(e) {
-                document.getElementById('insightsContent').innerHTML = '<p style="color:#dc2626;">Error: ' + e.message + '</p>';
+                document.getElementById('insightsContent').innerHTML = '<p style="color:var(--negative);">Error: ' + e.message + '</p>';
             }
             btn.textContent = 'Generate Hypotheses'; btn.disabled = false;
         }
@@ -238,7 +211,7 @@
             btn.textContent = 'Running...';
             btn.disabled = true;
             resultDiv.style.display = 'block';
-            contentDiv.innerHTML = '<p style="color:#64748b;">Starting the arbiter…</p>';
+            contentDiv.innerHTML = '<p style="color:var(--text-faint);">Starting the arbiter…</p>';
 
             try {
                 // 1. Kick off the job — returns immediately with a job_id
@@ -254,20 +227,20 @@
                     const plan = startData.plan || {};
                     const usage = (plan.usage && plan.usage.arbiter_runs) || {};
                     contentDiv.innerHTML =
-                        '<div style="border:1px solid #f1f5f9;border-radius:6px;padding:1rem;">'
-                      + '<h4 style="margin:0 0 0.4rem;color:#0f172a;font-size:0.9rem;">You have used this month\'s arbiter runs</h4>'
-                      + '<p style="color:#64748b;font-size:0.8rem;line-height:1.5;margin:0 0 0.75rem;">'
+                        '<div style="border:1px solid var(--border);border-radius:6px;padding:1rem;">'
+                      + '<h4 style="margin:0 0 0.4rem;color:var(--text);font-size:0.9rem;">You have used this month\'s arbiter runs</h4>'
+                      + '<p style="color:var(--text-faint);font-size:0.8rem;line-height:1.5;margin:0 0 0.75rem;">'
                       + 'The ' + (plan.plan || 'free') + ' plan allows ' + (usage.limit || 2)
                       + ' arbiter runs per month and ' + (usage.used || 0) + ' have been used. '
                       + 'Pro raises this to 40 runs across 5 businesses, with longer history and more specialists.</p>'
-                      + '<a href="/#pricing" style="display:inline-block;background:#0f172a;color:#fff;padding:0.5rem 0.9rem;border-radius:4px;font-size:0.8rem;text-decoration:none;">See plans</a>'
+                      + '<a href="/#pricing" style="display:inline-block;background:var(--surface-2);color:var(--text);padding:0.5rem 0.9rem;border-radius:4px;font-size:0.8rem;text-decoration:none;">See plans</a>'
                       + '</div>';
                     return;
                 }
                 if (!startData.ok) throw new Error(startData.error || 'Failed to start arbiter');
 
                 const jobId = startData.job_id;
-                contentDiv.innerHTML = '<p style="color:#64748b;">Specialists are generating hypotheses… the arbiter is selecting a portfolio. Polling for results…</p>';
+                contentDiv.innerHTML = '<p style="color:var(--text-faint);">Specialists are generating hypotheses… the arbiter is selecting a portfolio. Polling for results…</p>';
 
                 // 2. Poll the job status endpoint until done/error
                 let job = null;
@@ -280,7 +253,7 @@
                     job = await pollResp.json();
                     if (job.status === 'done') break;
                     if (job.status === 'error') throw new Error(job.error || 'Arbiter failed');
-                    contentDiv.innerHTML = '<p style="color:#64748b;">Arbiter still running… (' + attempts + ' polls)</p>';
+                    contentDiv.innerHTML = '<p style="color:var(--text-faint);">Arbiter still running… (' + attempts + ' polls)</p>';
                 }
 
                 if (!job || job.status !== 'done') throw new Error('Timed out waiting for arbiter');
@@ -289,58 +262,58 @@
                 const plan = job.plan;
                 let html = '';
 
-                html += '<div style="margin-bottom:1rem;border-bottom:1px solid #f1f5f9;padding-bottom:0.6rem;">'
-                     +  '<h3 style="color:#16a34a;margin:0 0 0.4rem;font-size:0.95rem;">' + (plan.title || 'Strategy Plan') + '</h3>'
-                     +  '<p style="color:#999;font-size:0.78rem;line-height:1.5;">' + (plan.narrative || 'No narrative.') + '</p>'
+                html += '<div style="margin-bottom:1rem;border-bottom:1px solid var(--border);padding-bottom:0.6rem;">'
+                     +  '<h3 style="color:var(--positive);margin:0 0 0.4rem;font-size:0.95rem;">' + (plan.title || 'Strategy Plan') + '</h3>'
+                     +  '<p style="color:var(--text-faint);font-size:0.78rem;line-height:1.5;">' + (plan.narrative || 'No narrative.') + '</p>'
                      +  '</div>';
 
                 html += '<div style="display:flex;gap:0.6rem;margin-bottom:1rem;flex-wrap:wrap;">'
-                     +  '<div style="background:#ffffff;padding:0.5rem 0.8rem;border-radius:4px;flex:1;min-width:100px;"><div style="color:#94a3b8;font-size:0.6rem;">Expected Impact</div><div style="color:#16a34a;font-size:0.95rem;font-weight:600;">£' + (plan.total_expected_impact_gbp || 0).toLocaleString() + '/mo</div></div>'
-                     +  '<div style="background:#ffffff;padding:0.5rem 0.8rem;border-radius:4px;flex:1;min-width:100px;"><div style="color:#94a3b8;font-size:0.6rem;">Total Effort</div><div style="color:#475569;font-size:0.95rem;font-weight:600;">' + (plan.total_effort || 0).toFixed(1) + ' units</div></div>'
-                     +  '<div style="background:#ffffff;padding:0.5rem 0.8rem;border-radius:4px;flex:1;min-width:100px;"><div style="color:#94a3b8;font-size:0.6rem;">Budget Used</div><div style="color:#475569;font-size:0.95rem;font-weight:600;">' + (plan.budget_used_pct || 0).toFixed(0) + '%</div></div>'
+                     +  '<div style="background:var(--surface);padding:0.5rem 0.8rem;border-radius:4px;flex:1;min-width:100px;"><div style="color:var(--text-faint);font-size:0.6rem;">Expected Impact</div><div style="color:var(--positive);font-size:0.95rem;font-weight:600;">£' + (plan.total_expected_impact_gbp || 0).toLocaleString() + '/mo</div></div>'
+                     +  '<div style="background:var(--surface);padding:0.5rem 0.8rem;border-radius:4px;flex:1;min-width:100px;"><div style="color:var(--text-faint);font-size:0.6rem;">Total Effort</div><div style="color:var(--text-muted);font-size:0.95rem;font-weight:600;">' + (plan.total_effort || 0).toFixed(1) + ' units</div></div>'
+                     +  '<div style="background:var(--surface);padding:0.5rem 0.8rem;border-radius:4px;flex:1;min-width:100px;"><div style="color:var(--text-faint);font-size:0.6rem;">Budget Used</div><div style="color:var(--text-muted);font-size:0.95rem;font-weight:600;">' + (plan.budget_used_pct || 0).toFixed(0) + '%</div></div>'
                      +  '</div>';
 
                 if (plan.initiatives && plan.initiatives.length) {
-                    html += '<h4 style="color:#777;font-size:0.75rem;margin:1rem 0 0.5rem;font-weight:500;">Selected Initiatives (' + plan.initiatives.length + ')</h4>';
+                    html += '<h4 style="color:var(--text-faint);font-size:0.75rem;margin:1rem 0 0.5rem;font-weight:500;">Selected Initiatives (' + plan.initiatives.length + ')</h4>';
                     plan.initiatives.forEach(function(ini, idx) {
                         const m = ini.metadata || {};
                         html += '<div class="ini-card" data-ini="' + ini.id + '" onclick="openInitiative(\'' + ini.id + '\')" title="Open detailed analysis">'
                              +  '<div style="display:flex;justify-content:space-between;align-items:flex-start;">'
-                             +  '<div><span style="color:#16a34a;font-weight:600;margin-right:0.5rem;">' + (idx+1) + '.</span>'
-                             +  '<strong style="color:#0f172a;font-size:0.85rem;">' + ini.title + '</strong><span class="ini-active-slot"></span></div>'
-                             +  '<span style="color:#16a34a;font-size:0.75rem;font-weight:600;">+£' + (ini.predicted_impact_gbp || 0).toLocaleString() + '/mo</span>'
+                             +  '<div><span style="color:var(--positive);font-weight:600;margin-right:0.5rem;">' + (idx+1) + '.</span>'
+                             +  '<strong style="color:var(--text);font-size:0.85rem;">' + ini.title + '</strong><span class="ini-active-slot"></span></div>'
+                             +  '<span style="color:var(--positive);font-size:0.75rem;font-weight:600;">+£' + (ini.predicted_impact_gbp || 0).toLocaleString() + '/mo</span>'
                              +  '</div>'
-                             +  '<p style="color:#999;font-size:0.75rem;margin:0.35rem 0;">' + ini.description + '</p>'
-                             +  '<div style="display:flex;gap:0.9rem;color:#94a3b8;font-size:0.65rem;">'
+                             +  '<p style="color:var(--text-faint);font-size:0.75rem;margin:0.35rem 0;">' + ini.description + '</p>'
+                             +  '<div style="display:flex;gap:0.9rem;color:var(--text-faint);font-size:0.65rem;">'
                              +  '<span>Effort: ' + (ini.effort || m.effort || 0) + '</span>'
                              +  '<span>Risk: ' + (ini.risk || m.risk || 0).toFixed(2) + '</span>'
                              +  '<span>Confidence: ' + ((ini.confidence || m.confidence || 0) * 100).toFixed(0) + '%</span>'
-                             +  '<span style="margin-left:auto;color:#2563eb;">View details →</span>'
+                             +  '<span style="margin-left:auto;color:var(--accent);">View details →</span>'
                              +  '</div></div>';
                     });
                 }
 
                 if (plan.rejected && plan.rejected.length) {
-                    html += '<h4 style="color:#777;font-size:0.75rem;margin:1rem 0 0.5rem;font-weight:500;">Rejected Hypotheses (' + plan.rejected.length + ')</h4>';
+                    html += '<h4 style="color:var(--text-faint);font-size:0.75rem;margin:1rem 0 0.5rem;font-weight:500;">Rejected Hypotheses (' + plan.rejected.length + ')</h4>';
                     plan.rejected.slice(0, 5).forEach(function(h) {
-                        html += '<div style="background:#f1f5f9;border:1px solid #2a2a2a;border-radius:4px;padding:0.6rem;margin-bottom:0.4rem;opacity:0.7;">'
-                             +  '<div style="display:flex;justify-content:space-between;"><span style="color:#64748b;font-size:0.75rem;">' + h.title + '</span><span style="color:#dc2626;font-size:0.7rem;">Rejected</span></div>'
-                             +  '<p style="color:#94a3b8;font-size:0.65rem;margin:0.2rem 0 0;">' + h.description + '</p></div>';
+                        html += '<div style="background:var(--surface-2);border:1px solid var(--border);border-radius:4px;padding:0.6rem;margin-bottom:0.4rem;opacity:0.7;">'
+                             +  '<div style="display:flex;justify-content:space-between;"><span style="color:var(--text-faint);font-size:0.75rem;">' + h.title + '</span><span style="color:var(--negative);font-size:0.7rem;">Rejected</span></div>'
+                             +  '<p style="color:var(--text-faint);font-size:0.65rem;margin:0.2rem 0 0;">' + h.description + '</p></div>';
                     });
                     if (plan.rejected.length > 5) {
-                        html += '<p style="color:#94a3b8;font-size:0.65rem;">… and ' + (plan.rejected.length - 5) + ' more</p>';
+                        html += '<p style="color:var(--text-faint);font-size:0.65rem;">… and ' + (plan.rejected.length - 5) + ' more</p>';
                     }
                 }
 
                 if (plan.metadata && plan.metadata.active_initiatives && plan.metadata.active_initiatives.length) {
-                    html += '<p style="color:#94a3b8;font-size:0.65rem;margin-top:0.6rem;">Planned around ' + plan.metadata.active_initiatives.length
+                    html += '<p style="color:var(--text-faint);font-size:0.65rem;margin-top:0.6rem;">Planned around ' + plan.metadata.active_initiatives.length
                          +  ' active initiative(s) — duplicates excluded, ' + (plan.metadata.effort_reserved_for_active || 0) + ' effort units reserved.</p>';
                 }
 
                 contentDiv.innerHTML = html;
                 loadActiveInitiatives();
             } catch (e) {
-                contentDiv.innerHTML = '<p style="color:#dc2626;">Error running arbiter: ' + e.message + '</p>';
+                contentDiv.innerHTML = '<p style="color:var(--negative);">Error running arbiter: ' + e.message + '</p>';
             } finally {
                 btn.textContent = '▶ Run Arbiter';
                 btn.disabled = false;
@@ -348,18 +321,21 @@
         }
 
         // ── Initiative detail view ──
-        // Role colours: validated categorical slots 1-4 (dark surface); roles are always also labelled in text.
+        // Role colours are plain hex because they are concatenated with an alpha
+        // suffix (`col + '22'`) and written into SVG attributes, where a
+        // `var(--token)` string cannot be resolved. The slots mirror the graph
+        // legend palette so a node type keeps one colour across the app.
         const ROLE = {
-            target:  { c: '#2563eb', l: 'Target' },
-            driver:  { c: '#d95926', l: 'Driver' },
-            rollup:  { c: '#199e70', l: 'Roll-up' },
-            outcome: { c: '#9085e9', l: 'Outcome' },
+            target:  { c: BAM_TOK.process, l: 'Target' },
+            driver:  { c: BAM_TOK.warning, l: 'Driver' },
+            rollup:  { c: BAM_TOK.positive, l: 'Roll-up' },
+            outcome: { c: BAM_TOK.metric, l: 'Outcome' },
         };
         // Reserved status colours, always shipped with icon + label.
         const STATUS = {
-            on_track: { c: '#059669', i: '✓', l: 'On track' },
-            ahead:    { c: '#059669', i: '▲', l: 'Ahead' },
-            behind:   { c: '#ec835a', i: '▼', l: 'Behind' },
+            on_track: { c: BAM_TOK.positive, i: '✓', l: 'On track' },
+            ahead:    { c: BAM_TOK.positive, i: '▲', l: 'Ahead' },
+            behind:   { c: BAM_TOK.negative, i: '▼', l: 'Behind' },
         };
         let ipData = null;
 
@@ -376,7 +352,7 @@
             document.getElementById('ipTitle').textContent = 'Loading…';
             document.getElementById('ipSub').textContent = '';
             document.getElementById('ipActions').innerHTML = '';
-            document.getElementById('ipBody').innerHTML = '<p style="color:#64748b;margin-top:1rem;">Loading initiative analysis…</p>';
+            document.getElementById('ipBody').innerHTML = '<p style="color:var(--text-faint);margin-top:1rem;">Loading initiative analysis…</p>';
             try {
                 const r = await fetch(tenantQS('/api/multiagent/initiatives/' + id));
                 const d = await r.json();
@@ -384,7 +360,7 @@
                 ipData = d;
                 renderInitiative();
             } catch (e) {
-                document.getElementById('ipBody').innerHTML = '<p style="color:#dc2626;margin-top:1rem;">Error: ' + esc(e.message) + '</p>';
+                document.getElementById('ipBody').innerHTML = '<p style="color:var(--negative);margin-top:1rem;">Error: ' + esc(e.message) + '</p>';
             }
         }
 
@@ -395,14 +371,14 @@
 
             let act = '';
             if (ini.status === 'measured') {
-                act += '<span style="color:#64748b;font-size:0.75rem;">Measured — actual ' + gbp(ini.actual_impact_gbp) + '/mo</span>';
+                act += '<span style="color:var(--text-faint);font-size:0.75rem;">Measured — actual ' + gbp(ini.actual_impact_gbp) + '/mo</span>';
             } else if (d.active) {
                 act += '<button class="ip-btn blue" id="ipProgressBtn" onclick="runProgress(\'' + ini.id + '\')">📈 Run Progress Agent</button>';
                 act += '<button class="ip-btn" onclick="toggleActive(\'' + ini.id + '\', false)">Deactivate</button>';
-                act += '<span style="color:#64748b;font-size:0.7rem;">Active since ' + esc((ini.started_at || ini.approved_at || '').slice(0, 10)) + '</span>';
+                act += '<span style="color:var(--text-faint);font-size:0.7rem;">Active since ' + esc((ini.started_at || ini.approved_at || '').slice(0, 10)) + '</span>';
             } else {
                 act += '<button class="ip-btn primary" onclick="toggleActive(\'' + ini.id + '\', true)">★ Save as active initiative</button>';
-                act += '<span style="color:#94a3b8;font-size:0.7rem;">Active initiatives are tracked by the Progress Agent and planned around by future arbiter runs.</span>';
+                act += '<span style="color:var(--text-faint);font-size:0.7rem;">Active initiatives are tracked by the Progress Agent and planned around by future arbiter runs.</span>';
             }
             document.getElementById('ipActions').innerHTML = act;
 
@@ -415,55 +391,55 @@
               +  stat('Risk', a.risk != null ? Number(a.risk).toFixed(2) : '—')
               +  stat('Confidence', a.confidence != null ? (a.confidence * 100).toFixed(0) + '%' : '—')
               +  '</div>';
-            h += '<p style="color:#64748b;line-height:1.55;margin-top:0.8rem;">' + esc(a.description) + '</p>';
-            if (a.why_now) h += '<p style="margin-top:0.6rem;line-height:1.5;"><span style="color:#64748b;">Why now — </span><span style="color:#334155;">' + esc(a.why_now) + '</span></p>';
-            if (a.rationale && a.rationale !== a.why_now) h += '<p style="margin-top:0.4rem;line-height:1.5;"><span style="color:#64748b;">Specialist rationale — </span><span style="color:#aaa;">' + esc(a.rationale) + '</span></p>';
+            h += '<p style="color:var(--text-faint);line-height:1.55;margin-top:0.8rem;">' + esc(a.description) + '</p>';
+            if (a.why_now) h += '<p style="margin-top:0.6rem;line-height:1.5;"><span style="color:var(--text-faint);">Why now — </span><span style="color:var(--text-muted);">' + esc(a.why_now) + '</span></p>';
+            if (a.rationale && a.rationale !== a.why_now) h += '<p style="margin-top:0.4rem;line-height:1.5;"><span style="color:var(--text-faint);">Specialist rationale — </span><span style="color:var(--text-faint);">' + esc(a.rationale) + '</span></p>';
             if (a.validation && ((a.validation.soft_violations || []).length || a.validation.soft_penalty_gbp)) {
-                h += '<p style="margin-top:0.4rem;color:#aaa;">⚠️ Soft constraint penalty ' + gbp(a.validation.soft_penalty_gbp, 2) + '/mo already deducted.</p>';
+                h += '<p style="margin-top:0.4rem;color:var(--text-faint);">⚠️ Soft constraint penalty ' + gbp(a.validation.soft_penalty_gbp, 2) + '/mo already deducted.</p>';
             }
             if (a.predictions && a.predictions.length) {
                 h += '<table class="ip-table" style="margin-top:0.8rem;"><thead><tr><th>Predicted metric</th><th>Baseline</th><th>Predicted</th><th>Δ</th><th>Horizon</th><th>Conf.</th></tr></thead><tbody>';
                 a.predictions.forEach(p => {
-                    h += '<tr><td>' + esc(p.metric) + (p.rationale ? '<div style="color:#64748b;font-size:0.65rem;">' + esc(p.rationale) + '</div>' : '') + '</td><td>' + gbp(p.baseline) + '</td><td>' + gbp(p.predicted) + '</td><td>' + (p.delta_pct >= 0 ? '+' : '') + p.delta_pct + '%</td><td>' + p.horizon_days + 'd</td><td>' + (p.confidence * 100).toFixed(0) + '%</td></tr>';
+                    h += '<tr><td>' + esc(p.metric) + (p.rationale ? '<div style="color:var(--text-faint);font-size:0.65rem;">' + esc(p.rationale) + '</div>' : '') + '</td><td>' + gbp(p.baseline) + '</td><td>' + gbp(p.predicted) + '</td><td>' + (p.delta_pct >= 0 ? '+' : '') + p.delta_pct + '%</td><td>' + p.horizon_days + 'd</td><td>' + (p.confidence * 100).toFixed(0) + '%</td></tr>';
                 });
                 h += '</tbody></table>';
             }
             h += '</div>';
 
             if (imp.warning) {
-                h += '<p style="color:#ec835a;margin-top:1rem;">⚠️ ' + esc(imp.warning) + '</p>';
+                h += '<p style="color:var(--warning);margin-top:1rem;">⚠️ ' + esc(imp.warning) + '</p>';
                 document.getElementById('ipBody').innerHTML = h;
                 return;
             }
 
             // 2. Graph
             h += '<div class="ip-section"><h4>Impacted nodes</h4>' + roleLegend() + '<div id="ipGraph" style="margin-top:0.4rem;"></div>'
-              +  '<p style="color:#94a3b8;font-size:0.65rem;margin-top:0.3rem;">Hover a node for the reasoning. Values show the monthly change at full effect.</p></div>';
+              +  '<p style="color:var(--text-faint);font-size:0.65rem;margin-top:0.3rem;">Hover a node for the reasoning. Values show the monthly change at full effect.</p></div>';
 
             // 3. Reasoning
             h += '<div class="ip-section"><h4>Why these nodes move</h4>';
             imp.impacted.forEach(n => {
-                h += '<div style="display:flex;gap:0.6rem;padding:0.45rem 0;border-bottom:1px solid #181818;">'
-                  +  '<div style="min-width:170px;"><span class="role-chip" style="background:' + ROLE[n.role].c + ';">' + ROLE[n.role].l + '</span><span style="color:#334155;">' + esc(n.label) + '</span></div>'
-                  +  '<div style="min-width:90px;text-align:right;color:#334155;font-variant-numeric:tabular-nums;">' + signedGbp(n.delta_gbp) + '/mo</div>'
-                  +  '<div style="color:#999;font-size:0.75rem;line-height:1.45;">' + esc(n.reasoning) + '</div></div>';
+                h += '<div style="display:flex;gap:0.6rem;padding:0.45rem 0;border-bottom:1px solid var(--border);">'
+                  +  '<div style="min-width:170px;"><span class="role-chip" style="background:' + ROLE[n.role].c + ';">' + ROLE[n.role].l + '</span><span style="color:var(--text-muted);">' + esc(n.label) + '</span></div>'
+                  +  '<div style="min-width:90px;text-align:right;color:var(--text-muted);font-variant-numeric:tabular-nums;">' + signedGbp(n.delta_gbp) + '/mo</div>'
+                  +  '<div style="color:var(--text-faint);font-size:0.75rem;line-height:1.45;">' + esc(n.reasoning) + '</div></div>';
             });
             h += '</div>';
 
             // 4. Projection
             h += '<div class="ip-section"><h4>Projected change · ' + imp.projection.months.length + ' months (' + esc(imp.projection.curve_kind) + ' ramp)</h4>'
-              +  '<div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.4rem;"><label style="color:#777;font-size:0.72rem;">Node</label><select id="ipNodeSel" onchange="drawProjection()" style="background:#f8fafc;color:#334155;border:1px solid #e2e8f0;border-radius:4px;padding:0.25rem 0.4rem;font-size:0.75rem;">'
+              +  '<div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.4rem;"><label style="color:var(--text-faint);font-size:0.72rem;">Node</label><select id="ipNodeSel" onchange="drawProjection()" style="background:var(--surface);color:var(--text-muted);border:1px solid var(--border);border-radius:4px;padding:0.25rem 0.4rem;font-size:0.75rem;">'
               +  imp.impacted.map((n, i) => '<option value="' + i + '">' + esc(n.label) + ' (' + ROLE[n.role].l + ')</option>').join('')
               +  '</select></div><div id="ipChart"></div>'
-              +  '<details style="margin-top:0.5rem;"><summary style="color:#777;font-size:0.72rem;cursor:pointer;">Table view — all impacted nodes</summary>' + projectionTable(imp) + '</details></div>';
+              +  '<details style="margin-top:0.5rem;"><summary style="color:var(--text-faint);font-size:0.72rem;cursor:pointer;">Table view — all impacted nodes</summary>' + projectionTable(imp) + '</details></div>';
 
             // 4b. Outcome range (Monte Carlo)
             h += '<div class="ip-section"><h4>Outcome range</h4><div id="ipMC"></div></div>';
 
             // 5. Progress
             h += '<div class="ip-section"><h4>Progress</h4><div id="ipProgress">';
-            if (!d.active) h += '<p style="color:#94a3b8;">Save this as an active initiative to track progress against the projection.</p>';
-            else h += '<p style="color:#64748b;">Run the Progress Agent to compare current node values with the projection.</p>';
+            if (!d.active) h += '<p style="color:var(--text-faint);">Save this as an active initiative to track progress against the projection.</p>';
+            else h += '<p style="color:var(--text-faint);">Run the Progress Agent to compare current node values with the projection.</p>';
             h += '</div>' + progressHistory(d.progress_history) + '</div>';
 
             document.getElementById('ipBody').innerHTML = h;
@@ -474,7 +450,7 @@
 
         function stat(k, v) { return '<div class="ip-stat"><div class="k">' + k + '</div><div class="v">' + v + '</div></div>'; }
         function roleLegend() {
-            return '<div style="display:flex;gap:0.9rem;font-size:0.68rem;color:#999;">' + Object.keys(ROLE).map(k =>
+            return '<div style="display:flex;gap:0.9rem;font-size:0.68rem;color:var(--text-faint);">' + Object.keys(ROLE).map(k =>
                 '<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:' + ROLE[k].c + ';margin-right:4px;vertical-align:middle;"></span>' + ROLE[k].l + '</span>').join('') + '</div>';
         }
 
@@ -493,28 +469,28 @@
                 const w = Math.min(150, slot - 8);
                 ns.forEach((n, i) => { pos[n.node_id] = { x: PAD + slot * i + (slot - w) / 2, y: PAD + ri * RH, w: w, h: 40, n: n }; });
             });
-            let s = '<svg width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;">';
+            let s = '<svg width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;background:var(--surface);border:1px solid var(--border);border-radius:6px;">';
             edges.forEach(e => {
                 const a = pos[e.source], b = pos[e.target];
                 if (!a || !b) return;
                 const [top, bot] = a.y <= b.y ? [a, b] : [b, a];
-                s += '<line x1="' + (top.x + top.w / 2) + '" y1="' + (top.y + top.h) + '" x2="' + (bot.x + bot.w / 2) + '" y2="' + bot.y + '" stroke="#e2e8f0" stroke-width="1.5"/>';
+                s += '<line x1="' + (top.x + top.w / 2) + '" y1="' + (top.y + top.h) + '" x2="' + (bot.x + bot.w / 2) + '" y2="' + bot.y + '" stroke="var(--text)" stroke-width="1.5"/>';
             });
             Object.values(pos).forEach(p => {
                 const n = p.n, col = ROLE[n.role].c, maxCh = Math.max(4, Math.floor(p.w / 6.2));
                 const lbl = n.label.length > maxCh ? n.label.slice(0, maxCh - 1) + '…' : n.label;
                 s += '<g class="ip-node" data-id="' + n.node_id + '" style="cursor:default;">'
-                  +  '<rect x="' + p.x + '" y="' + p.y + '" width="' + p.w + '" height="' + p.h + '" rx="4" fill="#141414" stroke="' + col + '" stroke-width="' + (n.role === 'target' ? 2.5 : 1.5) + '"/>'
+                  +  '<rect x="' + p.x + '" y="' + p.y + '" width="' + p.w + '" height="' + p.h + '" rx="4" fill="var(--surface)" stroke="' + col + '" stroke-width="' + (n.role === 'target' ? 2.5 : 1.5) + '"/>'
                   +  '<rect x="' + p.x + '" y="' + p.y + '" width="4" height="' + p.h + '" rx="2" fill="' + col + '"/>'
-                  +  '<text x="' + (p.x + p.w / 2 + 2) + '" y="' + (p.y + 16) + '" fill="#0f172a" font-size="11" text-anchor="middle">' + esc(lbl) + '</text>'
-                  +  '<text x="' + (p.x + p.w / 2 + 2) + '" y="' + (p.y + 31) + '" fill="#999" font-size="10" text-anchor="middle">' + signedGbp(n.delta_gbp) + '/mo</text></g>';
+                  +  '<text x="' + (p.x + p.w / 2 + 2) + '" y="' + (p.y + 16) + '" fill="var(--text)" font-size="11" text-anchor="middle">' + esc(lbl) + '</text>'
+                  +  '<text x="' + (p.x + p.w / 2 + 2) + '" y="' + (p.y + 31) + '" fill="var(--text-faint)" font-size="10" text-anchor="middle">' + signedGbp(n.delta_gbp) + '/mo</text></g>';
             });
             s += '</svg>';
             const el = document.getElementById('ipGraph');
             el.innerHTML = s;
             el.querySelectorAll('.ip-node').forEach(g => {
                 const n = pos[g.dataset.id].n;
-                const tip = '<b>' + esc(n.label) + '</b> · ' + ROLE[n.role].l + '<br>' + gbp(n.baseline) + ' → ' + gbp(n.baseline + n.delta_gbp) + '/mo (' + signedGbp(n.delta_gbp) + ')<br><span style="color:#999;">' + esc(n.reasoning) + '</span>';
+                const tip = '<b>' + esc(n.label) + '</b> · ' + ROLE[n.role].l + '<br>' + gbp(n.baseline) + ' → ' + gbp(n.baseline + n.delta_gbp) + '/mo (' + signedGbp(n.delta_gbp) + ')<br><span style="color:var(--text-faint);">' + esc(n.reasoning) + '</span>';
                 g.addEventListener('mouseenter', ev => showTip(tip, ev));
                 g.addEventListener('mousemove', moveTip);
                 g.addEventListener('mouseleave', hideTip);
@@ -530,20 +506,20 @@
             lo -= padV; hi += padV;
             const x = m => L + (W - L - R) * m / months[months.length - 1];
             const y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
-            let s = '<svg id="ipChartSvg" width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;">';
+            let s = '<svg id="ipChartSvg" width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;background:var(--surface);border:1px solid var(--border);border-radius:6px;">';
             for (let i = 0; i <= 3; i++) {
                 const v = lo + (hi - lo) * i / 3;
-                s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="#1c1c1c"/>'
-                  +  '<text x="' + (L - 8) + '" y="' + (y(v) + 3) + '" fill="#64748b" font-size="10" text-anchor="end">' + gbp(v) + '</text>';
+                s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="var(--border)"/>'
+                  +  '<text x="' + (L - 8) + '" y="' + (y(v) + 3) + '" fill="var(--text-faint)" font-size="10" text-anchor="end">' + gbp(v) + '</text>';
             }
-            months.forEach(m => { s += '<text x="' + x(m) + '" y="' + (H - 10) + '" fill="#64748b" font-size="10" text-anchor="middle">' + (m === 0 ? 'Now' : 'M' + m) + '</text>'; });
-            s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(n.baseline) + '" y2="' + y(n.baseline) + '" stroke="#64748b" stroke-dasharray="4 4" stroke-width="1"/>'
-              +  '<text x="' + (W - R) + '" y="' + (y(n.baseline) + (n.delta_gbp >= 0 ? 13 : -6)) + '" fill="#64748b" font-size="10" text-anchor="end">Baseline ' + gbp(n.baseline) + '</text>';
-            s += '<polyline fill="none" stroke="#2563eb" stroke-width="2" stroke-linejoin="round" points="' + months.map((m, i) => x(m) + ',' + y(vals[i])).join(' ') + '"/>';
-            months.forEach((m, i) => { s += '<circle cx="' + x(m) + '" cy="' + y(vals[i]) + '" r="4" fill="#2563eb" stroke="#f8fafc" stroke-width="2"/>'; });
+            months.forEach(m => { s += '<text x="' + x(m) + '" y="' + (H - 10) + '" fill="var(--text-faint)" font-size="10" text-anchor="middle">' + (m === 0 ? 'Now' : 'M' + m) + '</text>'; });
+            s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(n.baseline) + '" y2="' + y(n.baseline) + '" stroke="var(--text-faint)" stroke-dasharray="4 4" stroke-width="1"/>'
+              +  '<text x="' + (W - R) + '" y="' + (y(n.baseline) + (n.delta_gbp >= 0 ? 13 : -6)) + '" fill="var(--text-faint)" font-size="10" text-anchor="end">Baseline ' + gbp(n.baseline) + '</text>';
+            s += '<polyline fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" points="' + months.map((m, i) => x(m) + ',' + y(vals[i])).join(' ') + '"/>';
+            months.forEach((m, i) => { s += '<circle cx="' + x(m) + '" cy="' + y(vals[i]) + '" r="4" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>'; });
             const last = vals.length - 1;
-            s += '<text x="' + (x(months[last]) - 6) + '" y="' + (y(vals[last]) + (n.delta_gbp >= 0 ? -10 : 18)) + '" fill="#0f172a" font-size="11" text-anchor="end">' + gbp(vals[last]) + '/mo</text>';
-            s += '<line id="ipCross" x1="0" x2="0" y1="' + T + '" y2="' + (H - B) + '" stroke="#94a3b8" stroke-width="1" style="display:none;"/>';
+            s += '<text x="' + (x(months[last]) - 6) + '" y="' + (y(vals[last]) + (n.delta_gbp >= 0 ? -10 : 18)) + '" fill="var(--text)" font-size="11" text-anchor="end">' + gbp(vals[last]) + '/mo</text>';
+            s += '<line id="ipCross" x1="0" x2="0" y1="' + T + '" y2="' + (H - B) + '" stroke="var(--text-faint)" stroke-width="1" style="display:none;"/>';
             const slot = (W - L - R) / (months.length - 1);
             months.forEach((m, i) => { s += '<rect class="ip-hit" data-i="' + i + '" x="' + (x(m) - slot / 2) + '" y="' + T + '" width="' + slot + '" height="' + (H - T - B) + '" fill="transparent"/>'; });
             s += '</svg>';
@@ -553,7 +529,7 @@
             el.querySelectorAll('.ip-hit').forEach(r => {
                 const i = Number(r.dataset.i), m = months[i];
                 const tip = '<b>' + (m === 0 ? 'Now (baseline)' : 'Month ' + m) + '</b> · ' + esc(n.label) + '<br>' + gbp(vals[i], 2) + '/mo'
-                          + (m === 0 ? '' : '<br><span style="color:#999;">' + signedGbp(vals[i] - n.baseline) + ' vs baseline · ' + (imp.projection.curve[i - 1] * 100).toFixed(0) + '% of full effect</span>');
+                          + (m === 0 ? '' : '<br><span style="color:var(--text-faint);">' + signedGbp(vals[i] - n.baseline) + ' vs baseline · ' + (imp.projection.curve[i - 1] * 100).toFixed(0) + '% of full effect</span>');
                 r.addEventListener('mouseenter', ev => { cross.setAttribute('x1', x(m)); cross.setAttribute('x2', x(m)); cross.style.display = ''; showTip(tip, ev); });
                 r.addEventListener('mousemove', moveTip);
                 r.addEventListener('mouseleave', () => { cross.style.display = 'none'; hideTip(); });
@@ -592,7 +568,7 @@
             if (!el) return;
             const mc = ipData.monte_carlo;
             if (!mc) {
-                el.innerHTML = '<p style="color:#64748b;line-height:1.55;margin:0 0 0.7rem;">A single projection is one guess dressed as a number. '
+                el.innerHTML = '<p style="color:var(--text-faint);line-height:1.55;margin:0 0 0.7rem;">A single projection is one guess dressed as a number. '
                     + 'This runs 2,000 simulations across the assumptions the projection is most sensitive to \u2014 the adoption ramp, '
                     + 'the volume lift, and the target node\u2019s own historical volatility \u2014 and reports how wide the answer really is.</p>'
                     + '<button class="ip-btn blue" id="ipMCBtn" onclick="runMonteCarlo(\'' + ipData.initiative.id + '\')">\u25b6 Run 2,000-draw simulation</button>'
@@ -641,27 +617,27 @@
             const y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
             const poly = (loK, hiK) => bands.map(b => x(b.month) + ',' + y(b[hiK]))
                 .concat(bands.slice().reverse().map(b => x(b.month) + ',' + y(b[loK]))).join(' ');
-            let s = '<svg id="ipFanSvg" width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;">';
+            let s = '<svg id="ipFanSvg" width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;background:var(--surface);border:1px solid var(--border);border-radius:6px;">';
             for (let i = 0; i <= 3; i++) {
                 const v = lo + (hi - lo) * i / 3;
-                s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="#eef2f7"/>'
-                   + '<text x="' + (L - 8) + '" y="' + (y(v) + 3) + '" fill="#64748b" font-size="10" text-anchor="end">' + gbp(v) + '</text>';
+                s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="var(--surface-2)"/>'
+                   + '<text x="' + (L - 8) + '" y="' + (y(v) + 3) + '" fill="var(--text-faint)" font-size="10" text-anchor="end">' + gbp(v) + '</text>';
             }
-            s += '<polygon points="' + poly('p10', 'p90') + '" fill="#dbeafe"/>';
-            s += '<polygon points="' + poly('p25', 'p75') + '" fill="#93c5fd"/>';
-            s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(base) + '" y2="' + y(base) + '" stroke="#94a3b8" stroke-dasharray="4 4" stroke-width="1"/>';
-            s += '<polyline fill="none" stroke="#1d4ed8" stroke-width="2" stroke-linejoin="round" points="'
+            s += '<polygon points="' + poly('p10', 'p90') + '" fill="var(--surface-2)"/>';
+            s += '<polygon points="' + poly('p25', 'p75') + '" fill="' + BAM_TOK.process + '"/>';
+            s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(base) + '" y2="' + y(base) + '" stroke="var(--text-faint)" stroke-dasharray="4 4" stroke-width="1"/>';
+            s += '<polyline fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" points="'
                + bands.map(b => x(b.month) + ',' + y(b.p50)).join(' ') + '"/>';
             bands.forEach(b => {
                 if (b.month === 1 || b.month % 3 === 0 || b.month === n) {
-                    s += '<text x="' + x(b.month) + '" y="' + (H - 9) + '" fill="#64748b" font-size="10" text-anchor="middle">M' + b.month + '</text>';
+                    s += '<text x="' + x(b.month) + '" y="' + (H - 9) + '" fill="var(--text-faint)" font-size="10" text-anchor="middle">M' + b.month + '</text>';
                 }
             });
             const last = bands[n - 1];
-            s += '<text x="' + (x(last.month) + 6) + '" y="' + (y(last.p90) + 3) + '" fill="#3b82f6" font-size="9.5">P90 ' + gbp(last.p90) + '</text>';
-            s += '<text x="' + (x(last.month) + 6) + '" y="' + (y(last.p50) + 3) + '" fill="#1d4ed8" font-size="10" font-weight="600">' + gbp(last.p50) + '</text>';
-            s += '<text x="' + (x(last.month) + 6) + '" y="' + (y(last.p10) + 3) + '" fill="#3b82f6" font-size="9.5">P10 ' + gbp(last.p10) + '</text>';
-            s += '<line id="ipFanCross" x1="0" x2="0" y1="' + T + '" y2="' + (H - B) + '" stroke="#94a3b8" stroke-width="1" style="display:none;"/>';
+            s += '<text x="' + (x(last.month) + 6) + '" y="' + (y(last.p90) + 3) + '" fill="var(--accent)" font-size="9.5">P90 ' + gbp(last.p90) + '</text>';
+            s += '<text x="' + (x(last.month) + 6) + '" y="' + (y(last.p50) + 3) + '" fill="var(--accent)" font-size="10" font-weight="600">' + gbp(last.p50) + '</text>';
+            s += '<text x="' + (x(last.month) + 6) + '" y="' + (y(last.p10) + 3) + '" fill="var(--accent)" font-size="9.5">P10 ' + gbp(last.p10) + '</text>';
+            s += '<line id="ipFanCross" x1="0" x2="0" y1="' + T + '" y2="' + (H - B) + '" stroke="var(--text-faint)" stroke-width="1" style="display:none;"/>';
             const slot = (W - L - R) / Math.max(n - 1, 1);
             bands.forEach(b => {
                 s += '<rect class="ip-fan-hit" data-m="' + b.month + '" x="' + (x(b.month) - slot / 2) + '" y="' + T
@@ -674,7 +650,7 @@
                 const m = Number(rect.dataset.m);
                 const b = bands[m - 1];
                 const tip = '<b>Month ' + m + '</b><br>P90 ' + gbp(b.p90) + '/mo<br><b>Median ' + gbp(b.p50) + '/mo</b><br>P10 ' + gbp(b.p10) + '/mo'
-                          + '<br><span style="color:#999;">' + signedGbp(b.p50 - base) + ' vs baseline</span>';
+                          + '<br><span style="color:var(--text-faint);">' + signedGbp(b.p50 - base) + ' vs baseline</span>';
                 rect.addEventListener('mouseenter', ev => { cross.setAttribute('x1', x(b.month)); cross.setAttribute('x2', x(b.month)); cross.style.display = ''; showTip(tip, ev); });
                 rect.addEventListener('mousemove', moveTip);
                 rect.addEventListener('mouseleave', () => { cross.style.display = 'none'; hideTip(); });
@@ -691,14 +667,14 @@
             const pad = (hi - lo) * 0.06 || 1;
             const x = v => L + (W - L - R) * ((v - (lo - pad)) / ((hi + pad) - (lo - pad)));
             const rows = 5, rowH = 11;
-            let s = '<svg width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;">';
-            s += '<line x1="' + x(0) + '" x2="' + x(0) + '" y1="' + (T - 4) + '" y2="' + (H - B + 4) + '" stroke="#94a3b8" stroke-width="1"/>';
-            s += '<text x="' + x(0) + '" y="' + (H - 8) + '" fill="#64748b" font-size="9" text-anchor="middle">break-even</text>';
-            s += '<text x="' + x(lo) + '" y="' + (H - 8) + '" fill="#64748b" font-size="9" text-anchor="start">' + gbp(lo) + '</text>';
-            s += '<text x="' + x(hi) + '" y="' + (H - 8) + '" fill="#64748b" font-size="9" text-anchor="end">' + gbp(hi) + '</text>';
+            let s = '<svg width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;background:var(--surface);border:1px solid var(--border);border-radius:6px;">';
+            s += '<line x1="' + x(0) + '" x2="' + x(0) + '" y1="' + (T - 4) + '" y2="' + (H - B + 4) + '" stroke="var(--text-faint)" stroke-width="1"/>';
+            s += '<text x="' + x(0) + '" y="' + (H - 8) + '" fill="var(--text-faint)" font-size="9" text-anchor="middle">break-even</text>';
+            s += '<text x="' + x(lo) + '" y="' + (H - 8) + '" fill="var(--text-faint)" font-size="9" text-anchor="start">' + gbp(lo) + '</text>';
+            s += '<text x="' + x(hi) + '" y="' + (H - 8) + '" fill="var(--text-faint)" font-size="9" text-anchor="end">' + gbp(hi) + '</text>';
             q.forEach((v, i) => {
                 const cy = T + 8 + (i % rows) * rowH;
-                const col = v >= 0 ? '#2563eb' : '#d95926';
+                const col = v >= 0 ? 'var(--accent)' : 'var(--warning)';
                 s += '<circle class="ip-dot" data-v="' + v + '" cx="' + x(v).toFixed(1) + '" cy="' + cy + '" r="3.6" fill="' + col + '"/>';
             });
             s += '</svg>';
@@ -717,17 +693,17 @@
             const plotL = LABW, plotR = W - 52, mid = plotL + (plotR - plotL) / 2;
             const maxR = Math.max(0.2, Math.max.apply(null, sens.map(s => Math.abs(s.rank_correlation))));
             const scale = v => (plotR - plotL) / 2 * (v / maxR);
-            let s = '<svg width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;">';
-            s += '<line x1="' + mid + '" x2="' + mid + '" y1="' + (PAD_T - 8) + '" y2="' + (H - 22) + '" stroke="#94a3b8" stroke-width="1"/>';
-            s += '<text x="' + mid + '" y="' + (H - 7) + '" fill="#64748b" font-size="9" text-anchor="middle">no effect on the answer</text>';
+            let s = '<svg width="100%" viewBox="0 0 ' + W + ' ' + H + '" style="display:block;background:var(--surface);border:1px solid var(--border);border-radius:6px;">';
+            s += '<line x1="' + mid + '" x2="' + mid + '" y1="' + (PAD_T - 8) + '" y2="' + (H - 22) + '" stroke="var(--text-faint)" stroke-width="1"/>';
+            s += '<text x="' + mid + '" y="' + (H - 7) + '" fill="var(--text-faint)" font-size="9" text-anchor="middle">no effect on the answer</text>';
             sens.forEach((d, i) => {
                 const yy = PAD_T + i * ROW;
                 const v = d.rank_correlation, w = Math.abs(scale(v));
-                const col = v >= 0 ? '#2563eb' : '#d95926';
+                const col = v >= 0 ? 'var(--accent)' : 'var(--warning)';
                 const x0 = v >= 0 ? mid : mid - w;
-                s += '<text x="' + (plotL - 12) + '" y="' + (yy + 13) + '" fill="#334155" font-size="11" text-anchor="end">' + esc(driverLabel(d)) + '</text>';
+                s += '<text x="' + (plotL - 12) + '" y="' + (yy + 13) + '" fill="var(--text-muted)" font-size="11" text-anchor="end">' + esc(driverLabel(d)) + '</text>';
                 s += '<rect x="' + x0 + '" y="' + (yy + 3) + '" width="' + Math.max(w, 1.5) + '" height="14" rx="2" fill="' + col + '" opacity="0.85"/>';
-                s += '<text x="' + (v >= 0 ? mid + w + 7 : mid - w - 7) + '" y="' + (yy + 14) + '" fill="#475569" font-size="10" text-anchor="' + (v >= 0 ? 'start' : 'end') + '">'
+                s += '<text x="' + (v >= 0 ? mid + w + 7 : mid - w - 7) + '" y="' + (yy + 14) + '" fill="var(--text-muted)" font-size="10" text-anchor="' + (v >= 0 ? 'start' : 'end') + '">'
                    + (v >= 0 ? '+' : '') + Number(v).toFixed(2) + '</text>';
             });
             s += '</svg>';
@@ -740,7 +716,7 @@
         async function runMonteCarlo(id) {
             const btn = document.getElementById('ipMCBtn'), out = document.getElementById('ipMCOut');
             if (btn) { btn.disabled = true; btn.textContent = 'Simulating\u2026'; }
-            if (out) out.innerHTML = '<p style="color:#64748b;font-size:0.75rem;margin-top:0.6rem;">Running 2,000 draws over 12 months\u2026</p>';
+            if (out) out.innerHTML = '<p style="color:var(--text-faint);font-size:0.75rem;margin-top:0.6rem;">Running 2,000 draws over 12 months\u2026</p>';
             try {
                 const r = await fetch(tenantQS('/api/multiagent/initiatives/' + id + '/montecarlo'), {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
@@ -755,7 +731,7 @@
                 }
                 renderMonteCarlo();
             } catch (e) {
-                if (out) out.innerHTML = '<p style="color:#dc2626;font-size:0.75rem;">Error: ' + esc(e.message) + '</p>';
+                if (out) out.innerHTML = '<p style="color:var(--negative);font-size:0.75rem;">Error: ' + esc(e.message) + '</p>';
                 if (btn) { btn.disabled = false; btn.textContent = '\u25b6 Run 2,000-draw simulation'; }
             }
         }
@@ -766,16 +742,16 @@
                 t += '<tr><td><span class="role-chip" style="background:' + ROLE[n.role].c + ';">' + ROLE[n.role].l + '</span>' + esc(n.label) + '</td><td>' + gbp(n.baseline) + '</td>'
                   +  n.projection.map(v => '<td>' + gbp(v) + '</td>').join('') + '<td>' + signedGbp(n.delta_gbp) + '</td></tr>';
             });
-            t += '<tr><td style="color:#777;">Ramp (% of full effect)</td><td></td>' + imp.projection.curve.map(c => '<td style="color:#777;">' + (c * 100).toFixed(0) + '%</td>').join('') + '<td></td></tr>';
+            t += '<tr><td style="color:var(--text-faint);">Ramp (% of full effect)</td><td></td>' + imp.projection.curve.map(c => '<td style="color:var(--text-faint);">' + (c * 100).toFixed(0) + '%</td>').join('') + '<td></td></tr>';
             return t + '</tbody></table>';
         }
 
         function progressHistory(hist) {
             if (!hist || !hist.length) return '';
-            let h = '<details style="margin-top:0.6rem;"><summary style="color:#777;font-size:0.72rem;cursor:pointer;">Previous checks (' + hist.length + ')</summary>';
+            let h = '<details style="margin-top:0.6rem;"><summary style="color:var(--text-faint);font-size:0.72rem;cursor:pointer;">Previous checks (' + hist.length + ')</summary>';
             hist.slice().reverse().forEach(p => {
                 const st = STATUS[p.status] || STATUS.on_track;
-                h += '<div style="font-size:0.72rem;color:#999;padding:0.3rem 0;border-bottom:1px solid #181818;">' + esc(p.checked_at.slice(0, 16).replace('T', ' ')) + ' · <span style="color:' + st.c + ';">' + st.i + ' ' + st.l + '</span> · ' + esc(p.summary) + '</div>';
+                h += '<div style="font-size:0.72rem;color:var(--text-faint);padding:0.3rem 0;border-bottom:1px solid var(--border);">' + esc(p.checked_at.slice(0, 16).replace('T', ' ')) + ' · <span style="color:' + st.c + ';">' + st.i + ' ' + st.l + '</span> · ' + esc(p.summary) + '</div>';
             });
             return h + '</details>';
         }
@@ -800,15 +776,15 @@
         async function runProgress(id) {
             const btn = document.getElementById('ipProgressBtn'), out = document.getElementById('ipProgress');
             btn.disabled = true; btn.textContent = 'Checking…';
-            out.innerHTML = '<p style="color:#64748b;">Progress Agent is comparing current node values with the projection…</p>';
+            out.innerHTML = '<p style="color:var(--text-faint);">Progress Agent is comparing current node values with the projection…</p>';
             try {
                 const r = await fetch(tenantQS('/api/multiagent/initiatives/' + id + '/progress'), { method: 'POST' });
                 const d = await r.json();
                 if (!d.ok) throw new Error(d.error || 'Progress check failed');
                 const rep = d.report, st = STATUS[rep.status];
                 let h = '<div class="status-banner" style="border-color:' + st.c + ';background:' + st.c + '14;">'
-                      + '<div style="color:' + st.c + ';font-weight:600;font-size:0.9rem;">' + st.i + ' ' + st.l + (rep.too_early ? ' <span style="color:#64748b;font-weight:400;font-size:0.72rem;">(provisional — too early to judge)</span>' : '') + '</div>'
-                      + '<div style="color:#475569;margin-top:0.3rem;line-height:1.5;">' + esc(rep.summary) + '</div></div>';
+                      + '<div style="color:' + st.c + ';font-weight:600;font-size:0.9rem;">' + st.i + ' ' + st.l + (rep.too_early ? ' <span style="color:var(--text-faint);font-weight:400;font-size:0.72rem;">(provisional — too early to judge)</span>' : '') + '</div>'
+                      + '<div style="color:var(--text-muted);margin-top:0.3rem;line-height:1.5;">' + esc(rep.summary) + '</div></div>';
                 h += '<div class="ip-stats">'
                   +  stat('Elapsed', rep.elapsed_months + ' mo')
                   +  stat('Ramp expected', (rep.expected_ramp_fraction * 100).toFixed(0) + '%')
@@ -817,19 +793,19 @@
                   +  stat('Ratio', rep.achievement_ratio == null ? '—' : (rep.achievement_ratio * 100).toFixed(0) + '%')
                   +  '</div>';
                 if (rep.blockers.length) {
-                    h += '<div style="margin-top:0.7rem;"><div style="color:#ec835a;font-size:0.72rem;margin-bottom:0.25rem;">⚠ Blockers</div>'
-                      +  rep.blockers.map(b => '<div style="color:#64748b;font-size:0.75rem;padding:0.2rem 0 0.2rem 0.8rem;border-left:2px solid #ec835a;margin-bottom:0.25rem;">' + esc(b) + '</div>').join('') + '</div>';
+                    h += '<div style="margin-top:0.7rem;"><div style="color:var(--warning);font-size:0.72rem;margin-bottom:0.25rem;">⚠ Blockers</div>'
+                      +  rep.blockers.map(b => '<div style="color:var(--text-faint);font-size:0.75rem;padding:0.2rem 0 0.2rem 0.8rem;border-left:2px solid var(--warning);margin-bottom:0.25rem;">' + esc(b) + '</div>').join('') + '</div>';
                 }
                 if (rep.deviations.length) {
-                    h += '<div style="margin-top:0.7rem;"><div style="color:#999;font-size:0.72rem;margin-bottom:0.25rem;">Deviations from projection</div>'
-                      +  rep.deviations.map(v => '<div style="color:#aaa;font-size:0.75rem;padding:0.15rem 0;">• ' + esc(v.message) + '</div>').join('') + '</div>';
+                    h += '<div style="margin-top:0.7rem;"><div style="color:var(--text-faint);font-size:0.72rem;margin-bottom:0.25rem;">Deviations from projection</div>'
+                      +  rep.deviations.map(v => '<div style="color:var(--text-faint);font-size:0.75rem;padding:0.15rem 0;">• ' + esc(v.message) + '</div>').join('') + '</div>';
                 }
-                h += '<details style="margin-top:0.6rem;"><summary style="color:#777;font-size:0.72rem;cursor:pointer;">Node-by-node</summary><table class="ip-table" style="margin-top:0.4rem;"><thead><tr><th>Node</th><th>Baseline</th><th>Expected now</th><th>Current</th><th>Gap</th><th>7d</th></tr></thead><tbody>'
+                h += '<details style="margin-top:0.6rem;"><summary style="color:var(--text-faint);font-size:0.72rem;cursor:pointer;">Node-by-node</summary><table class="ip-table" style="margin-top:0.4rem;"><thead><tr><th>Node</th><th>Baseline</th><th>Expected now</th><th>Current</th><th>Gap</th><th>7d</th></tr></thead><tbody>'
                   +  rep.nodes.map(n => '<tr><td>' + esc(n.label) + '</td><td>' + gbp(n.baseline) + '</td><td>' + gbp(n.expected_now) + '</td><td>' + gbp(n.current) + '</td><td>' + signedGbp(n.gap_gbp) + '</td><td>' + (n.change_7d_pct >= 0 ? '+' : '') + n.change_7d_pct + '%</td></tr>').join('')
                   +  '</tbody></table></details>';
                 out.innerHTML = h;
             } catch (e) {
-                out.innerHTML = '<p style="color:#dc2626;">Error: ' + esc(e.message) + '</p>';
+                out.innerHTML = '<p style="color:var(--negative);">Error: ' + esc(e.message) + '</p>';
             } finally {
                 btn.disabled = false; btn.textContent = '📈 Run Progress Agent';
             }
@@ -855,10 +831,10 @@
                     const st = last ? STATUS[last.status] : null;
                     return '<div class="ini-card active" onclick="openInitiative(\'' + i.id + '\')">'
                          + '<div style="display:flex;justify-content:space-between;align-items:center;gap:0.6rem;">'
-                         + '<div><strong style="color:#0f172a;font-size:0.82rem;">' + esc(i.title) + '</strong><span class="active-pill">● ' + esc(i.status.toUpperCase()) + '</span>'
-                         + '<div style="color:#64748b;font-size:0.68rem;margin-top:0.2rem;">' + esc(i.node_label || i.node_id) + ' · since ' + esc((i.started_at || i.approved_at || '').slice(0, 10)) + '</div></div>'
-                         + '<div style="text-align:right;"><div style="color:#16a34a;font-size:0.75rem;font-weight:600;">' + signedGbp(i.predicted_impact_gbp) + '/mo</div>'
-                         + '<div style="font-size:0.68rem;color:' + (st ? st.c : '#94a3b8') + ';">' + (st ? st.i + ' ' + st.l : 'Not yet checked') + '</div></div>'
+                         + '<div><strong style="color:var(--text);font-size:0.82rem;">' + esc(i.title) + '</strong><span class="active-pill">● ' + esc(i.status.toUpperCase()) + '</span>'
+                         + '<div style="color:var(--text-faint);font-size:0.68rem;margin-top:0.2rem;">' + esc(i.node_label || i.node_id) + ' · since ' + esc((i.started_at || i.approved_at || '').slice(0, 10)) + '</div></div>'
+                         + '<div style="text-align:right;"><div style="color:var(--positive);font-size:0.75rem;font-weight:600;">' + signedGbp(i.predicted_impact_gbp) + '/mo</div>'
+                         + '<div style="font-size:0.68rem;color:' + (st ? st.c : 'var(--text-faint)') + ';">' + (st ? st.i + ' ' + st.l : 'Not yet checked') + '</div></div>'
                          + '</div></div>';
                 }).join('');
             } catch (e) { /* non-critical */ }
@@ -866,5 +842,5 @@
         document.addEventListener('keydown', e => { if (e.key === 'Escape') closeInitiative(); });
         loadActiveInitiatives();
     </script>
-</body>
-</html>
+
+{% endblock %}
